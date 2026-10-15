@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
@@ -7,12 +7,19 @@ import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-rea
 import { countryByNumeric, type Country, type GameMode, type Location } from '../lib/countries'
 import { temperatures } from '../lib/geo'
 import type { Guess } from '../lib/game'
-import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from '../lib/motion'
+import {
+  GLOBE_FOCUS_DELAY_MS,
+  GLOBE_FOCUS_DURATION_MS,
+  GUESS_BLINK_CYCLES,
+  GUESS_BLINK_DURATION_MS,
+  GUESS_BLINK_PERIOD_MS,
+  prefersReducedMotion,
+} from '../lib/motion'
 
 const graticule = geoGraticule10()
 const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
-type Focus = { location: Location; sequence: number } | null
+type Focus = { countryId: string; location: Location; sequence: number } | null
 type RevealedLocation = { country: Country; location: Location }
 const revealColor = '#a77332'
 
@@ -32,15 +39,22 @@ function Globe({
   const [attempt, setAttempt] = useState(0)
   const [rotation, setRotation] = useState(initialRotation)
   const [zoom, setZoom] = useState(1)
+  const [blinkingCountryId, setBlinkingCountryId] = useState<string | null>(null)
+  const blinkStopTimer = useRef<number | null>(null)
+  const guessedIds = useRef(new Set<string>())
+  guessedIds.current = new Set(guesses.map((g) => g.country.id))
   const rotationRef = useRef(rotation)
   rotationRef.current = rotation
   const flightFrame = useRef<number | null>(null)
   const flightDelay = useRef<number | null>(null)
-  const cancelFlight = useCallback(() => {
+  const cancelMotion = useCallback(() => {
     if (flightFrame.current !== null) cancelAnimationFrame(flightFrame.current)
     if (flightDelay.current !== null) window.clearTimeout(flightDelay.current)
+    if (blinkStopTimer.current !== null) window.clearTimeout(blinkStopTimer.current)
     flightFrame.current = null
     flightDelay.current = null
+    blinkStopTimer.current = null
+    setBlinkingCountryId(null)
   }, [])
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const gesture = useRef({ multi: false, distance: 0 })
@@ -80,7 +94,7 @@ function Globe({
   }, [attempt])
 
   useEffect(() => {
-    cancelFlight()
+    cancelMotion()
     if (!focus) {
       setRotation(initialRotation)
       setZoom(1)
@@ -103,12 +117,24 @@ function Globe({
         const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2
         const [lng, lat] = route(eased)
         setRotation(progress === 1 ? target : [-lng, -lat, 0])
-        flightFrame.current = progress < 1 ? requestAnimationFrame(frame) : null
+        if (progress < 1) flightFrame.current = requestAnimationFrame(frame)
+        else {
+          flightFrame.current = null
+          // Begin the cue only after the final camera frame has been reached.
+          // Only actual guesses blink; a give-up reveal is not a guessed location.
+          if (guessedIds.current.has(focus.countryId) && !prefersReducedMotion()) {
+            setBlinkingCountryId(focus.countryId)
+            blinkStopTimer.current = window.setTimeout(() => {
+              setBlinkingCountryId(null)
+              blinkStopTimer.current = null
+            }, GUESS_BLINK_DURATION_MS)
+          }
+        }
       }
       flightFrame.current = requestAnimationFrame(frame)
     }, GLOBE_FOCUS_DELAY_MS)
-    return cancelFlight
-  }, [focus, cancelFlight])
+    return cancelMotion
+  }, [focus, cancelMotion])
 
   const projection = useMemo(
     () =>
@@ -133,7 +159,7 @@ function Globe({
   const center: [number, number] = [-rotation[0], -rotation[1]]
 
   function reset() {
-    cancelFlight()
+    cancelMotion()
     setRotation(initialRotation)
     setZoom(1)
   }
@@ -167,7 +193,7 @@ function Globe({
             )
               e.preventDefault()
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(e.key))
-              cancelFlight()
+              cancelMotion()
             if (e.key === 'ArrowLeft') setRotation((r) => [r[0] - 12, r[1], 0])
             if (e.key === 'ArrowRight') setRotation((r) => [r[0] + 12, r[1], 0])
             if (e.key === 'ArrowUp') setRotation((r) => [r[0], Math.min(85, r[1] + 12), 0])
@@ -184,7 +210,7 @@ function Globe({
             aria-label="World globe. Guessed locations are colored. Answers are revealed only after a correct guess or giving up."
             onPointerDown={(e) => {
               if (e.pointerType === 'mouse' && e.button !== 0) return
-              cancelFlight()
+              cancelMotion()
               e.currentTarget.setPointerCapture(e.pointerId)
               if (!pointers.current.size) gesture.current = { multi: false, distance: 0 }
               pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
@@ -257,7 +283,20 @@ function Globe({
                   stroke="#254553"
                   strokeWidth="0.65"
                   strokeLinejoin="round"
-                  className={f.country ? 'country-path' : 'territory-path'}
+                  className={
+                    f.country
+                      ? `country-path${f.country.id === blinkingCountryId ? ' guess-country-blink' : ''}`
+                      : 'territory-path'
+                  }
+                  style={
+                    f.country?.id === blinkingCountryId
+                      ? ({
+                          '--guess-heat-color': colors.get(blinkingCountryId),
+                          animationDuration: `${GUESS_BLINK_PERIOD_MS}ms`,
+                          animationIterationCount: GUESS_BLINK_CYCLES,
+                        } as CSSProperties)
+                      : undefined
+                  }
                 >
                   <title>{f.country?.name || 'Territory (not in the playable list)'}</title>
                 </path>
@@ -279,6 +318,19 @@ function Globe({
                       data-country={g.country.numeric}
                       data-capital={mode === 'capitals' ? g.country.id : undefined}
                       data-revealed={g.revealed || undefined}
+                      className={
+                        g.country.id === blinkingCountryId && !g.revealed
+                          ? 'guess-marker-blink'
+                          : undefined
+                      }
+                      style={
+                        g.country.id === blinkingCountryId && !g.revealed
+                          ? {
+                              animationDuration: `${GUESS_BLINK_PERIOD_MS}ms`,
+                              animationIterationCount: GUESS_BLINK_CYCLES,
+                            }
+                          : undefined
+                      }
                     >
                       <title>
                         {g.revealed ? 'Answer: ' : ''}

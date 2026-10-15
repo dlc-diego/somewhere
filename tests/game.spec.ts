@@ -65,7 +65,9 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
     await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.round.v1')!).answer),
   ).toBe('FRA')
   await guess(page, 'France', 'France')
-  await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible({
+    timeout: 8000,
+  })
   await expect(page.getByText('2 curious guesses.')).toBeVisible()
   await page.getByRole('button', { name: 'Close dialog' }).click()
   await expect(page.getByRole('heading', { name: 'You found your somewhere.' })).toBeVisible()
@@ -312,12 +314,14 @@ test('manual globe controls cancel a pending flight and reduced motion skips it'
   // A canceled flight must stay canceled even after its original finish time.
   await page.waitForTimeout(1350)
   await expect(france).toHaveAttribute('d', initial!)
+  await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await guess(page, 'Tuvalu', 'Tuvalu')
   const marker = page.locator('circle[data-country="798"]')
   await expect(marker).toBeVisible()
   expect(Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
   expect(Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+  await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
 })
 
 test('adjacent guesses get the hottest feedback and the closest stays highlighted first', async ({
@@ -390,7 +394,9 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
   await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
   await guess(page, 'Paris', 'Paris')
-  await expect(page.getByRole('dialog', { name: 'You found the mystery capital' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'You found the mystery capital' })).toBeVisible({
+    timeout: 8000,
+  })
   await expect(page.getByRole('dialog')).toContainText('Paris')
   await expect(page.getByRole('dialog')).toContainText('3 curious guesses')
   await page.getByRole('button', { name: 'Close dialog' }).click()
@@ -471,4 +477,73 @@ test('giving up without guesses works and mode switching cancels a pending resul
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.round.v1')!).guesses),
   ).toEqual([])
+})
+
+for (const mode of ['countries', 'capitals'] as const) {
+  test(`${mode} blink starts after arrival, uses heat feedback and stops on its own`, async ({
+    page,
+  }) => {
+    await seed(page)
+    await seedCapitals(page, mode === 'capitals')
+    await page.goto('/')
+    await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+    await page.getByRole('combobox').fill(mode === 'capitals' ? 'Tokyo' : 'Japan')
+    await page.getByRole('option', { name: /Tokyo|Japan/ }).click()
+    const observed = await page.evaluate(async () => {
+      const path = document.querySelector<SVGPathElement>('path[data-country="392"]')!
+      const before = path.getAttribute('d')
+      let movementBeforeBlink = false
+      document.querySelector<HTMLButtonElement>('.guess-button')!.click()
+      const deadline = performance.now() + 5000
+      while (!path.classList.contains('guess-country-blink') && performance.now() < deadline) {
+        if (path.getAttribute('d') !== before) movementBeforeBlink = true
+        await new Promise(requestAnimationFrame)
+      }
+      const blinkStarted = path.classList.contains('guess-country-blink')
+      const arrivedPath = path.getAttribute('d')
+      await new Promise((resolve) => setTimeout(resolve, 180))
+      return { movementBeforeBlink, blinkStarted, arrivedPath, laterPath: path.getAttribute('d') }
+    })
+    expect(observed.movementBeforeBlink).toBe(true)
+    expect(observed.blinkStarted).toBe(true)
+    // Geometry is already settled while the blink is running.
+    expect(observed.laterPath).toBe(observed.arrivedPath)
+    const path = page.locator('path[data-country="392"]')
+    await expect(path).toHaveAttribute('fill', '#576ca6')
+    await expect
+      .poll(() => path.evaluate((el) => getComputedStyle(el).fill))
+      .not.toBe('rgb(87, 108, 166)')
+    await expect(page.locator('path[data-country="250"]')).not.toHaveClass(/guess-country-blink/)
+    if (mode === 'capitals') {
+      const marker = page.locator('circle[data-capital="JPN"]')
+      await expect(marker).toHaveClass('guess-marker-blink')
+      expect(Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
+      expect(Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+      await expect
+        .poll(() => marker.evaluate((el) => Number(getComputedStyle(el).fillOpacity)))
+        .toBeLessThan(0.9)
+    }
+    await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0, {
+      timeout: 6500,
+    })
+    await expect(path).toHaveCSS('fill', 'rgb(87, 108, 166)')
+    if (mode === 'capitals')
+      await expect(page.locator('circle[data-capital="JPN"]')).toHaveCSS('fill-opacity', '1')
+  })
+}
+
+test('another guess replaces the blink and manual controls cancel it', async ({ page }) => {
+  await seed(page)
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  await guess(page, 'Japan', 'Japan')
+  await expect(page.locator('path[data-country="392"]')).toHaveClass(/guess-country-blink/)
+  await guess(page, 'Germany', 'Germany')
+  await expect(page.locator('path[data-country="392"]')).not.toHaveClass(/guess-country-blink/)
+  await expect(page.locator('path[data-country="276"]')).toHaveClass(/guess-country-blink/)
+  await expect(page.locator('path[data-country="276"]')).toHaveAttribute('fill', '#9e2439')
+  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+  await page.waitForTimeout(1500)
+  await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
 })

@@ -1546,3 +1546,32 @@ h1 {
     font-size: 12px;
   }
 }
+
+.guess-country-blink {
+  animation-name: guess-country-blink;
+  animation-timing-function: ease-in-out;
+}
+.guess-marker-blink {
+  animation-name: guess-marker-blink;
+  animation-timing-function: ease-in-out;
+}
+@keyframes guess-country-blink {
+  0%,
+  100% {
+    fill: var(--guess-heat-color);
+  }
+  50% {
+    fill: #bcc6b6;
+  }
+}
+@keyframes guess-marker-blink {
+  0%,
+  100% {
+    fill-opacity: 1;
+    stroke-opacity: 1;
+  }
+  50% {
+    fill-opacity: 0.15;
+    stroke-opacity: 0.35;
+  }
+}
