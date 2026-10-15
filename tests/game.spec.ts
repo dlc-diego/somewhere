@@ -227,3 +227,76 @@ test('unavailable browser storage warns but does not prevent gameplay', async ({
     page.getByRole('list', { name: 'Guesses, newest first', includeHidden: true }).locator('li'),
   ).toHaveCount(1)
 })
+
+test('compact Val layout, animated guess arrival and mobile globe centering', async ({
+  page,
+  isMobile,
+}) => {
+  await seed(page)
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Built for Val', level: 1 })).toBeVisible()
+  await expect(page.locator('footer')).toContainText('Built for Val')
+  await expect(page.getByText('A hunch is a good start.')).toHaveCount(0)
+  await expect(page.getByText('Follow your curiosity')).toHaveCount(0)
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  const search = (await page.getByRole('region', { name: 'Country search' }).boundingBox())!
+  const map = (await page.getByRole('region', { name: 'Explore the world' }).boundingBox())!
+  if (isMobile) expect(search.y + search.height).toBeLessThan(map.y)
+  else expect(map.x + map.width).toBeLessThan(search.x)
+
+  const france = page.locator('[data-country="250"]').first()
+  await page.getByRole('combobox').fill('Tuvalu')
+  await page.getByRole('option', { name: /Tuvalu/ }).click()
+  // Record actual projected geometry around the guess: there should be a short
+  // pause followed by intermediate frames, rather than an instant camera jump.
+  const samples = await page.evaluate(async () => {
+    const path = () => document.querySelector('[data-country="250"]')!.getAttribute('d')
+    const before = path()
+    document.querySelector<HTMLButtonElement>('.guess-button')!.click()
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    const paused = path()
+    await new Promise((resolve) => setTimeout(resolve, 530))
+    return { before, paused, midway: path() }
+  })
+  expect(samples.paused).toBe(samples.before)
+  expect(samples.midway).not.toBe(samples.before)
+  const marker = page.locator('circle[data-country="798"]')
+  await expect(marker).toBeVisible()
+  await expect.poll(async () => Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
+  await expect.poll(async () => Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+  expect(await france.getAttribute('d')).not.toBe(samples.midway)
+  if (isMobile) {
+    await expect
+      .poll(async () =>
+        page.getByTestId('globe').evaluate((el) => {
+          const bounds = el.getBoundingClientRect()
+          return Math.abs(bounds.top + bounds.height / 2 - innerHeight / 2)
+        }),
+      )
+      .toBeLessThan(5)
+    expect(await page.getByRole('combobox').evaluate((el) => el === document.activeElement)).toBe(
+      false,
+    )
+  }
+})
+
+test('manual globe controls cancel a pending flight and reduced motion skips it', async ({
+  page,
+}) => {
+  await seed(page)
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  const france = page.locator('[data-country="250"]').first()
+  const initial = await france.getAttribute('d')
+  await guess(page, 'Japan', 'Japan')
+  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  // A canceled flight must stay canceled even after its original finish time.
+  await page.waitForTimeout(1350)
+  await expect(france).toHaveAttribute('d', initial!)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await guess(page, 'Tuvalu', 'Tuvalu')
+  const marker = page.locator('circle[data-country="798"]')
+  await expect(marker).toBeVisible()
+  expect(Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
+  expect(Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+})

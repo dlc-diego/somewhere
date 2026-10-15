@@ -1,5 +1,5 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
@@ -7,6 +7,7 @@ import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-rea
 import { countryByNumeric, type Country } from '../lib/countries'
 import { temperatures } from '../lib/geo'
 import type { Guess } from '../lib/game'
+import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from '../lib/motion'
 
 const graticule = geoGraticule10()
 const initialRotation: [number, number, number] = [-12, -18, 0]
@@ -27,6 +28,16 @@ function Globe({
   const [attempt, setAttempt] = useState(0)
   const [rotation, setRotation] = useState(initialRotation)
   const [zoom, setZoom] = useState(1)
+  const rotationRef = useRef(rotation)
+  rotationRef.current = rotation
+  const flightFrame = useRef<number | null>(null)
+  const flightDelay = useRef<number | null>(null)
+  const cancelFlight = useCallback(() => {
+    if (flightFrame.current !== null) cancelAnimationFrame(flightFrame.current)
+    if (flightDelay.current !== null) window.clearTimeout(flightDelay.current)
+    flightFrame.current = null
+    flightDelay.current = null
+  }, [])
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const gesture = useRef({ moved: false, multi: false, candidate: '', distance: 0, travel: 0 })
   const colors = useMemo(
@@ -55,12 +66,35 @@ function Globe({
   }, [attempt])
 
   useEffect(() => {
-    if (focus) setRotation([-focus.country.lng, -focus.country.lat, 0])
-    else {
+    cancelFlight()
+    if (!focus) {
       setRotation(initialRotation)
       setZoom(1)
+      return
     }
-  }, [focus])
+    const target: [number, number, number] = [-focus.country.lng, -focus.country.lat, 0]
+    if (prefersReducedMotion()) {
+      setRotation(target)
+      return
+    }
+    flightDelay.current = window.setTimeout(() => {
+      flightDelay.current = null
+      // Interpolate the viewing center over the shortest great-circle route,
+      // including when a guess crosses the date line.
+      const from = rotationRef.current
+      const route = geoInterpolate([-from[0], -from[1]], [focus.country.lng, focus.country.lat])
+      const started = performance.now()
+      const frame = (now: number) => {
+        const progress = Math.min(1, (now - started) / GLOBE_FOCUS_DURATION_MS)
+        const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2
+        const [lng, lat] = route(eased)
+        setRotation(progress === 1 ? target : [-lng, -lat, 0])
+        flightFrame.current = progress < 1 ? requestAnimationFrame(frame) : null
+      }
+      flightFrame.current = requestAnimationFrame(frame)
+    }, GLOBE_FOCUS_DELAY_MS)
+    return cancelFlight
+  }, [focus, cancelFlight])
 
   const projection = useMemo(
     () =>
@@ -85,10 +119,12 @@ function Globe({
   const center: [number, number] = [-rotation[0], -rotation[1]]
 
   function reset() {
+    cancelFlight()
     setRotation(initialRotation)
     setZoom(1)
   }
   function endPointer(id: number, select = true) {
+    if (!pointers.current.has(id)) return
     if (select && !gesture.current.moved && !gesture.current.multi) {
       const country = countryByNumeric.get(gesture.current.candidate)
       if (country) onSelect(country)
@@ -121,6 +157,8 @@ function Globe({
               )
             )
               e.preventDefault()
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(e.key))
+              cancelFlight()
             if (e.key === 'ArrowLeft') setRotation((r) => [r[0] - 12, r[1], 0])
             if (e.key === 'ArrowRight') setRotation((r) => [r[0] + 12, r[1], 0])
             if (e.key === 'ArrowUp') setRotation((r) => [r[0], Math.min(85, r[1] + 12), 0])
@@ -137,6 +175,7 @@ function Globe({
             aria-label="World globe. Only guessed countries are colored."
             onPointerDown={(e) => {
               if (e.pointerType === 'mouse' && e.button !== 0) return
+              cancelFlight()
               e.currentTarget.setPointerCapture(e.pointerId)
               if (!pointers.current.size)
                 gesture.current = {

@@ -132,7 +132,7 @@ button:hover:not(:disabled) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 42px 0 34px;
+  padding: 26px 0;
 }
 .eyebrow {
   font-size: 10px;
@@ -143,17 +143,7 @@ button:hover:not(:disabled) {
   margin: 0;
   color: #5e6a59;
 }
-.intro .eyebrow {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  color: #85624b;
-}
-.tiny-line {
-  width: 18px;
-  height: 1px;
-  background: #c78559;
-}
+
 h1 {
   font-family: var(--serif);
   font-size: clamp(35px, 4.2vw, 56px);
@@ -162,35 +152,17 @@ h1 {
   line-height: 1.15;
   margin: 12px 0;
 }
-h1 em {
-  color: #c96c49;
-  font-weight: 400;
-}
-.intro-copy {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #5e6a59;
-  margin: 0;
-}
-.intro-note {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  font-size: 11px;
-  line-height: 1.9;
-  color: #5e6a59;
-  margin-right: 9px;
-}
-.intro-note svg {
-  color: #85624b;
-}
+
 .game-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 30px;
+  grid-template-areas: 'globe search' 'globe history';
+  grid-template-rows: auto 1fr;
+  gap: 26px 30px;
   align-items: start;
 }
 .globe-panel {
+  grid-area: globe;
   min-width: 0;
   background: #edf0e9;
   border-radius: 18px;
@@ -354,10 +326,15 @@ h1 em {
   border-radius: 50%;
   display: inline-block;
 }
-.play-column {
+.history-column {
+  grid-area: history;
   min-width: 0;
 }
+.history-column .history {
+  margin-top: 0;
+}
 .search-card {
+  grid-area: search;
   background: #fffefa;
   border: 1px solid #e5e6dc;
   border-radius: 15px;
@@ -1017,8 +994,8 @@ h1 em {
     padding: 0 35px;
   }
   .intro {
-    padding-top: 48px;
-    padding-bottom: 38px;
+    padding-top: 30px;
+    padding-bottom: 30px;
   }
   .game-layout {
     gap: 34px;
@@ -1078,9 +1055,7 @@ h1 em {
   .globe-heading .eyebrow {
     font-size: 8px;
   }
-  .intro-note {
-    font-size: 10px;
-  }
+
   .globe-loading {
     min-height: 450px;
   }
@@ -1109,24 +1084,22 @@ h1 em {
     padding: 9px 11px;
   }
   .intro {
-    padding: 31px 0 27px;
+    padding: 23px 0;
   }
-  .intro-note {
-    display: none;
-  }
+
   h1 {
     font-size: 42px;
   }
-  .intro-copy {
-    font-size: 12px;
-  }
+
   .game-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'search' 'globe' 'history';
+    grid-template-rows: auto;
+    gap: 20px;
   }
   .globe-panel,
-  .play-column {
+  .history-column {
     width: 100%;
   }
   .globe-panel {
@@ -1285,20 +1258,15 @@ h1 em {
     gap: 5px;
   }
   .intro {
-    padding: 27px 0 23px;
+    padding: 22px 0;
   }
-  .intro .eyebrow {
-    font-size: 8px;
-    letter-spacing: 1.5px;
-  }
+
   h1 {
     font-size: 35px;
     letter-spacing: -1.5px;
     margin: 11px 0 10px;
   }
-  .intro-copy {
-    font-size: 11px;
-  }
+
   .globe-panel {
     padding: 16px 16px 18px;
     border-radius: 14px;
@@ -1461,4 +1429,18 @@ h1 em {
   .game-footnote {
     font-size: 10px;
   }
+}
+
+.intro h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(28px, 3vw, 38px);
+  letter-spacing: -1px;
+  margin: 0;
+}
+.title-heart {
+  color: #b8886b;
+  width: 25px;
+  height: 25px;
 }

@@ -33,7 +33,7 @@ In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm 
 - Each guess colors that country and displays the great-circle distance between the two countries’ representative centers. Text labels and symbols supplement color.
 - Cold: **7,000 km or more**. Cool: **3,000–6,999 km**. Warm: **1,000–2,999 km**. Hot: **under 1,000 km**. Thresholds use unrounded distances; displayed kilometers are rounded.
 - Only an exact country match wins. A tiny nonzero distance is displayed as `<1 km`.
-- Guess history is newest first. Tap a history entry to center it on the globe. Duplicate guesses are rejected.
+- Guess history is newest first. Tap a history entry to center it on the globe. Duplicate guesses are rejected. On phones, search sits above the globe; submitting a guess closes the keyboard and smoothly centers the globe on screen. After a short pause, the globe glides to your guess. Dragging or resetting interrupts the movement, and reduced-motion preferences skip the animation.
 - A completed round shows the answer, guess count, and replay controls. A new round during an active game requires confirmation.
 - The round and all guesses are saved in this browser’s `localStorage`, including completed rounds. Invalid saves recover with a message. If storage is disabled or full, gameplay continues with a warning. Progress is local to the browser and is not synced between devices or tabs.
 
@@ -90,7 +90,7 @@ On Linux you may need Playwright’s documented browser system dependencies. In 
 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:e2e
 ```
 
-Browser tests cover a complete win/replay journey, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement and selection, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
+Browser tests cover a complete win/replay journey, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement and selection, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, animated guess arrival, mobile globe centering, reduced-motion behavior, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
 
 ## Data, accuracy, and licensing
 

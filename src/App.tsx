@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import {
   ArrowRight,
   Check,
@@ -8,7 +8,6 @@ import {
   Heart,
   MapPin,
   RotateCcw,
-  Sparkles,
   Trophy,
 } from 'lucide-react'
 import CountrySearch from './components/CountrySearch'
@@ -17,6 +16,7 @@ import Dialog from './components/Dialog'
 import { addGuess, guessDetails, hasWon, loadRound, newRound, STORAGE_KEY } from './lib/game'
 import { countryById, type Country } from './lib/countries'
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
+import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from './lib/motion'
 
 const Globe = lazy(() => import('./components/Globe'))
 type DialogType = 'help' | 'restart' | 'win' | null
@@ -30,6 +30,8 @@ export default function App() {
   const [focus, setFocus] = useState<{ country: Country; sequence: number } | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
+  const [victoryPending, setVictoryPending] = useState(false)
+  const globePanel = useRef<HTMLElement>(null)
   const guesses = guessDetails(round)
   const won = hasWon(round)
   const closest = guesses.length ? Math.min(...guesses.map((g) => g.distance)) : null
@@ -41,6 +43,32 @@ export default function App() {
       setWarning('Browser storage is unavailable. This round may not survive a refresh.')
     }
   }, [round])
+
+  useEffect(() => {
+    if (!focus || !window.matchMedia('(max-width: 820px)').matches) return
+    // Let the mobile keyboard close before centering the globe in the viewport.
+    if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur()
+    const timer = window.setTimeout(() => {
+      globePanel.current?.querySelector('.globe-viewport')?.scrollIntoView({
+        block: 'center',
+        behavior: prefersReducedMotion() ? 'instant' : 'smooth',
+      })
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [focus])
+
+  useEffect(() => {
+    if (!victoryPending) return
+    // Let the final guess arrive on the globe before showing the celebration.
+    const timer = window.setTimeout(
+      () => {
+        setDialog('win')
+        setVictoryPending(false)
+      },
+      prefersReducedMotion() ? 0 : GLOBE_FOCUS_DELAY_MS + GLOBE_FOCUS_DURATION_MS + 100,
+    )
+    return () => window.clearTimeout(timer)
+  }, [victoryPending])
 
   const selectOnGlobe = useCallback(
     (country: Country) => setSelection((s) => ({ country, sequence: (s?.sequence || 0) + 1 })),
@@ -59,7 +87,7 @@ export default function App() {
     setAnnouncement(
       `${country.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
-    if (hasWon(result.round)) setDialog('win')
+    if (hasWon(result.round)) setVictoryPending(true)
   }
   function restart() {
     setRound(newRound(round.answer))
@@ -67,6 +95,7 @@ export default function App() {
     setFocus(null)
     setDialog(null)
     setCopied(false)
+    setVictoryPending(false)
     setAnnouncement('A fresh mystery country is ready. Good luck!')
   }
   function requestRestart() {
@@ -114,23 +143,9 @@ export default function App() {
 
       <main>
         <section className="intro" aria-labelledby="page-title">
-          <div>
-            <p className="eyebrow">
-              <span className="tiny-line" /> Follow your curiosity
-            </p>
-            <h1 id="page-title">
-              One world. <em>One mystery.</em>
-            </h1>
-            <p className="intro-copy">There’s a country on our mind. Can you find it?</p>
-          </div>
-          <div className="intro-note">
-            <Sparkles size={17} />
-            <span>
-              No timer. No pressure.
-              <br />
-              Just a little exploration.
-            </span>
-          </div>
+          <h1 id="page-title">
+            Built for Val <Heart className="title-heart" aria-hidden="true" strokeWidth={1.5} />
+          </h1>
         </section>
         {warning && (
           <div className="storage-warning" role="status">
@@ -138,7 +153,42 @@ export default function App() {
           </div>
         )}
         <div className="game-layout">
-          <section className="globe-panel" aria-label="Explore the world">
+          <section className="search-card" id="country-search" aria-label="Country search">
+            <div className="search-card-top">
+              <span className={`round-status ${won ? 'is-won' : ''}`}>
+                <span /> {won ? 'Mystery solved' : 'The search is on'}
+              </span>
+              <span className="round-label">195 countries</span>
+            </div>
+            {won && (
+              <>
+                <h2>You found your somewhere.</h2>
+                <p className="card-description">
+                  {countryById.get(round.answer)!.name} was the mystery country. Beautifully
+                  explored.
+                </p>
+              </>
+            )}
+            {won ? (
+              <div className="completed-actions">
+                <button className="primary" onClick={restart}>
+                  Explore another round <ArrowRight size={18} />
+                </button>
+                <button className="text-button" onClick={() => setDialog('win')}>
+                  <Trophy size={15} /> See your discovery
+                </button>
+              </div>
+            ) : (
+              <CountrySearch
+                key={round.answer}
+                onGuess={submit}
+                guessed={round.guesses}
+                disabled={won}
+                selection={selection}
+              />
+            )}
+          </section>
+          <section ref={globePanel} className="globe-panel" aria-label="Explore the world">
             <Suspense
               fallback={
                 <div className="globe-loading" role="status">
@@ -163,41 +213,7 @@ export default function App() {
             </div>
           </section>
 
-          <div className="play-column">
-            <section className="search-card" id="country-search" aria-labelledby="search-title">
-              <div className="search-card-top">
-                <span className={`round-status ${won ? 'is-won' : ''}`}>
-                  <span /> {won ? 'Mystery solved' : 'The search is on'}
-                </span>
-                <span className="round-label">195 countries</span>
-              </div>
-              <h2 id="search-title">
-                {won ? 'You found your somewhere.' : 'A hunch is a good start.'}
-              </h2>
-              <p className="card-description">
-                {won
-                  ? `${countryById.get(round.answer)!.name} was the mystery country. Beautifully explored.`
-                  : 'Guess a country. We’ll tell you how close you are.'}
-              </p>
-              {won ? (
-                <div className="completed-actions">
-                  <button className="primary" onClick={restart}>
-                    Explore another round <ArrowRight size={18} />
-                  </button>
-                  <button className="text-button" onClick={() => setDialog('win')}>
-                    <Trophy size={15} /> See your discovery
-                  </button>
-                </div>
-              ) : (
-                <CountrySearch
-                  key={round.answer}
-                  onGuess={submit}
-                  guessed={round.guesses}
-                  disabled={won}
-                  selection={selection}
-                />
-              )}
-            </section>
+          <div className="history-column">
             <GuessHistory guesses={guesses} onFocus={focusCountry} />
             {closest !== null && !won && (
               <div className="closest-note">
@@ -216,7 +232,7 @@ export default function App() {
       </main>
       <footer className="site-footer">
         <span>
-          Made for curious hearts <Heart size={12} />
+          Built for Val <Heart size={12} />
         </span>
         <button className="text-button" onClick={() => setDialog('help')}>
           A small world, explained <ArrowRight size={13} />

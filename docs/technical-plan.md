@@ -4,7 +4,7 @@
 
 The requested inspiration is Globle’s guess → proximity feedback → repeat loop. The reference website was requested read-only from the cloud environment but the network proxy returned HTTP 403, so live inspection was unavailable. The user’s detailed specification supplies the interaction requirements. Somewhere has its own visual design, copy, icons, and color palette; no reference-site code or assets are used.
 
-The first release is a single-player random-round game: no accounts, daily challenge, timers, leaderboard, audio, or infrastructure. The globe is the visual centerpiece; search and history sit alongside it on desktop and stack below it on phones. Animation is restricted to a loading indicator, with reduced-motion support.
+The first release is a single-player random-round game: no accounts, daily challenge, timers, leaderboard, audio, or infrastructure. The globe is the visual centerpiece; search and history sit alongside it on desktop; on phones, search appears above the globe and history below it. The screen is personalized with a compact “Built for Val” title and heart. Submitting a guess scrolls the mobile globe into the center of the viewport and triggers a short, delayed rotation to the guessed country. Manual controls interrupt the rotation, and reduced-motion preferences skip it. There is no idle animation apart from the loading indicator.
 
 ## Stack decision
 
