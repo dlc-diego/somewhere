@@ -1,0 +1,135 @@
+# Somewhere
+
+A small, polished country guessing game. Explore a draggable globe, guess a country, and follow the warmer-or-colder feedback until you find the mystery country.
+
+**React + TypeScript + Vite, with an SVG globe powered by D3 Geo. Entirely static. No accounts, keys, backend, database, analytics, or runtime map APIs.**
+
+## Run locally
+
+Use **Node 22.12+** (Node 24 is also supported) and npm.
+
+```sh
+npm ci
+npm run dev
+```
+
+Open the address printed by Vite. To run and check the deployable build:
+
+```sh
+npm test
+npm run build
+npm run preview
+```
+
+The `dist/` directory is the complete website. Keep its `assets/` and `data/` directories together. Do not open `index.html` directly from the filesystem; use a web server.
+
+In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm --cache /tmp/wep-app-npm ci` there. No secrets or environment variables are needed by the app.
+
+## How it plays
+
+- A random country is selected once per round. New rounds exclude the immediately previous answer.
+- Search a name, an ISO code, or an alias such as `UK`, `UAE`, `Turkey`, or `Ivory Coast`. Select a suggestion, then press **Make a guess**. With a keyboard, Enter selects the highlighted suggestion; a second Enter submits it.
+- Drag the globe to rotate it, pinch to zoom, or use the zoom buttons. Tapping a playable country selects it without submitting a guess. Keyboard users can focus the globe and use arrows, `+`, `-`, and `Home`.
+- Each guess colors that country and displays the great-circle distance between the two countries’ representative centers. Text labels and symbols supplement color.
+- Cold: **7,000 km or more**. Cool: **3,000–6,999 km**. Warm: **1,000–2,999 km**. Hot: **under 1,000 km**. Thresholds use unrounded distances; displayed kilometers are rounded.
+- Only an exact country match wins. A tiny nonzero distance is displayed as `<1 km`.
+- Guess history is newest first. Tap a history entry to center it on the globe. Duplicate guesses are rejected.
+- A completed round shows the answer, guess count, and replay controls. A new round during an active game requires confirmation.
+- The round and all guesses are saved in this browser’s `localStorage`, including completed rounds. Invalid saves recover with a message. If storage is disabled or full, gameplay continues with a warning. Progress is local to the browser and is not synced between devices or tabs.
+
+Daily challenges are deliberately deferred; replayable random rounds cover the core experience without timezone rules or additional infrastructure.
+
+## Deploy free: Cloudflare Pages
+
+Cloudflare Pages serves this app as static files with HTTPS and a free `pages.dev` address. There is no custom domain requirement and no game server to run. Hosting and build quotas remain subject to the provider’s current free-plan terms; the app itself makes no metered map or country API calls.
+
+1. Commit this project and push it to your GitHub repository, `dlc-diego/wep-app`. The initial checkout was empty; the full application must be present on the connected branch before deployment.
+2. Sign in to Cloudflare and create a **Pages** project connected to that Git repository. Choose the branch containing the app (normally `main`).
+3. Configure:
+
+   | Setting                | Value                                                    |
+   | ---------------------- | -------------------------------------------------------- |
+   | Framework              | Vite (or no preset with the settings below)              |
+   | Root directory         | Repository root                                          |
+   | Build command          | `npm run build`                                          |
+   | Build output directory | `dist`                                                   |
+   | Node version           | Set `NODE_VERSION` to `22` or `24` in the build settings |
+
+4. Deploy. The platform installs dependencies and builds the project. Open its assigned HTTPS URL on your phone and computer.
+5. Verify the globe loads, make a guess, refresh to check persistence, and start another round. Share the assigned URL with your wife.
+
+Future pushes to the connected production branch rebuild the site. There are no runtime secrets to enter. The app includes responsive layouts, a mobile viewport declaration, touch rotation and pinch gestures, and 16px mobile inputs to avoid focus zoom on iOS. A phone needs a current browser with JavaScript enabled.
+
+## Deploy free: GitHub Pages (simplest with this repository)
+
+A deployment workflow is included at [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml). GitHub Pages availability for private repositories depends on your GitHub plan; Cloudflare Pages is a useful alternative if you want the source repository to stay private.
+
+1. Push the app to `main` in your GitHub repository.
+2. In the repository’s **Settings → Pages**, choose **GitHub Actions** as the deployment source.
+3. In **Actions**, run **Deploy to GitHub Pages**, or push another commit to `main`.
+4. Wait for the deployment job to succeed, then use the URL provided by GitHub Pages (typically `https://dlc-diego.github.io/wep-app/`).
+
+Vite’s relative base (`./`) and relative map-data paths support both domain-root hosting and the `/wep-app/` project path. No client-side router or rewrite rules are needed. The app’s nested-path loading is covered by a browser test.
+
+### Netlify alternative
+
+Import the Git repository, set build command `npm run build`, publish directory `dist`, and use Node 22 or 24. Netlify provides an HTTPS `netlify.app` address. Review its current free-plan credits and limits before choosing it. No functions or paid add-ons are required.
+
+## Verification
+
+```sh
+npm test                     # geographic calculations, game rules, data, persistence validation
+npm run build                # strict TypeScript check and Vite production build
+npx playwright install chromium
+npm run test:e2e             # desktop and mobile Chromium against the production build
+```
+
+On Linux you may need Playwright’s documented browser system dependencies. In this cloud environment Chromium is already available:
+
+```sh
+PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:e2e
+```
+
+Browser tests cover a complete win/replay journey, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement and selection, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
+
+## Data, accuracy, and licensing
+
+- **Playable list:** 195 entries: 193 UN member states plus Palestine and Vatican City. This is an explicit gameplay scope, rather than a statement about sovereignty. Dependent territories and other disputed states, including Taiwan and Kosovo, are not answers in this version. The guide explains this scope before play.
+- **Metadata:** [mledoze/countries](https://github.com/mledoze/countries), provided by `world-countries`. Each playable country has a canonical ISO 3166-1 alpha-3 identifier. Names and useful aliases are normalized for case, diacritics, punctuation, and whitespace. The two Congos have distinct display names.
+- **Boundaries:** Natural Earth 1:50m via [world-atlas](https://github.com/topojson/world-atlas). Country features are joined through zero-padded ISO numeric codes and then matched to alpha-3 records; names are never used for matching. MultiPolygon features preserve disconnected regions. Some dataset IDs repeat across associated regions; rendering uses separate feature keys while matching all their parts to the same country.
+- **Rendering:** The generator simplifies topology, preserving shared borders and disconnected polygon records. Outlines are approximate and small islands may be visually reduced or degenerate at this scale. Tiny guessed countries receive a center marker; Tuvalu, which has no boundary in this dataset, always receives one. Before guessing, tiny countries can be selected reliably through search.
+- **Disputes:** Borders reflect the source dataset’s choices and vintage. Areas without a matching numeric code remain neutral and unplayable. Claims, overseas dependencies, and disputed areas are not reassigned by inference from their labels.
+- **Centers and distance:** Metadata supplies representative latitude and longitude, which are not calculated land centroids, capitals, or nearest border points. The same coordinates are used consistently for all guesses and answers. Large or island countries can produce unintuitive center distances; overseas regions do not change the chosen center. Haversine uses mean Earth radius **6,371.0088 km**, handles the date line and poles, and clamps floating-point error. The Earth is treated as a sphere.
+- **Licenses:** Natural Earth geography is public domain; the `world-atlas` package has an ISC license. Country metadata is ODbL. The adapted metadata database is distributed under ODbL at `public/data/countries.json`, alongside the complete license. Original sources and download links are credited in the game guide. No assets, branding, or code were copied from Globle.
+
+Generated datasets are committed, bundled, and served from your site. Updating npm dependencies does not silently change geography. To deliberately update them:
+
+```sh
+npm run data:generate
+npm test
+npm run build
+```
+
+Review the resulting data changes and attribution. `scripts/generate-data.mjs` is deterministic and validates list membership. Routine builds use committed data and do not need to regenerate it.
+
+## Architecture and trade-offs
+
+See [docs/technical-plan.md](docs/technical-plan.md) for the library comparison and implementation choices.
+
+```text
+src/
+  lib/            Country lookup, geographic math, game rules, saved-state validation
+  components/     Globe, accessible country search, guess history, native dialog
+  data/           Compact playable-country metadata
+  App.tsx         Round state and the game screen
+  styles.css      Responsive plain CSS and reduced-motion support
+public/data/      Lazy-loaded boundaries, adapted metadata, attribution licenses
+scripts/          Reproducible dataset preparation
+tests/            Browser tests using production assets
+```
+
+**Answer privacy:** The globe only receives guesses, never the answer. It does not pan to or mark the answer before the player guesses it. However, a fully static game must calculate distances in the browser, so the answer exists in memory and saved storage. A player using developer tools can find it. Obfuscation would not solve this. Strong secrecy requires a server to hold the answer and evaluate guesses; that complexity is intentionally avoided for this personal game.
+
+**Performance:** Country boundaries and D3 are loaded separately from the initial game UI. Search works while the map loads and after map failures. Geometry is simplified ahead of time, projection paths are memoized, there is no animation/render loop when idle, and no remote imagery or web fonts. SVG is a shaded orthographic projection with 3D-like rotation, not a WebGL 3D scene. Current measurements and limits are recorded in the technical plan.
+
+Once GitHub Pages is configured to use GitHub Actions, pushes to `main` automatically rebuild and deploy the site. The deployment workflow reports its published URL. A local build alone does not publish the app.

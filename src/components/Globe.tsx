@@ -1,0 +1,304 @@
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { geoDistance, geoGraticule10, geoOrthographic, geoPath } from 'd3-geo'
+import { feature } from 'topojson-client'
+import type { FeatureCollection, Geometry } from 'geojson'
+import type { GeometryCollection, Topology } from 'topojson-specification'
+import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-react'
+import { countryByNumeric, type Country } from '../lib/countries'
+import { temperatures } from '../lib/geo'
+import type { Guess } from '../lib/game'
+
+const graticule = geoGraticule10()
+const initialRotation: [number, number, number] = [-12, -18, 0]
+type Atlas = Topology<{ countries: GeometryCollection }>
+type Focus = { country: Country; sequence: number } | null
+
+function Globe({
+  guesses,
+  focus,
+  onSelect,
+}: {
+  guesses: Guess[]
+  focus: Focus
+  onSelect: (country: Country) => void
+}) {
+  const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
+  const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const [rotation, setRotation] = useState(initialRotation)
+  const [zoom, setZoom] = useState(1)
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const gesture = useRef({ moved: false, multi: false, candidate: '', distance: 0, travel: 0 })
+  const colors = useMemo(
+    () => new Map(guesses.map((g) => [g.country.id, temperatures[g.temperature].color])),
+    [guesses],
+  )
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setError(false)
+    fetch(`${import.meta.env.BASE_URL}data/world.json`, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error('Map unavailable')
+        return r.json() as Promise<Atlas>
+      })
+      .then((atlas) => {
+        const collection = feature(atlas, atlas.objects.countries)
+        if (collection.type !== 'FeatureCollection' || collection.features.length < 190)
+          throw new Error('Invalid map')
+        setWorld(collection)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setError(true)
+      })
+    return () => controller.abort()
+  }, [attempt])
+
+  useEffect(() => {
+    if (focus) setRotation([-focus.country.lng, -focus.country.lat, 0])
+    else {
+      setRotation(initialRotation)
+      setZoom(1)
+    }
+  }, [focus])
+
+  const projection = useMemo(
+    () =>
+      geoOrthographic()
+        .translate([300, 300])
+        .scale(265 * zoom)
+        .rotate(rotation)
+        .clipAngle(90)
+        .precision(0.6),
+    [rotation, zoom],
+  )
+  const path = useMemo(() => geoPath(projection), [projection])
+  const mapPaths = useMemo(
+    () =>
+      world?.features.map((f, index) => ({
+        key: `${f.id ?? 'unmapped'}-${index}`,
+        country: countryByNumeric.get(String(f.id).padStart(3, '0')),
+        d: path(f) || '',
+      })),
+    [world, path],
+  )
+  const center: [number, number] = [-rotation[0], -rotation[1]]
+
+  function reset() {
+    setRotation(initialRotation)
+    setZoom(1)
+  }
+  function endPointer(id: number, select = true) {
+    if (select && !gesture.current.moved && !gesture.current.multi) {
+      const country = countryByNumeric.get(gesture.current.candidate)
+      if (country) onSelect(country)
+    }
+    pointers.current.delete(id)
+    if (!pointers.current.size) gesture.current.multi = false
+  }
+
+  return (
+    <div className="globe-content">
+      <div className="globe-heading">
+        <span className="eyebrow">A world of possibilities</span>
+        <span className="live-indicator">
+          <span /> Free play
+        </span>
+      </div>
+      <div className="globe-viewport" data-testid="globe" data-ready={Boolean(world)}>
+        <span className="compass-n" aria-hidden="true">
+          N
+        </span>
+        <div
+          className="globe-keyboard"
+          tabIndex={0}
+          role="group"
+          aria-label="Interactive globe. Drag to rotate, pinch to zoom. Keyboard: arrow keys rotate, plus and minus zoom, Home resets. Use country search to identify or guess countries."
+          onKeyDown={(e) => {
+            if (
+              ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', 'Home'].includes(
+                e.key,
+              )
+            )
+              e.preventDefault()
+            if (e.key === 'ArrowLeft') setRotation((r) => [r[0] - 12, r[1], 0])
+            if (e.key === 'ArrowRight') setRotation((r) => [r[0] + 12, r[1], 0])
+            if (e.key === 'ArrowUp') setRotation((r) => [r[0], Math.min(85, r[1] + 12), 0])
+            if (e.key === 'ArrowDown') setRotation((r) => [r[0], Math.max(-85, r[1] - 12), 0])
+            if (e.key === '+' || e.key === '=') setZoom((z) => Math.min(2.2, z + 0.2))
+            if (e.key === '-') setZoom((z) => Math.max(1, z - 0.2))
+            if (e.key === 'Home') reset()
+          }}
+        >
+          <svg
+            viewBox="0 0 600 600"
+            className="globe-svg"
+            role="img"
+            aria-label="World globe. Only guessed countries are colored."
+            onPointerDown={(e) => {
+              if (e.pointerType === 'mouse' && e.button !== 0) return
+              e.currentTarget.setPointerCapture(e.pointerId)
+              if (!pointers.current.size)
+                gesture.current = {
+                  moved: false,
+                  multi: false,
+                  candidate:
+                    (e.target as Element).closest('[data-country]')?.getAttribute('data-country') ||
+                    '',
+                  distance: 0,
+                  travel: 0,
+                }
+              pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+              if (pointers.current.size >= 2) {
+                gesture.current.multi = true
+                const [a, b] = [...pointers.current.values()]
+                gesture.current.distance = Math.hypot(a.x - b.x, a.y - b.y)
+              }
+            }}
+            onPointerMove={(e) => {
+              const previous = pointers.current.get(e.pointerId)
+              if (!previous) return
+              const dx = e.clientX - previous.x,
+                dy = e.clientY - previous.y
+              pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+              gesture.current.travel += Math.hypot(dx, dy)
+              if (gesture.current.travel > 5) gesture.current.moved = true
+              if (pointers.current.size === 1 && !gesture.current.multi) {
+                setRotation((r) => [
+                  (r[0] + (dx * 0.4) / zoom) % 360,
+                  Math.max(-85, Math.min(85, r[1] - (dy * 0.4) / zoom)),
+                  0,
+                ])
+              } else if (pointers.current.size >= 2) {
+                const [a, b] = [...pointers.current.values()]
+                const distance = Math.hypot(a.x - b.x, a.y - b.y)
+                const ratio = gesture.current.distance ? distance / gesture.current.distance : 1
+                setZoom((z) => Math.max(1, Math.min(2.2, z * ratio)))
+                gesture.current.distance = distance
+              }
+            }}
+            onPointerUp={(e) => endPointer(e.pointerId)}
+            onPointerCancel={(e) => endPointer(e.pointerId, false)}
+            onLostPointerCapture={(e) => pointers.current.delete(e.pointerId)}
+          >
+            <defs>
+              <radialGradient id="ocean" cx="33%" cy="25%" r="80%">
+                <stop offset="0" stopColor="#294c5e" />
+                <stop offset="0.65" stopColor="#173747" />
+                <stop offset="1" stopColor="#0b2535" />
+              </radialGradient>
+              <radialGradient id="shade" cx="36%" cy="28%" r="75%">
+                <stop offset="0.4" stopColor="#001927" stopOpacity="0" />
+                <stop offset="1" stopColor="#001927" stopOpacity="0.42" />
+              </radialGradient>
+              <clipPath id="globe-clip">
+                <circle cx="300" cy="300" r={265 * zoom} />
+              </clipPath>
+            </defs>
+            <circle className="orbit" cx="300" cy="300" r="285" />
+            <circle cx="300" cy="300" r={265 * zoom} fill="url(#ocean)" />
+            <g clipPath="url(#globe-clip)">
+              <path
+                d={path(graticule) || ''}
+                fill="none"
+                stroke="#7995a2"
+                strokeOpacity="0.15"
+                strokeWidth="0.7"
+              />
+              {mapPaths?.map((f) => (
+                <path
+                  key={f.key}
+                  d={f.d}
+                  data-country={f.country?.numeric}
+                  data-guessed={f.country ? colors.has(f.country.id) : false}
+                  fill={(f.country && colors.get(f.country.id)) || '#bcc6b6'}
+                  stroke="#254553"
+                  strokeWidth="0.65"
+                  strokeLinejoin="round"
+                  className={f.country ? 'country-path' : 'territory-path'}
+                >
+                  <title>{f.country?.name || 'Territory (not in the playable list)'}</title>
+                </path>
+              ))}
+              <circle cx="300" cy="300" r={265 * zoom} fill="url(#shade)" pointerEvents="none" />
+              {guesses
+                .filter(
+                  (g) =>
+                    (g.country.small || g.country.id === 'TUV') &&
+                    geoDistance([g.country.lng, g.country.lat], center) < Math.PI / 2,
+                )
+                .map((g) => {
+                  const point = projection([g.country.lng, g.country.lat])!
+                  return (
+                    <circle
+                      key={g.country.id}
+                      cx={point[0]}
+                      cy={point[1]}
+                      r="5"
+                      fill={temperatures[g.temperature].color}
+                      stroke="#fffaf1"
+                      strokeWidth="1.5"
+                      data-country={g.country.numeric}
+                    >
+                      <title>{g.country.name}</title>
+                    </circle>
+                  )
+                })}
+            </g>
+          </svg>
+        </div>
+        {!world && (
+          <div className="map-status" role="status">
+            {error ? (
+              <>
+                <p>The globe couldn’t load.</p>
+                <button className="text-button" onClick={() => setAttempt((a) => a + 1)}>
+                  <RefreshCw size={15} /> Try again
+                </button>
+                <small>You can still play using search.</small>
+              </>
+            ) : (
+              <>
+                <div className="loading-ring" />
+                <p>Unfolding the world…</p>
+              </>
+            )}
+          </div>
+        )}
+        <div className="globe-tools">
+          <button
+            className="icon-button"
+            aria-label="Zoom in"
+            disabled={zoom >= 2.2}
+            onClick={() => setZoom((z) => Math.min(2.2, z + 0.2))}
+          >
+            <Plus size={18} />
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Zoom out"
+            disabled={zoom <= 1}
+            onClick={() => setZoom((z) => Math.max(1, z - 0.2))}
+          >
+            <Minus size={18} />
+          </button>
+          <span />
+          <button className="icon-button" aria-label="Reset globe view" onClick={reset}>
+            <RotateCcw size={17} />
+          </button>
+        </div>
+        <span className="globe-coordinate" aria-hidden="true">
+          <LocateFixed size={13} /> The next stop is up to you
+        </span>
+      </div>
+      <div className="globe-caption">
+        <Move size={15} />
+        <span>
+          Drag to explore <span className="caption-dot">·</span> Tap a country to select it
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export default memo(Globe)
