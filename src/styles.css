@@ -1483,3 +1483,66 @@ h1 {
     text-align: right;
   }
 }
+
+.mode-selector {
+  display: flex;
+  background: #eef1e7;
+  border: 1px solid #dce3d2;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 21px;
+}
+.mode-selector button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 1;
+  background: none;
+  padding: 10px 8px;
+  min-height: 40px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #5e6a59;
+}
+.mode-selector button[aria-pressed='true'] {
+  background: #fffefa;
+  color: #263c39;
+  font-weight: 650;
+  box-shadow: 0 1px 4px #263c3912;
+}
+.give-up-area {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 26px;
+}
+.give-up-button {
+  background: none;
+  border: 1px solid #d9ded1;
+  border-radius: 7px;
+  min-height: 44px;
+  padding: 11px 18px;
+  font-size: 11px;
+  color: #5e6a59;
+}
+.give-up-button:hover {
+  background: #f0f1e8;
+}
+.answer-country {
+  color: #5e6a59;
+  margin: 0 0 10px;
+  font-size: 12px;
+}
+@media (max-width: 480px) {
+  .mode-selector button {
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .give-up-area {
+    padding-bottom: 24px;
+  }
+  .give-up-button {
+    font-size: 12px;
+  }
+}

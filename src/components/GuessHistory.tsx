@@ -1,14 +1,16 @@
 import { Flag, MapPin, Navigation, Trophy } from 'lucide-react'
 import { formatDistance, temperatures } from '../lib/geo'
 import { sortGuessesByDistance, type Guess } from '../lib/game'
-import type { Country } from '../lib/countries'
+import type { Country, GameMode, Location } from '../lib/countries'
 
 export default function GuessHistory({
   guesses,
   onFocus,
+  mode,
 }: {
   guesses: Guess[]
-  onFocus: (country: Country) => void
+  onFocus: (country: Country, location: Location) => void
+  mode: GameMode
 }) {
   const sorted = sortGuessesByDistance(guesses)
   const closest = sorted[0]
@@ -51,8 +53,8 @@ export default function GuessHistory({
             >
               <button
                 className="guess-row"
-                onClick={() => onFocus(g.country)}
-                aria-label={`${g.number}. ${g.country.name}, ${formatDistance(g.distance)} kilometers, ${temperatures[g.temperature].label}. ${closest.country.id === g.country.id ? 'Closest guess. ' : ''}Show on globe.`}
+                onClick={() => onFocus(g.country, g.location)}
+                aria-label={`${g.number}. ${g.location.name}${mode === 'capitals' ? `, ${g.country.name}` : ''}, ${formatDistance(g.distance)} kilometers, ${temperatures[g.temperature].label}. ${closest.country.id === g.country.id ? 'Closest guess. ' : ''}Show on globe.`}
               >
                 <span className="guess-number">{String(g.number).padStart(2, '0')}</span>
                 <span className="guess-country">
@@ -60,7 +62,8 @@ export default function GuessHistory({
                     {g.country.flag}
                   </span>
                   <span>
-                    {g.country.name}
+                    {g.location.name}
+                    {mode === 'capitals' && <small>{g.country.name}</small>}
                     {closest?.country.id === g.country.id && (
                       <small>
                         {g.temperature === 'found' ? (

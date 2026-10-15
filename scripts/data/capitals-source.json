@@ -1,0 +1,1566 @@
+{
+  "AFG": {
+    "name": "Kabul",
+    "lat": 34.518636,
+    "lng": 69.181314,
+    "aliases": ["Kabul"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151561
+  },
+  "AGO": {
+    "name": "Luanda",
+    "lat": -8.83634,
+    "lng": 13.232481,
+    "aliases": ["Luanda"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151469
+  },
+  "ALB": {
+    "name": "Tirana",
+    "lat": 41.327541,
+    "lng": 19.818883,
+    "aliases": ["Tirana"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151117
+  },
+  "AND": {
+    "name": "Andorra la Vella",
+    "lat": 42.510753,
+    "lng": 1.526594,
+    "aliases": ["Andorra"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149089
+  },
+  "ARE": {
+    "name": "Abu Dhabi",
+    "lat": 24.466684,
+    "lng": 54.366593,
+    "aliases": ["Abu Dhabi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150565
+  },
+  "ARG": {
+    "name": "Buenos Aires",
+    "lat": -34.610715,
+    "lng": -58.432513,
+    "aliases": ["Buenos Aires"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151559
+  },
+  "ARM": {
+    "name": "Yerevan",
+    "lat": 40.183097,
+    "lng": 44.511606,
+    "aliases": ["Yerevan"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151119
+  },
+  "ATG": {
+    "name": "Saint John's",
+    "lat": 17.118036,
+    "lng": -61.850034,
+    "aliases": ["Saint John's"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150457
+  },
+  "AUS": {
+    "name": "Canberra",
+    "lat": -35.283029,
+    "lng": 149.129026,
+    "aliases": ["Canberra"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151161
+  },
+  "AUT": {
+    "name": "Vienna",
+    "lat": 48.201961,
+    "lng": 16.364693,
+    "aliases": ["Vienna"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151563
+  },
+  "AZE": {
+    "name": "Baku",
+    "lat": 40.397218,
+    "lng": 49.860271,
+    "aliases": ["Baku"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151123
+  },
+  "BDI": {
+    "name": "Gitega",
+    "lat": -3.426007,
+    "lng": 29.843594,
+    "aliases": ["Gitega"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159146001
+  },
+  "BEL": {
+    "name": "Brussels",
+    "lat": 50.835263,
+    "lng": 4.331371,
+    "aliases": ["Brussels"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151465
+  },
+  "BEN": {
+    "name": "Porto-Novo",
+    "lat": 6.483311,
+    "lng": 2.616626,
+    "aliases": ["Porto-Novo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150345
+  },
+  "BFA": {
+    "name": "Ouagadougou",
+    "lat": 12.372262,
+    "lng": -1.52667,
+    "aliases": ["Ouagadougou"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151173
+  },
+  "BGD": {
+    "name": "Dhaka",
+    "lat": 23.725006,
+    "lng": 90.406634,
+    "aliases": ["Dhaka"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151467
+  },
+  "BGR": {
+    "name": "Sofia",
+    "lat": 42.685295,
+    "lng": 23.314708,
+    "aliases": ["Sofia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151147
+  },
+  "BHR": {
+    "name": "Manama",
+    "lat": 26.236136,
+    "lng": 50.583052,
+    "aliases": ["Manama"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150451
+  },
+  "BHS": {
+    "name": "Nassau",
+    "lat": 25.08339,
+    "lng": -77.350044,
+    "aliases": ["Nassau"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151207
+  },
+  "BIH": {
+    "name": "Sarajevo",
+    "lat": 43.850022,
+    "lng": 18.383002,
+    "aliases": ["Sarajevo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151177
+  },
+  "BLR": {
+    "name": "Minsk",
+    "lat": 53.901923,
+    "lng": 27.564681,
+    "aliases": ["Minsk"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151149
+  },
+  "BLZ": {
+    "name": "Belmopan",
+    "lat": 17.252033,
+    "lng": -88.767073,
+    "aliases": ["Belmopan"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151109
+  },
+  "BOL": {
+    "name": "Sucre",
+    "lat": -19.040971,
+    "lng": -65.259516,
+    "aliases": ["Sucre"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151095
+  },
+  "BRA": {
+    "name": "Brasília",
+    "lat": -15.781394,
+    "lng": -47.917998,
+    "aliases": ["Brasília", "Brasilia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151443
+  },
+  "BRB": {
+    "name": "Bridgetown",
+    "lat": 13.102003,
+    "lng": -59.616527,
+    "aliases": ["Bridgetown"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150339
+  },
+  "BRN": {
+    "name": "Bandar Seri Begawan",
+    "lat": 4.883331,
+    "lng": 114.933284,
+    "aliases": ["Bandar Seri Begawan"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151083
+  },
+  "BTN": {
+    "name": "Thimphu",
+    "lat": 27.472986,
+    "lng": 89.639014,
+    "aliases": ["Thimphu"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151151
+  },
+  "BWA": {
+    "name": "Gaborone",
+    "lat": -24.646314,
+    "lng": 25.911948,
+    "aliases": ["Gaborone"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151153
+  },
+  "CAF": {
+    "name": "Bangui",
+    "lat": 4.366644,
+    "lng": 18.558288,
+    "aliases": ["Bangui"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151111
+  },
+  "CAN": {
+    "name": "Ottawa",
+    "lat": 45.418643,
+    "lng": -75.701961,
+    "aliases": ["Ottawa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151059
+  },
+  "CHE": {
+    "name": "Bern",
+    "lat": 46.916683,
+    "lng": 7.466976,
+    "aliases": ["Bern"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149737
+  },
+  "CHL": {
+    "name": "Santiago",
+    "lat": -33.440205,
+    "lng": -70.650504,
+    "aliases": ["Santiago"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151615
+  },
+  "CHN": {
+    "name": "Beijing",
+    "lat": 39.90172,
+    "lng": 116.394201,
+    "aliases": ["Beijing", "Peking"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151595
+  },
+  "CIV": {
+    "name": "Yamoussoukro",
+    "lat": 6.818381,
+    "lng": -5.275503,
+    "aliases": ["Yamoussoukro"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150999
+  },
+  "CMR": {
+    "name": "Yaoundé",
+    "lat": 3.868647,
+    "lng": 11.514705,
+    "aliases": ["Yaoundé", "Yaounde"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151115
+  },
+  "COD": {
+    "name": "Kinshasa",
+    "lat": -4.327778,
+    "lng": 15.313026,
+    "aliases": ["Kinshasa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151539
+  },
+  "COG": {
+    "name": "Brazzaville",
+    "lat": -4.25724,
+    "lng": 15.282744,
+    "aliases": ["Brazzaville"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150993
+  },
+  "COL": {
+    "name": "Bogotá",
+    "lat": 4.598369,
+    "lng": -74.08529,
+    "aliases": ["Bogota"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151601
+  },
+  "COM": {
+    "name": "Moroni",
+    "lat": -11.704158,
+    "lng": 43.240244,
+    "aliases": ["Moroni"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149083
+  },
+  "CPV": {
+    "name": "Praia",
+    "lat": 14.916698,
+    "lng": -23.516689,
+    "aliases": ["Praia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151205
+  },
+  "CRI": {
+    "name": "San José",
+    "lat": 9.930371,
+    "lng": -84.078814,
+    "aliases": ["San José", "San Jose"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150849
+  },
+  "CUB": {
+    "name": "Havana",
+    "lat": 23.133905,
+    "lng": -82.366128,
+    "aliases": ["Havana"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151347
+  },
+  "CYP": {
+    "name": "Nicosia",
+    "lat": 35.166677,
+    "lng": 33.366635,
+    "aliases": ["Nicosia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151209
+  },
+  "CZE": {
+    "name": "Prague",
+    "lat": 50.086967,
+    "lng": 14.422939,
+    "aliases": ["Prague"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151359
+  },
+  "DEU": {
+    "name": "Berlin",
+    "lat": 52.523764,
+    "lng": 13.399603,
+    "aliases": ["Berlin"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151529
+  },
+  "DJI": {
+    "name": "Djibouti",
+    "lat": 11.595014,
+    "lng": 43.148002,
+    "aliases": ["Djibouti"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149869
+  },
+  "DMA": {
+    "name": "Roseau",
+    "lat": 15.301016,
+    "lng": -61.387013,
+    "aliases": ["Roseau"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149847
+  },
+  "DNK": {
+    "name": "Copenhagen",
+    "lat": 55.68051,
+    "lng": 12.56154,
+    "aliases": ["København", "Kobenhavn", "Copenhagen"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151437
+  },
+  "DOM": {
+    "name": "Santo Domingo",
+    "lat": 18.470745,
+    "lng": -69.929742,
+    "aliases": ["Santo Domingo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151401
+  },
+  "DZA": {
+    "name": "Algiers",
+    "lat": 36.765011,
+    "lng": 3.048607,
+    "aliases": ["Algiers"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151471
+  },
+  "ECU": {
+    "name": "Quito",
+    "lat": -0.213042,
+    "lng": -78.501997,
+    "aliases": ["Quito"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150847
+  },
+  "EGY": {
+    "name": "Cairo",
+    "lat": 30.051906,
+    "lng": 31.248022,
+    "aliases": ["Cairo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151603
+  },
+  "ERI": {
+    "name": "Asmara",
+    "lat": 15.333339,
+    "lng": 38.933324,
+    "aliases": ["Asmara"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150873
+  },
+  "ESP": {
+    "name": "Madrid",
+    "lat": 40.401972,
+    "lng": -3.685297,
+    "aliases": ["Madrid"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151503
+  },
+  "EST": {
+    "name": "Tallinn",
+    "lat": 59.433877,
+    "lng": 24.728041,
+    "aliases": ["Tallinn"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150877
+  },
+  "ETH": {
+    "name": "Addis Ababa",
+    "lat": 9.035256,
+    "lng": 38.698059,
+    "aliases": ["Addis Ababa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151549
+  },
+  "FIN": {
+    "name": "Helsinki",
+    "lat": 60.163804,
+    "lng": 24.932457,
+    "aliases": ["Helsinki"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151419
+  },
+  "FJI": {
+    "name": "Suva",
+    "lat": -18.133016,
+    "lng": 178.441707,
+    "aliases": ["Suva"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150917
+  },
+  "FRA": {
+    "name": "Paris",
+    "lat": 48.858092,
+    "lng": 2.352992,
+    "aliases": ["Paris"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151613
+  },
+  "FSM": {
+    "name": "Palikir",
+    "lat": 6.916644,
+    "lng": 158.149974,
+    "aliases": ["Palikir"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149061
+  },
+  "GAB": {
+    "name": "Libreville",
+    "lat": 0.385389,
+    "lng": 9.457965,
+    "aliases": ["Libreville"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150913
+  },
+  "GBR": {
+    "name": "London",
+    "lat": 51.501941,
+    "lng": -0.118668,
+    "aliases": ["London"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151577
+  },
+  "GEO": {
+    "name": "Tbilisi",
+    "lat": 41.726956,
+    "lng": 44.78885,
+    "aliases": ["Tbilisi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150961
+  },
+  "GHA": {
+    "name": "Accra",
+    "lat": 5.55198,
+    "lng": -0.218662,
+    "aliases": ["Accra"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151403
+  },
+  "GIN": {
+    "name": "Conakry",
+    "lat": 9.533469,
+    "lng": -13.682181,
+    "aliases": ["Conakry"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150997
+  },
+  "GMB": {
+    "name": "Banjul",
+    "lat": 13.453876,
+    "lng": -16.591701,
+    "aliases": ["Banjul"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149997
+  },
+  "GNB": {
+    "name": "Bissau",
+    "lat": 11.865024,
+    "lng": -15.598361,
+    "aliases": ["Bissau"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150803
+  },
+  "GNQ": {
+    "name": "Malabo",
+    "lat": 3.750015,
+    "lng": 8.783278,
+    "aliases": ["Malabo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150867
+  },
+  "GRC": {
+    "name": "Athens",
+    "lat": 37.985272,
+    "lng": 23.731375,
+    "aliases": ["Athens"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151545
+  },
+  "GRD": {
+    "name": "St. George's",
+    "lat": 12.052633,
+    "lng": -61.741643,
+    "aliases": ["Saint George's"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150447
+  },
+  "GTM": {
+    "name": "Guatemala City",
+    "lat": 14.623081,
+    "lng": -90.528911,
+    "aliases": ["Guatemala City", "Guatemala"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150909
+  },
+  "GUY": {
+    "name": "Georgetown",
+    "lat": 6.801974,
+    "lng": -58.167029,
+    "aliases": ["Georgetown"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150585
+  },
+  "HND": {
+    "name": "Tegucigalpa",
+    "lat": 14.103991,
+    "lng": -87.219475,
+    "aliases": ["Tegucigalpa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150583
+  },
+  "HRV": {
+    "name": "Zagreb",
+    "lat": 45.800007,
+    "lng": 15.999995,
+    "aliases": ["Zagreb"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150875
+  },
+  "HTI": {
+    "name": "Port-au-Prince",
+    "lat": 18.54297,
+    "lng": -72.33798,
+    "aliases": ["Port-au-Prince"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150589
+  },
+  "HUN": {
+    "name": "Budapest",
+    "lat": 47.501952,
+    "lng": 19.081375,
+    "aliases": ["Budapest"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151257
+  },
+  "IDN": {
+    "name": "Jakarta",
+    "lat": -6.172472,
+    "lng": 106.827492,
+    "aliases": ["Jakarta"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151599
+  },
+  "IND": {
+    "name": "New Delhi",
+    "lat": 28.600023,
+    "lng": 77.19998,
+    "aliases": ["New Delhi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151541
+  },
+  "IRL": {
+    "name": "Dublin",
+    "lat": 53.346731,
+    "lng": -6.25698,
+    "aliases": ["Dublin"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151309
+  },
+  "IRN": {
+    "name": "Tehran",
+    "lat": 35.673889,
+    "lng": 51.422398,
+    "aliases": ["Tehran"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151551
+  },
+  "IRQ": {
+    "name": "Baghdad",
+    "lat": 33.340594,
+    "lng": 44.391923,
+    "aliases": ["Baghdad"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151547
+  },
+  "ISL": {
+    "name": "Reykjavik",
+    "lat": 64.143459,
+    "lng": -21.936546,
+    "aliases": ["Reykjavík", "Reykjavik"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150587
+  },
+  "ISR": {
+    "name": "Jerusalem",
+    "lat": 31.778408,
+    "lng": 35.206626,
+    "aliases": ["Jerusalem"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151203
+  },
+  "ITA": {
+    "name": "Rome",
+    "lat": 41.897902,
+    "lng": 12.481313,
+    "aliases": ["Rome"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151593
+  },
+  "JAM": {
+    "name": "Kingston",
+    "lat": 17.977077,
+    "lng": -76.767434,
+    "aliases": ["Kingston"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150855
+  },
+  "JOR": {
+    "name": "Amman",
+    "lat": 31.951971,
+    "lng": 35.931354,
+    "aliases": ["Amman"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150807
+  },
+  "JPN": {
+    "name": "Tokyo",
+    "lat": 35.686963,
+    "lng": 139.749462,
+    "aliases": ["Tokyo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151609
+  },
+  "KAZ": {
+    "name": "Astana",
+    "lat": 51.181125,
+    "lng": 71.427774,
+    "aliases": ["Nur-Sultan", "Astana", "Nur Sultan"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150965
+  },
+  "KEN": {
+    "name": "Nairobi",
+    "lat": -1.281401,
+    "lng": 36.814711,
+    "aliases": ["Nairobi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151597
+  },
+  "KGZ": {
+    "name": "Bishkek",
+    "lat": 42.875025,
+    "lng": 74.583258,
+    "aliases": ["Bishkek"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150813
+  },
+  "KHM": {
+    "name": "Phnom Penh",
+    "lat": 11.551976,
+    "lng": 104.914689,
+    "aliases": ["Phnom Penh"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151127
+  },
+  "KIR": {
+    "name": "South Tarawa",
+    "lat": 1.338188,
+    "lng": 173.017571,
+    "aliases": ["Tarawa", "South Tarawa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149079
+  },
+  "KNA": {
+    "name": "Basseterre",
+    "lat": 17.302031,
+    "lng": -62.717009,
+    "aliases": ["Basseterre"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150435
+  },
+  "KOR": {
+    "name": "Seoul",
+    "lat": 37.568295,
+    "lng": 126.997785,
+    "aliases": ["Seoul"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151523
+  },
+  "KWT": {
+    "name": "Kuwait City",
+    "lat": 29.371664,
+    "lng": 47.976355,
+    "aliases": ["Kuwait City"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151361
+  },
+  "LAO": {
+    "name": "Vientiane",
+    "lat": 17.966693,
+    "lng": 102.59998,
+    "aliases": ["Vientiane"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150991
+  },
+  "LBN": {
+    "name": "Beirut",
+    "lat": 33.873921,
+    "lng": 35.507762,
+    "aliases": ["Beirut"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150957
+  },
+  "LBR": {
+    "name": "Monrovia",
+    "lat": 6.314582,
+    "lng": -10.79966,
+    "aliases": ["Monrovia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151311
+  },
+  "LBY": {
+    "name": "Tripoli",
+    "lat": 32.8925,
+    "lng": 13.180012,
+    "aliases": ["Tripoli"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151415
+  },
+  "LCA": {
+    "name": "Castries",
+    "lat": 14.007875,
+    "lng": -60.992875,
+    "aliases": ["Castries"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150433
+  },
+  "LIE": {
+    "name": "Vaduz",
+    "lat": 47.133724,
+    "lng": 9.51667,
+    "aliases": ["Vaduz"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159146061
+  },
+  "LKA": {
+    "name": "Sri Jayawardenepura Kotte",
+    "lat": 6.900004,
+    "lng": 79.949993,
+    "aliases": [
+      "Sri Jayawardenepura Kotte",
+      "Sri Jawewardenepura Kotte",
+      "Kotte",
+      "Sri Jayewardenepura Kotte"
+    ],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149593
+  },
+  "LSO": {
+    "name": "Maseru",
+    "lat": -29.316674,
+    "lng": 27.483273,
+    "aliases": ["Maseru"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150831
+  },
+  "LTU": {
+    "name": "Vilnius",
+    "lat": 54.683366,
+    "lng": 25.316635,
+    "aliases": ["Vilnius"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150809
+  },
+  "LUX": {
+    "name": "Luxembourg",
+    "lat": 49.61166,
+    "lng": 6.130003,
+    "aliases": ["Luxembourg"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159146437
+  },
+  "LVA": {
+    "name": "Riga",
+    "lat": 56.950024,
+    "lng": 24.099965,
+    "aliases": ["Riga"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150811
+  },
+  "MAR": {
+    "name": "Rabat",
+    "lat": 34.025307,
+    "lng": -6.836408,
+    "aliases": ["Rabat"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150673
+  },
+  "MCO": {
+    "name": "Monaco",
+    "lat": 43.739646,
+    "lng": 7.406913,
+    "aliases": ["Monaco"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149077
+  },
+  "MDA": {
+    "name": "Chișinău",
+    "lat": 47.005024,
+    "lng": 28.857711,
+    "aliases": ["Chișinău", "Chisinau"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150677
+  },
+  "MDG": {
+    "name": "Antananarivo",
+    "lat": -18.914691,
+    "lng": 47.514678,
+    "aliases": ["Antananarivo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150835
+  },
+  "MDV": {
+    "name": "Malé",
+    "lat": 4.172037,
+    "lng": 73.508901,
+    "aliases": ["Malé", "Male"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151201
+  },
+  "MEX": {
+    "name": "Mexico City",
+    "lat": 19.444388,
+    "lng": -99.132934,
+    "aliases": ["Mexico City"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151587
+  },
+  "MHL": {
+    "name": "Majuro",
+    "lat": 7.103004,
+    "lng": 171.38,
+    "aliases": ["Majuro"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149063
+  },
+  "MKD": {
+    "name": "Skopje",
+    "lat": 42.000006,
+    "lng": 21.433461,
+    "aliases": ["Skopje"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150073
+  },
+  "MLI": {
+    "name": "Bamako",
+    "lat": 12.65196,
+    "lng": -8.001985,
+    "aliases": ["Bamako"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150945
+  },
+  "MLT": {
+    "name": "Valletta",
+    "lat": 35.899732,
+    "lng": 14.514711,
+    "aliases": ["Valletta"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151199
+  },
+  "MMR": {
+    "name": "Naypyidaw",
+    "lat": 19.768503,
+    "lng": 96.116673,
+    "aliases": ["Naypyidaw"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151179
+  },
+  "MNE": {
+    "name": "Podgorica",
+    "lat": 42.465972,
+    "lng": 19.266307,
+    "aliases": ["Podgorica"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149511
+  },
+  "MNG": {
+    "name": "Ulaanbaatar",
+    "lat": 47.918619,
+    "lng": 106.91467,
+    "aliases": ["Ulaanbaatar", "Ulan Bator"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150781
+  },
+  "MOZ": {
+    "name": "Maputo",
+    "lat": -25.953332,
+    "lng": 32.587217,
+    "aliases": ["Maputo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150683
+  },
+  "MRT": {
+    "name": "Nouakchott",
+    "lat": 18.086427,
+    "lng": -15.97534,
+    "aliases": ["Nouakchott"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150943
+  },
+  "MUS": {
+    "name": "Port Louis",
+    "lat": -20.166639,
+    "lng": 57.499994,
+    "aliases": ["Port Louis"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150443
+  },
+  "MWI": {
+    "name": "Lilongwe",
+    "lat": -13.983295,
+    "lng": 33.783302,
+    "aliases": ["Lilongwe"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150907
+  },
+  "MYS": {
+    "name": "Kuala Lumpur",
+    "lat": 3.139797,
+    "lng": 101.688699,
+    "aliases": ["Kuala Lumpur"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151317
+  },
+  "NAM": {
+    "name": "Windhoek",
+    "lat": -22.570006,
+    "lng": 17.083546,
+    "aliases": ["Windhoek"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150785
+  },
+  "NER": {
+    "name": "Niamey",
+    "lat": 13.491643,
+    "lng": 7.096404,
+    "aliases": ["Niamey", "Maradi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149391
+  },
+  "NGA": {
+    "name": "Abuja",
+    "lat": 9.05462,
+    "lng": 7.489505,
+    "aliases": ["Abuja"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150799
+  },
+  "NIC": {
+    "name": "Managua",
+    "lat": 12.154962,
+    "lng": -86.270437,
+    "aliases": ["Managua"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150623
+  },
+  "NLD": {
+    "name": "Amsterdam",
+    "lat": 52.351914,
+    "lng": 4.914694,
+    "aliases": ["Amsterdam"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151519
+  },
+  "NOR": {
+    "name": "Oslo",
+    "lat": 59.918636,
+    "lng": 10.748033,
+    "aliases": ["Oslo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151281
+  },
+  "NPL": {
+    "name": "Kathmandu",
+    "lat": 27.718638,
+    "lng": 85.314696,
+    "aliases": ["Kathmandu"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150655
+  },
+  "NRU": {
+    "name": "Yaren",
+    "lat": -0.55,
+    "lng": 166.92,
+    "aliases": ["Yaren District"],
+    "source": "Approximate government-district point; no official capital"
+  },
+  "NZL": {
+    "name": "Wellington",
+    "lat": -41.292068,
+    "lng": 174.777201,
+    "aliases": ["Wellington"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151699
+  },
+  "OMN": {
+    "name": "Muscat",
+    "lat": 23.585179,
+    "lng": 58.378311,
+    "aliases": ["Muscat"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150717
+  },
+  "PAK": {
+    "name": "Islamabad",
+    "lat": 33.689368,
+    "lng": 73.08063,
+    "aliases": ["Islamabad"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150645
+  },
+  "PAN": {
+    "name": "Panama City",
+    "lat": 8.969963,
+    "lng": -79.534983,
+    "aliases": ["Panama City"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150667
+  },
+  "PER": {
+    "name": "Lima",
+    "lat": -12.046067,
+    "lng": -77.052008,
+    "aliases": ["Lima"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151511
+  },
+  "PHL": {
+    "name": "Manila",
+    "lat": 14.606105,
+    "lng": 120.980271,
+    "aliases": ["Manila"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151525
+  },
+  "PLW": {
+    "name": "Ngerulmud",
+    "lat": 7.487396,
+    "lng": 134.626549,
+    "aliases": ["Melekeok"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149073
+  },
+  "PNG": {
+    "name": "Port Moresby",
+    "lat": -9.464708,
+    "lng": 147.192504,
+    "aliases": ["Port Moresby"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150663
+  },
+  "POL": {
+    "name": "Warsaw",
+    "lat": 52.230872,
+    "lng": 21.005347,
+    "aliases": ["Warsaw"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151299
+  },
+  "PRK": {
+    "name": "Pyongyang",
+    "lat": 39.021385,
+    "lng": 125.752745,
+    "aliases": ["Pyongyang"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151303
+  },
+  "PRT": {
+    "name": "Lisbon",
+    "lat": 38.724669,
+    "lng": -9.146812,
+    "aliases": ["Lisbon"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151273
+  },
+  "PRY": {
+    "name": "Asunción",
+    "lat": -25.290671,
+    "lng": -57.625834,
+    "aliases": ["Asunción", "Asuncion"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150621
+  },
+  "PSE": {
+    "name": "Ramallah",
+    "lat": 31.902945,
+    "lng": 35.206209,
+    "aliases": ["Ramallah"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159121947
+  },
+  "QAT": {
+    "name": "Doha",
+    "lat": 25.286556,
+    "lng": 51.532968,
+    "aliases": ["Doha"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149469
+  },
+  "ROU": {
+    "name": "Bucharest",
+    "lat": 44.435318,
+    "lng": 26.098001,
+    "aliases": ["Bucharest"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151263
+  },
+  "RUS": {
+    "name": "Moscow",
+    "lat": 55.75411,
+    "lng": 37.613577,
+    "aliases": ["Moscow"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151585
+  },
+  "RWA": {
+    "name": "Kigali",
+    "lat": -1.951644,
+    "lng": 30.058586,
+    "aliases": ["Kigali"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149385
+  },
+  "SAU": {
+    "name": "Riyadh",
+    "lat": 24.634497,
+    "lng": 46.720487,
+    "aliases": ["Riyadh"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151581
+  },
+  "SDN": {
+    "name": "Khartoum",
+    "lat": 15.590024,
+    "lng": 32.532233,
+    "aliases": ["Khartoum"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151275
+  },
+  "SEN": {
+    "name": "Dakar",
+    "lat": 14.717778,
+    "lng": -17.475076,
+    "aliases": ["Dakar"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151513
+  },
+  "SGP": {
+    "name": "Singapore",
+    "lat": 1.294979,
+    "lng": 103.853875,
+    "aliases": ["Singapore"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151627
+  },
+  "SLB": {
+    "name": "Honiara",
+    "lat": -9.437994,
+    "lng": 159.949766,
+    "aliases": ["Honiara"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150665
+  },
+  "SLE": {
+    "name": "Freetown",
+    "lat": 8.471957,
+    "lng": -13.236162,
+    "aliases": ["Freetown"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150625
+  },
+  "SLV": {
+    "name": "San Salvador",
+    "lat": 13.70328,
+    "lng": -89.215576,
+    "aliases": ["San Salvador"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150853
+  },
+  "SMR": {
+    "name": "City of San Marino",
+    "lat": 43.936096,
+    "lng": 12.44177,
+    "aliases": ["San Marino"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159146051
+  },
+  "SOM": {
+    "name": "Mogadishu",
+    "lat": 2.068627,
+    "lng": 45.364732,
+    "aliases": ["Mogadishu"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150715
+  },
+  "SRB": {
+    "name": "Belgrade",
+    "lat": 44.820591,
+    "lng": 20.466045,
+    "aliases": ["Belgrade"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151079
+  },
+  "SSD": {
+    "name": "Juba",
+    "lat": 4.829975,
+    "lng": 31.580026,
+    "aliases": ["Juba"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149449
+  },
+  "STP": {
+    "name": "São Tomé",
+    "lat": 0.337466,
+    "lng": 6.72965,
+    "aliases": ["São Tomé", "Sao Tome"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151195
+  },
+  "SUR": {
+    "name": "Paramaribo",
+    "lat": 5.83503,
+    "lng": -55.167031,
+    "aliases": ["Paramaribo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150597
+  },
+  "SVK": {
+    "name": "Bratislava",
+    "lat": 48.150018,
+    "lng": 17.116981,
+    "aliases": ["Bratislava"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149463
+  },
+  "SVN": {
+    "name": "Ljubljana",
+    "lat": 46.055288,
+    "lng": 14.514969,
+    "aliases": ["Ljubljana"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149461
+  },
+  "SWE": {
+    "name": "Stockholm",
+    "lat": 59.324127,
+    "lng": 18.0663,
+    "aliases": ["Stockholm"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151507
+  },
+  "SWZ": {
+    "name": "Mbabane",
+    "lat": -26.316651,
+    "lng": 31.133335,
+    "aliases": ["Mbabane"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149413
+  },
+  "SYC": {
+    "name": "Victoria",
+    "lat": -4.616632,
+    "lng": 55.44999,
+    "aliases": ["Victoria"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151191
+  },
+  "SYR": {
+    "name": "Damascus",
+    "lat": 33.50198,
+    "lng": 36.29805,
+    "aliases": ["Damascus"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151269
+  },
+  "TCD": {
+    "name": "N'Djamena",
+    "lat": 12.115042,
+    "lng": 15.047202,
+    "aliases": ["N'Djamena", "Ndjamena"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150863
+  },
+  "TGO": {
+    "name": "Lomé",
+    "lat": 6.133883,
+    "lng": 1.220811,
+    "aliases": ["Lomé", "Lome"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150535
+  },
+  "THA": {
+    "name": "Bangkok",
+    "lat": 13.751945,
+    "lng": 100.514699,
+    "aliases": ["Bangkok"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151509
+  },
+  "TJK": {
+    "name": "Dushanbe",
+    "lat": 38.560035,
+    "lng": 68.773879,
+    "aliases": ["Dushanbe"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150609
+  },
+  "TKM": {
+    "name": "Ashgabat",
+    "lat": 37.949995,
+    "lng": 58.383299,
+    "aliases": ["Ashgabat"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150567
+  },
+  "TLS": {
+    "name": "Dili",
+    "lat": -8.559388,
+    "lng": 125.579456,
+    "aliases": ["Dili", "Díli"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150577
+  },
+  "TON": {
+    "name": "Nuku'alofa",
+    "lat": -21.138512,
+    "lng": -175.220564,
+    "aliases": ["Nuku'alofa", "Nukualofa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151187
+  },
+  "TTO": {
+    "name": "Port of Spain",
+    "lat": 10.651997,
+    "lng": -61.517031,
+    "aliases": ["Port-of-Spain"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149307
+  },
+  "TUN": {
+    "name": "Tunis",
+    "lat": 36.802778,
+    "lng": 10.179678,
+    "aliases": ["Tunis"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150537
+  },
+  "TUR": {
+    "name": "Ankara",
+    "lat": 39.929184,
+    "lng": 32.862446,
+    "aliases": ["Ankara"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151255
+  },
+  "TUV": {
+    "name": "Funafuti",
+    "lat": -8.516652,
+    "lng": 179.216647,
+    "aliases": ["Funafuti"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149071
+  },
+  "TZA": {
+    "name": "Dodoma",
+    "lat": -6.183306,
+    "lng": 35.750004,
+    "aliases": ["Dodoma"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159149731
+  },
+  "UGA": {
+    "name": "Kampala",
+    "lat": 0.318605,
+    "lng": 32.581378,
+    "aliases": ["Kampala"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150593
+  },
+  "UKR": {
+    "name": "Kyiv",
+    "lat": 50.435313,
+    "lng": 30.514682,
+    "aliases": ["Kyiv", "Kiev"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151495
+  },
+  "URY": {
+    "name": "Montevideo",
+    "lat": -34.905376,
+    "lng": -56.186823,
+    "aliases": ["Montevideo"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150469
+  },
+  "USA": {
+    "name": "Washington D.C.",
+    "lat": 38.901495,
+    "lng": -77.011364,
+    "aliases": ["Washington,  D.C.", "Washington, D.C.", "Washington", "Washington DC"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151573
+  },
+  "UZB": {
+    "name": "Tashkent",
+    "lat": 41.303828,
+    "lng": 69.268823,
+    "aliases": ["Tashkent"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151501
+  },
+  "VAT": {
+    "name": "Vatican City",
+    "lat": 41.903282,
+    "lng": 12.453387,
+    "aliases": ["Vatican City"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159127243
+  },
+  "VCT": {
+    "name": "Kingstown",
+    "lat": 13.155756,
+    "lng": -61.220236,
+    "aliases": ["Kingstown"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150431
+  },
+  "VEN": {
+    "name": "Caracas",
+    "lat": 10.502944,
+    "lng": -66.918983,
+    "aliases": ["Caracas"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151493
+  },
+  "VNM": {
+    "name": "Hanoi",
+    "lat": 21.035273,
+    "lng": 105.848068,
+    "aliases": ["Hanoi"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151251
+  },
+  "VUT": {
+    "name": "Port Vila",
+    "lat": -17.73335,
+    "lng": 168.316641,
+    "aliases": ["Port Vila"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150579
+  },
+  "WSM": {
+    "name": "Apia",
+    "lat": -13.835715,
+    "lng": -171.768599,
+    "aliases": ["Apia"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151197
+  },
+  "YEM": {
+    "name": "Sana'a",
+    "lat": 15.356679,
+    "lng": 44.204648,
+    "aliases": ["Sanaa"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159151259
+  },
+  "ZAF": {
+    "name": "Pretoria",
+    "lat": -25.704975,
+    "lng": 28.227483,
+    "aliases": ["Pretoria"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150661
+  },
+  "ZMB": {
+    "name": "Lusaka",
+    "lat": -15.414698,
+    "lng": 28.281382,
+    "aliases": ["Lusaka"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150571
+  },
+  "ZWE": {
+    "name": "Harare",
+    "lat": -17.815844,
+    "lng": 31.042764,
+    "aliases": ["Harare"],
+    "source": "Natural Earth 10m populated places",
+    "neId": 1159150573
+  }
+}

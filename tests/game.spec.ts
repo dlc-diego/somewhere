@@ -10,6 +10,23 @@ async function seed(page: Page, answer = 'FRA') {
       )
   }, answer)
 }
+async function seedCapitals(page: Page, active = false) {
+  await page.addInitScript((active) => {
+    if (!localStorage.getItem('somewhere.capitals.v1'))
+      localStorage.setItem(
+        'somewhere.capitals.v1',
+        JSON.stringify({
+          version: 2,
+          mode: 'capitals',
+          revealed: false,
+          answer: 'FRA',
+          guesses: [],
+        }),
+      )
+    if (active && !localStorage.getItem('somewhere.mode.v1'))
+      localStorage.setItem('somewhere.mode.v1', 'capitals')
+  }, active)
+}
 async function guess(page: Page, query: string, name: string) {
   await page.getByRole('combobox').fill(query)
   await page
@@ -331,4 +348,127 @@ test('adjacent guesses get the hottest feedback and the closest stays highlighte
   )
   const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
   expect(a11y.violations).toEqual([])
+})
+
+test('capital mode uses cities, preserves both rounds, and supports win and replay', async ({
+  page,
+}) => {
+  await seed(page)
+  await seedCapitals(page)
+  await page.goto('/')
+  await guess(page, 'Germany', 'Germany')
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
+  await expect(page.getByRole('list', { name: 'Guesses, closest first' })).toHaveCount(0)
+  await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
+  await guess(page, 'London', 'London')
+  const list = page.getByRole('list', { name: 'Guesses, closest first' })
+  await expect(list.getByRole('button')).toHaveAccessibleName(
+    /1\. London, United Kingdom, 34\d kilometers, Hot/,
+  )
+  await guess(page, 'London', 'London')
+  await expect(page.getByRole('alert')).toContainText('different capital')
+  await expect(list.locator('li')).toHaveCount(1)
+  await expect(page.locator('circle[data-capital="GBR"]')).toBeVisible()
+  await expect
+    .poll(async () => Number(await page.locator('circle[data-capital="GBR"]').getAttribute('cx')))
+    .toBeCloseTo(300, 3)
+  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await expect(list.getByRole('button')).toHaveAccessibleName(/1\. Germany.*Adjacent/)
+  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a country…')
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await expect(list).toContainText('London')
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Capitals', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(list).toContainText('London')
+  await guess(page, 'Berlin', 'Berlin')
+  await expect(list.locator('li').first()).toContainText('London')
+  await expect(list.getByRole('button', { name: /Berlin.*Adjacent/ })).toBeVisible()
+  await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
+  await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
+  await guess(page, 'Paris', 'Paris')
+  await expect(page.getByRole('dialog', { name: 'You found the mystery capital' })).toBeVisible()
+  await expect(page.getByRole('dialog')).toContainText('Paris')
+  await expect(page.getByRole('dialog')).toContainText('3 curious guesses')
+  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await expect(page.getByRole('button', { name: 'Give up and reveal answer' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Explore another round' }).click()
+  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('somewhere.capitals.v1')!),
+  )
+  expect(saved).toMatchObject({ mode: 'capitals', revealed: false, guesses: [] })
+  expect(saved.answer).not.toBe('FRA')
+  const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+  expect(a11y.violations).toEqual([])
+})
+
+for (const mode of ['countries', 'capitals'] as const) {
+  test(`giving up a ${mode} round reveals the answer without inventing a win`, async ({ page }) => {
+    await seed(page)
+    await seedCapitals(page, mode === 'capitals')
+    await page.goto('/')
+    await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+    const button = page.getByRole('button', { name: 'Give up and reveal answer', exact: true })
+    const footer = (await page.locator('footer').boundingBox())!
+    const revealButton = (await button.boundingBox())!
+    expect(revealButton.y).toBeGreaterThanOrEqual(footer.y + footer.height)
+    await guess(
+      page,
+      mode === 'capitals' ? 'Tokyo' : 'Japan',
+      mode === 'capitals' ? 'Tokyo' : 'Japan',
+    )
+    await expect(page.locator('[data-revealed="true"]')).toHaveCount(0)
+    await button.click()
+    await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible()
+    const answer = mode === 'capitals' ? 'Paris' : 'France'
+    await expect(page.getByRole('dialog')).toContainText(answer)
+    await expect(page.getByRole('dialog')).toContainText('Answer revealed after 1')
+    await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-guessed', 'false')
+    await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-revealed', 'true')
+    await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#a77332')
+    const key = mode === 'capitals' ? 'somewhere.capitals.v1' : 'somewhere.round.v1'
+    const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), key)
+    expect(saved).toMatchObject({ revealed: true, guesses: ['JPN'], answer: 'FRA', mode })
+    const a11y = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+      .analyze()
+    expect(a11y.violations).toEqual([])
+    await page.getByRole('button', { name: 'Close dialog' }).click()
+    await expect(page.getByRole('combobox')).toHaveCount(0)
+    await expect(button).toHaveCount(0)
+    await page.reload()
+    await expect(page.getByRole('heading', { name: `The answer was ${answer}.` })).toBeVisible()
+    await expect(
+      page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+    ).toHaveCount(1)
+    await page.getByRole('button', { name: 'Explore another round' }).click()
+    await expect(page.getByRole('combobox')).toBeVisible()
+    await expect(page.locator('[data-revealed="true"]')).toHaveCount(0)
+    await expect(button).toBeVisible()
+  })
+}
+
+test('giving up without guesses works and mode switching cancels a pending result', async ({
+  page,
+}) => {
+  await seed(page)
+  await seedCapitals(page)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page.waitForTimeout(1500)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
+  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'The answer was France.' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Every adventure starts somewhere.' }),
+  ).toBeVisible()
+  expect(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.round.v1')!).guesses),
+  ).toEqual([])
 })

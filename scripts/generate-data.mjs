@@ -4,6 +4,10 @@ import countries from 'world-countries'
 import { presimplify, simplify, quantile } from 'topojson-simplify'
 import { quantize } from 'topojson-client'
 
+const capitals = JSON.parse(
+  readFileSync(new URL('./data/capitals-source.json', import.meta.url), 'utf8'),
+)
+
 const extraAliases = {
   USA: ['USA', 'US', 'America', 'United States of America'],
   GBR: ['UK', 'Britain', 'Great Britain', 'United Kingdom'],
@@ -59,6 +63,12 @@ const playable = countries
     lng: c.latlng[1],
     small: c.area < 2500,
     borders: [...borders.get(c.cca3)].sort(),
+    capital: {
+      name: capitals[c.cca3].name,
+      lat: capitals[c.cca3].lat,
+      lng: capitals[c.cca3].lng,
+      aliases: capitals[c.cca3].aliases,
+    },
     aliases: [
       ...new Set([
         c.name.common,

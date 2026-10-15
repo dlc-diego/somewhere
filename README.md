@@ -1,6 +1,6 @@
 # Somewhere
 
-A small, polished country guessing game. Explore a draggable globe, guess a country, and follow the warmer-or-colder feedback until you find the mystery country.
+A small, polished geography guessing game. Choose countries or capital cities, explore a draggable globe, and follow the warmer-or-colder feedback until you find the mystery location.
 
 **React + TypeScript + Vite, with an SVG globe powered by D3 Geo. Entirely static. No accounts, keys, backend, database, analytics, or runtime map APIs.**
 
@@ -27,15 +27,16 @@ In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm 
 
 ## How it plays
 
-- A random country is selected once per round. New rounds exclude the immediately previous answer.
-- Search a name, an ISO code, or an alias such as `UK`, `UAE`, `Turkey`, or `Ivory Coast`. Select a suggestion, then press **Make a guess**. With a keyboard, Enter selects the highlighted suggestion; a second Enter submits it.
+- Choose **Countries** or **Capitals** above the search field. Each mode keeps a separate saved round, so you can switch without losing either journey. A random answer is selected once per round, and new rounds exclude that mode’s immediately previous answer. Country saves from the earlier version are migrated automatically.
+- In country mode, search a name, ISO code, or alias such as `UK`, `UAE`, `Turkey`, or `Ivory Coast`. In capital mode, search a city name or spelling variant such as `Paris`, `Washington DC`, or `Kiev`; suggestions include the city’s country. Select a suggestion, then press **Make a guess**. With a keyboard, Enter selects the highlighted suggestion; a second Enter submits it.
 - Drag the globe to rotate it, pinch to zoom, or use the zoom buttons. Map taps never select or submit guesses; all guesses go through the search interface. Keyboard users can focus the globe and use arrows, `+`, `-`, and `Home`.
-- Each guess colors that country and displays the great-circle distance between the two countries’ representative centers. Text labels and symbols supplement color.
-- Cold: **7,000 km or more**. Cool: **3,000–6,999 km**. Warm: **1,000–2,999 km**. Hot: **under 1,000 km**. Countries sharing a land border are marked **Adjacent** with the hottest, darkest-red feedback regardless of center distance. This does not count as a correct guess. Thresholds use unrounded distances; displayed kilometers are rounded.
-- Only an exact country match wins. A tiny nonzero distance is displayed as `<1 km`.
-- Guess history is sorted by unrounded center distance, closest first, with original guess numbers preserved. The closest row has a highlighted background and a “Closest guess” badge; it stays pinned while the desktop list scrolls. Distance ties keep the original guess order. Tap a history entry to center it on the globe. Duplicate guesses are rejected. On phones, search sits above the globe; submitting a guess closes the keyboard and smoothly centers the globe on screen. After a short pause, the globe glides to your guess. Dragging or resetting interrupts the movement, and reduced-motion preferences skip the animation.
+- Each guess colors its country and displays the great-circle distance to the answer. Country mode uses representative country centers; capital mode uses the two cities’ coordinates and adds a marker for every guessed capital. Text labels and symbols supplement color.
+- Cold: **7,000 km or more**. Cool: **3,000–6,999 km**. Warm: **1,000–2,999 km**. Hot: **under 1,000 km**. Countries sharing a land border—and capitals belonging to those countries—are marked **Adjacent** with the hottest, darkest-red feedback regardless of center distance. This does not count as a correct guess. Thresholds use unrounded distances; displayed kilometers are rounded.
+- Only an exact country or selected-capital match wins. A tiny nonzero distance is displayed as `<1 km`.
+- Guess history is sorted by unrounded distance for the selected mode, closest first, with original guess numbers preserved. The closest row has a highlighted background and a “Closest guess” badge; it stays pinned while the desktop list scrolls. Distance ties keep the original guess order. Tap a history entry to center it on the globe. Duplicate guesses are rejected. On phones, search sits above the globe; submitting a guess closes the keyboard and smoothly centers the globe on screen. After a short pause, the globe glides to your guess. Dragging or resetting interrupts the movement, and reduced-motion preferences skip the animation.
+- The **Give up and reveal answer** button is at the very bottom, below the footer. It ends the current mode’s round, reveals the answer on the globe in gold, and preserves the guess history. It does not add a winning guess or count as a win, and it works before any guesses. Other modes are unaffected.
 - A completed round shows the answer, guess count, and replay controls. A new round during an active game requires confirmation.
-- The round and all guesses are saved in this browser’s `localStorage`, including completed rounds. Invalid saves recover with a message. If storage is disabled or full, gameplay continues with a warning. Progress is local to the browser and is not synced between devices or tabs.
+- Both rounds, all guesses, the selected mode, and revealed/completed states are saved in this browser’s `localStorage`. Invalid saves recover with a message. If storage is disabled or full, gameplay continues with a warning. Progress is local to the browser and is not synced between devices or tabs.
 
 Daily challenges are deliberately deferred; replayable random rounds cover the core experience without timezone rules or additional infrastructure.
 
@@ -90,13 +91,14 @@ On Linux you may need Playwright’s documented browser system dependencies. In 
 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:e2e
 ```
 
-Browser tests cover a complete win/replay journey, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement without map-based guess selection, adjacent-country heat, closest-first ranking and highlighting, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, animated guess arrival, mobile globe centering, reduced-motion behavior, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
+Browser tests cover country and capital win/replay journeys, giving up (including with no guesses), preserving separate modes, old-save migration, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement without map-based guess selection, adjacent-country heat, closest-first ranking and highlighting, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, animated guess arrival, mobile globe centering, reduced-motion behavior, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
 
 ## Data, accuracy, and licensing
 
 - **Playable list:** 195 entries: 193 UN member states plus Palestine and Vatican City. This is an explicit gameplay scope, rather than a statement about sovereignty. Dependent territories and other disputed states, including Taiwan and Kosovo, are not answers in this version. The guide explains this scope before play.
 - **Metadata:** [mledoze/countries](https://github.com/mledoze/countries), provided by `world-countries`. Each playable country has a canonical ISO 3166-1 alpha-3 identifier. Names and useful aliases are normalized for case, diacritics, punctuation, and whitespace. The two Congos have distinct display names.
 - **Adjacency:** Shared land borders are generated from `world-countries` ISO alpha-3 border lists, made symmetric, and restricted to playable countries. Explicit territory mappings include French Guiana/Saint Martin → France, Sint Maarten → Netherlands, Gibraltar → United Kingdom, and Hong Kong/Macau → China. Canada–Denmark’s 2022 Hans Island land border is added; the source’s one-sided India–Sri Lanka entry is removed because Palk Strait is not a land border. Sea crossings and maritime borders alone do not count. The graph follows source border claims elsewhere and is independent of simplified map geometry.
+- **Capitals:** One selected capital/government seat per playable country, using representative public-domain Natural Earth populated-place coordinates joined to canonical country IDs. Choices include Pretoria (South Africa), Sucre (Bolivia), Amsterdam (Netherlands), Mbabane (Eswatini), Sri Jayawardenepura Kotte (Sri Lanka), and Ramallah as Palestine’s administrative seat. Yaren is Nauru’s government district, not an official capital, and uses a documented approximate point. Other co-capitals are not separate answers; aliases refer to the same selected city. The source can lag relocations (for example Jakarta follows the source during Indonesia’s transition). See [capital source notes](scripts/data/README.md) for the full policies, source details, and exceptions. City markers identify actual city points rather than country centers.
 - **Boundaries:** Natural Earth 1:50m via [world-atlas](https://github.com/topojson/world-atlas). Country features are joined through zero-padded ISO numeric codes and then matched to alpha-3 records; names are never used for matching. MultiPolygon features preserve disconnected regions. Some dataset IDs repeat across associated regions; rendering uses separate feature keys while matching all their parts to the same country.
 - **Rendering:** The generator simplifies topology, preserving shared borders and disconnected polygon records. Outlines are approximate and small islands may be visually reduced or degenerate at this scale. Tiny guessed countries receive a center marker; Tuvalu, which has no boundary in this dataset, always receives one. Before guessing, tiny countries can be selected reliably through search.
 - **Disputes:** Borders reflect the source dataset’s choices and vintage. Areas without a matching numeric code remain neutral and unplayable. Claims, overseas dependencies, and disputed areas are not reassigned by inference from their labels.
@@ -120,8 +122,8 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the library comparison 
 ```text
 src/
   lib/            Country lookup, geographic math, game rules, saved-state validation
-  components/     Globe, accessible country search, guess history, native dialog
-  data/           Compact playable-country metadata
+  components/     Globe, accessible country/capital search, guess history, native dialog
+  data/           Playable countries, selected capitals, and border metadata
   App.tsx         Round state and the game screen
   styles.css      Responsive plain CSS and reduced-motion support
 public/data/      Lazy-loaded boundaries, adapted metadata, attribution licenses
@@ -129,7 +131,7 @@ scripts/          Reproducible dataset preparation
 tests/            Browser tests using production assets
 ```
 
-**Answer privacy:** The globe only receives guesses, never the answer. It does not pan to or mark the answer before the player guesses it. However, a fully static game must calculate distances in the browser, so the answer exists in memory and saved storage. A player using developer tools can find it. Obfuscation would not solve this. Strong secrecy requires a server to hold the answer and evaluate guesses; that complexity is intentionally avoided for this personal game.
+**Answer privacy:** The globe receives guesses and only receives the answer location after the player explicitly gives up; correct guesses already appear in the guess list. It does not pan to or mark an answer before a correct guess or giving up. However, a fully static game must calculate distances in the browser, so the answer exists in memory and saved storage. A player using developer tools can find it. Obfuscation would not solve this. Strong secrecy requires a server to hold the answer and evaluate guesses; that complexity is intentionally avoided for this personal game.
 
 **Performance:** Country boundaries and D3 are loaded separately from the initial game UI. Search works while the map loads and after map failures. Geometry is simplified ahead of time, projection paths are memoized, there is no animation/render loop when idle, and no remote imagery or web fonts. SVG is a shaded orthographic projection with 3D-like rotation, not a WebGL 3D scene. Current measurements and limits are recorded in the technical plan.
 

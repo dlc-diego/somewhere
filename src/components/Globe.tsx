@@ -4,7 +4,7 @@ import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
 import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-react'
-import { countryByNumeric, type Country } from '../lib/countries'
+import { countryByNumeric, type Country, type GameMode, type Location } from '../lib/countries'
 import { temperatures } from '../lib/geo'
 import type { Guess } from '../lib/game'
 import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from '../lib/motion'
@@ -12,9 +12,21 @@ import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } f
 const graticule = geoGraticule10()
 const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
-type Focus = { country: Country; sequence: number } | null
+type Focus = { location: Location; sequence: number } | null
+type RevealedLocation = { country: Country; location: Location }
+const revealColor = '#a77332'
 
-function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
+function Globe({
+  guesses,
+  focus,
+  mode,
+  answerReveal,
+}: {
+  guesses: Guess[]
+  focus: Focus
+  mode: GameMode
+  answerReveal: RevealedLocation | null
+}) {
   const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
   const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -32,10 +44,20 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
   }, [])
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const gesture = useRef({ multi: false, distance: 0 })
-  const colors = useMemo(
-    () => new Map(guesses.map((g) => [g.country.id, temperatures[g.temperature].color])),
-    [guesses],
-  )
+  const colors = useMemo(() => {
+    const result = new Map(guesses.map((g) => [g.country.id, temperatures[g.temperature].color]))
+    if (answerReveal) result.set(answerReveal.country.id, revealColor)
+    return result
+  }, [guesses, answerReveal])
+  const markers = guesses
+    .filter((g) => mode === 'capitals' || g.country.small || g.country.id === 'TUV')
+    .map((g) => ({
+      country: g.country,
+      location: g.location,
+      color: temperatures[g.temperature].color,
+      revealed: false,
+    }))
+  if (answerReveal) markers.push({ ...answerReveal, color: revealColor, revealed: true })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -64,7 +86,7 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
       setZoom(1)
       return
     }
-    const target: [number, number, number] = [-focus.country.lng, -focus.country.lat, 0]
+    const target: [number, number, number] = [-focus.location.lng, -focus.location.lat, 0]
     if (prefersReducedMotion()) {
       setRotation(target)
       return
@@ -74,7 +96,7 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
       // Interpolate the viewing center over the shortest great-circle route,
       // including when a guess crosses the date line.
       const from = rotationRef.current
-      const route = geoInterpolate([-from[0], -from[1]], [focus.country.lng, focus.country.lat])
+      const route = geoInterpolate([-from[0], -from[1]], [focus.location.lng, focus.location.lat])
       const started = performance.now()
       const frame = (now: number) => {
         const progress = Math.min(1, (now - started) / GLOBE_FOCUS_DURATION_MS)
@@ -159,7 +181,7 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
             viewBox="0 0 600 600"
             className="globe-svg"
             role="img"
-            aria-label="World globe. Only guessed countries are colored."
+            aria-label="World globe. Guessed locations are colored. Answers are revealed only after a correct guess or giving up."
             onPointerDown={(e) => {
               if (e.pointerType === 'mouse' && e.button !== 0) return
               cancelFlight()
@@ -225,7 +247,12 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
                   key={f.key}
                   d={f.d}
                   data-country={f.country?.numeric}
-                  data-guessed={f.country ? colors.has(f.country.id) : false}
+                  data-guessed={
+                    f.country ? guesses.some((g) => g.country.id === f.country!.id) : false
+                  }
+                  data-revealed={
+                    answerReveal && f.country?.id === answerReveal.country.id ? true : undefined
+                  }
                   fill={(f.country && colors.get(f.country.id)) || '#bcc6b6'}
                   stroke="#254553"
                   strokeWidth="0.65"
@@ -236,26 +263,28 @@ function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
                 </path>
               ))}
               <circle cx="300" cy="300" r={265 * zoom} fill="url(#shade)" pointerEvents="none" />
-              {guesses
-                .filter(
-                  (g) =>
-                    (g.country.small || g.country.id === 'TUV') &&
-                    geoDistance([g.country.lng, g.country.lat], center) < Math.PI / 2,
-                )
+              {markers
+                .filter((g) => geoDistance([g.location.lng, g.location.lat], center) < Math.PI / 2)
                 .map((g) => {
-                  const point = projection([g.country.lng, g.country.lat])!
+                  const point = projection([g.location.lng, g.location.lat])!
                   return (
                     <circle
                       key={g.country.id}
                       cx={point[0]}
                       cy={point[1]}
                       r="5"
-                      fill={temperatures[g.temperature].color}
+                      fill={g.color}
                       stroke="#fffaf1"
                       strokeWidth="1.5"
                       data-country={g.country.numeric}
+                      data-capital={mode === 'capitals' ? g.country.id : undefined}
+                      data-revealed={g.revealed || undefined}
                     >
-                      <title>{g.country.name}</title>
+                      <title>
+                        {g.revealed ? 'Answer: ' : ''}
+                        {g.location.name}
+                        {mode === 'capitals' ? `, ${g.country.name}` : ''}
+                      </title>
                     </circle>
                   )
                 })}

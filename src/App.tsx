@@ -10,34 +10,58 @@ import {
   RotateCcw,
   Trophy,
 } from 'lucide-react'
-import CountrySearch from './components/CountrySearch'
+import GuessSearch from './components/GuessSearch'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
-import { addGuess, guessDetails, hasWon, loadRound, newRound, STORAGE_KEY } from './lib/game'
-import { countryById, type Country } from './lib/countries'
+import {
+  addGuess,
+  guessDetails,
+  hasEnded,
+  hasWon,
+  loadRound,
+  newRound,
+  revealAnswer,
+  storageKeyFor,
+  MODE_KEY,
+  type Round,
+} from './lib/game'
+import {
+  countryById,
+  locationFor,
+  type Country,
+  type GameMode,
+  type Location,
+} from './lib/countries'
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
 import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from './lib/motion'
 
 const Globe = lazy(() => import('./components/Globe'))
-type DialogType = 'help' | 'restart' | 'win' | null
+type DialogType = 'help' | 'restart' | 'result' | null
 
 export default function App() {
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
   const [warning, setWarning] = useState(initial.warning)
   const [dialog, setDialog] = useState<DialogType>(null)
-  const [focus, setFocus] = useState<{ country: Country; sequence: number } | null>(null)
+  const [focus, setFocus] = useState<{ location: Location; sequence: number } | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
-  const [victoryPending, setVictoryPending] = useState(false)
+  const [resultPending, setResultPending] = useState(false)
   const globePanel = useRef<HTMLElement>(null)
+  const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
   const guesses = guessDetails(round)
   const won = hasWon(round)
+  const ended = hasEnded(round)
+  const mode = round.mode
+  const item = mode === 'capitals' ? 'capital' : 'country'
+  const answerCountry = countryById.get(round.answer)!
+  const answerLocation = locationFor(answerCountry, mode)
   const closest = guesses.length ? Math.min(...guesses.map((g) => g.distance)) : null
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(round))
+      localStorage.setItem(storageKeyFor(round.mode), JSON.stringify(round))
+      localStorage.setItem(MODE_KEY, round.mode)
     } catch {
       setWarning('Browser storage is unavailable. This round may not survive a refresh.')
     }
@@ -57,47 +81,70 @@ export default function App() {
   }, [focus])
 
   useEffect(() => {
-    if (!victoryPending) return
-    // Let the final guess arrive on the globe before showing the celebration.
+    if (!resultPending) return
+    // Let the final guess or revealed answer arrive before showing its result.
     const timer = window.setTimeout(
       () => {
-        setDialog('win')
-        setVictoryPending(false)
+        setDialog('result')
+        setResultPending(false)
       },
       prefersReducedMotion() ? 0 : GLOBE_FOCUS_DELAY_MS + GLOBE_FOCUS_DURATION_MS + 100,
     )
     return () => window.clearTimeout(timer)
-  }, [victoryPending])
+  }, [resultPending])
 
   const focusCountry = useCallback(
-    (country: Country) => setFocus((f) => ({ country, sequence: (f?.sequence || 0) + 1 })),
+    (country: Country, location: Location = country) =>
+      setFocus((f) => ({ location, sequence: (f?.sequence || 0) + 1 })),
     [],
   )
   function submit(country: Country) {
     const result = addGuess(round, country.id)
     if (result.error) return result.error
     setRound(result.round)
-    focusCountry(country)
     const latest = guessDetails(result.round).at(-1)!
+    focusCountry(country, latest.location)
     setAnnouncement(
-      `${country.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
+      `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
-    if (hasWon(result.round)) setVictoryPending(true)
+    if (hasWon(result.round)) setResultPending(true)
   }
   function restart() {
-    setRound(newRound(round.answer))
+    setRound(newRound(round.answer, mode))
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    setVictoryPending(false)
-    setAnnouncement('A fresh mystery country is ready. Good luck!')
+    setResultPending(false)
+    setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
   function requestRestart() {
-    if (round.guesses.length && !won) setDialog('restart')
+    if (round.guesses.length && !ended) setDialog('restart')
     else restart()
   }
+  function changeMode(nextMode: GameMode) {
+    if (nextMode === mode) return
+    roundsCache.current.set(mode, round)
+    const loaded = loadRound(nextMode)
+    const nextRound = roundsCache.current.get(nextMode) || loaded.round
+    setRound(nextRound)
+    setWarning(loaded.warning)
+    setFocus(null)
+    setDialog(null)
+    setCopied(false)
+    setResultPending(false)
+    setAnnouncement(`Now guessing ${nextMode}. Each mode keeps its own round.`)
+  }
+  function giveUp() {
+    if (ended) return
+    setRound(revealAnswer(round))
+    focusCountry(answerCountry, answerLocation)
+    setResultPending(true)
+    setAnnouncement(
+      `Answer revealed: ${answerLocation.name}${mode === 'capitals' ? `, ${answerCountry.name}` : ''}. Round complete.`,
+    )
+  }
   async function share() {
-    const text = `I found ${countryById.get(round.answer)!.name} in ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'} on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
+    const text = `${won ? 'I found' : 'I revealed'} ${answerLocation.name} (${mode}) ${won ? 'in' : 'after'} ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'} on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -109,7 +156,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <a href="#country-search" className="skip-link">
-        Skip to country search
+        Skip to guessing
       </a>
       <header className="site-header">
         <a className="brand" href="./" aria-label="Somewhere home">
@@ -147,37 +194,54 @@ export default function App() {
           </div>
         )}
         <div className="game-layout">
-          <section className="search-card" id="country-search" aria-label="Country search">
+          <section
+            className="search-card"
+            id="country-search"
+            aria-label={mode === 'capitals' ? 'Capital search' : 'Country search'}
+          >
+            <div className="mode-selector" role="group" aria-label="Game mode">
+              <button aria-pressed={mode === 'countries'} onClick={() => changeMode('countries')}>
+                <Globe2 size={15} /> Countries
+              </button>
+              <button aria-pressed={mode === 'capitals'} onClick={() => changeMode('capitals')}>
+                <MapPin size={15} /> Capitals
+              </button>
+            </div>
             <div className="search-card-top">
               <span className={`round-status ${won ? 'is-won' : ''}`}>
-                <span /> {won ? 'Mystery solved' : 'The search is on'}
+                <span />{' '}
+                {won ? 'Mystery solved' : round.revealed ? 'Answer revealed' : 'The search is on'}
               </span>
-              <span className="round-label">195 countries</span>
+              <span className="round-label">195 {mode}</span>
             </div>
-            {won && (
+            {ended && (
               <>
-                <h2>You found your somewhere.</h2>
+                <h2>
+                  {won ? 'You found your somewhere.' : `The answer was ${answerLocation.name}.`}
+                </h2>
                 <p className="card-description">
-                  {countryById.get(round.answer)!.name} was the mystery country. Beautifully
-                  explored.
+                  {answerLocation.name}
+                  {mode === 'capitals' ? `, ${answerCountry.name},` : ''} was the mystery {item}.{' '}
+                  {won ? 'Beautifully explored.' : 'A new discovery for your next adventure.'}
                 </p>
               </>
             )}
-            {won ? (
+            {ended ? (
               <div className="completed-actions">
                 <button className="primary" onClick={restart}>
                   Explore another round <ArrowRight size={18} />
                 </button>
-                <button className="text-button" onClick={() => setDialog('win')}>
-                  <Trophy size={15} /> See your discovery
+                <button className="text-button" onClick={() => setDialog('result')}>
+                  {won ? <Trophy size={15} /> : <Globe2 size={15} />} See your discovery
                 </button>
               </div>
             ) : (
-              <CountrySearch
-                key={round.answer}
+              <GuessSearch
+                mode={mode}
+                key={`${mode}:${round.answer}`}
                 onGuess={submit}
                 guessed={round.guesses}
-                disabled={won}
+                disabled={ended}
               />
             )}
           </section>
@@ -190,7 +254,14 @@ export default function App() {
                 </div>
               }
             >
-              <Globe guesses={guesses} focus={focus} />
+              <Globe
+                guesses={guesses}
+                focus={focus}
+                mode={mode}
+                answerReveal={
+                  round.revealed ? { country: answerCountry, location: answerLocation } : null
+                }
+              />
             </Suspense>
             <div className="temperature-legend" aria-label="Distance color key">
               <span className="legend-label">Far away</span>
@@ -207,8 +278,8 @@ export default function App() {
           </section>
 
           <div className="history-column">
-            <GuessHistory guesses={guesses} onFocus={focusCountry} />
-            {closest !== null && !won && (
+            <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
+            {closest !== null && !ended && (
               <div className="closest-note">
                 <MapPin size={14} />
                 <span>
@@ -219,8 +290,10 @@ export default function App() {
           </div>
         </div>
         <p className="game-footnote">
-          <Globe2 size={14} /> Distances are measured between country centers. Every direction is a
-          possibility.
+          <Globe2 size={14} />{' '}
+          {mode === 'capitals'
+            ? 'Distances are measured between capital cities. Adjacent means their countries share a land border.'
+            : 'Distances are measured between country centers. Every direction is a possibility.'}
         </p>
       </main>
       <footer className="site-footer">
@@ -231,6 +304,13 @@ export default function App() {
           A small world, explained <ArrowRight size={13} />
         </button>
       </footer>
+      {!ended && (
+        <div className="give-up-area">
+          <button className="give-up-button" onClick={giveUp}>
+            Give up and reveal answer
+          </button>
+        </div>
+      )}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
@@ -250,10 +330,11 @@ export default function App() {
             <li>
               <span>01</span>
               <div>
-                <strong>Pick a country</strong>
+                <strong>Choose countries or capitals</strong>
                 <p>
-                  Search a name or alias, select a suggestion, then make your guess. The globe is
-                  for exploring; tapping it never selects a guess.
+                  Use the mode buttons to guess a country or a capital city. Search a name or alias,
+                  select a suggestion, then make your guess. Each mode keeps its own saved round.
+                  The globe is for exploring; tapping it never selects a guess.
                 </p>
               </div>
             </li>
@@ -262,10 +343,13 @@ export default function App() {
               <div>
                 <strong>Follow the warmth</strong>
                 <p>
-                  Each guess reveals its distance to the mystery country’s center. Cold is 7,000+
-                  km; cool is 3,000–7,000; warm is 1,000–3,000; hot is under 1,000. Countries
-                  sharing a land border are marked “Adjacent” with the hottest color, regardless of
-                  center distance. Your closest guess stays highlighted at the top of the list.
+                  Country rounds measure center-to-center distance; capital rounds measure
+                  city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm is
+                  1,000–3,000; hot is under 1,000. Countries sharing a land border are marked
+                  “Adjacent” with the hottest color, regardless of distance. In capital mode,
+                  “Adjacent” means the capitals' countries share a land border, not that the cities
+                  touch. Capital guesses get city markers as well as country colors. Your closest
+                  guess stays highlighted at the top of the list.
                 </p>
               </div>
             </li>
@@ -274,8 +358,10 @@ export default function App() {
               <div>
                 <strong>Find your somewhere</strong>
                 <p>
-                  There’s no guess limit. Find the exact country to win, then start a fresh
-                  adventure. Your round saves in this browser.
+                  There’s no guess limit. Find the exact country or capital to win, then start a
+                  fresh adventure. Or use “Give up and reveal answer” at the very bottom to end a
+                  round and see its answer. Giving up keeps your guesses and is not a win. Your
+                  rounds save in this browser.
                 </p>
               </div>
             </li>
@@ -285,12 +371,16 @@ export default function App() {
             <p>
               We play with 193 UN member states, Palestine, and Vatican City. Territories and other
               disputed states are outside this version’s answer list. Borders are simplified; small
-              guessed countries get a marker. Centers are approximate, and distance is
-              center-to-center, not border-to-border.
+              guessed countries get a marker. Centers and city coordinates are approximate, and
+              distances are not border-to-border. Capitals use one selected city per country: for
+              example Pretoria for South Africa and Sucre for Bolivia. Nauru uses Yaren, its
+              government district; Palestine uses Ramallah as its administrative seat. Other
+              co-capitals are not separate guesses. See the README for the full data choices and
+              limitations.
             </p>
             <p>
-              The answer stays unmarked until guessed. As a browser-only game, it can be found by
-              inspecting saved data.
+              The answer stays unmarked until guessed correctly or revealed by giving up. As a
+              browser-only game, it can be found by inspecting saved data.
             </p>
             <p>
               Map:{' '}
@@ -322,7 +412,8 @@ export default function App() {
           <h2>A new direction?</h2>
           <p className="dialog-description">
             Your current journey has {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}.
-            Starting over will replace this round with a new mystery country.
+            Starting over will replace this round with a new mystery {item}. Your other mode's round
+            will be kept.
           </p>
           <button className="primary" onClick={restart}>
             Start a fresh round <ArrowRight size={17} />
@@ -332,36 +423,37 @@ export default function App() {
           </button>
         </Dialog>
       )}
-      {dialog === 'win' && (
+      {dialog === 'result' && (
         <Dialog
-          title="You found the mystery country"
+          title={won ? `You found the mystery ${item}` : 'Answer revealed'}
           onClose={() => setDialog(null)}
           className="win-dialog"
         >
           <span className="victory-symbol">
-            <Trophy size={32} strokeWidth={1.5} />
+            {won ? <Trophy size={32} strokeWidth={1.5} /> : <Globe2 size={32} strokeWidth={1.5} />}
           </span>
-          <p className="eyebrow">Oh, there you are</p>
+          <p className="eyebrow">{won ? 'Oh, there you are' : 'A little discovery'}</p>
           <h2>
-            You found your
+            {won ? 'You found your' : 'Here’s your'}
             <br />
             <em>somewhere.</em>
           </h2>
           <span className="victory-country">
-            <span aria-hidden="true">{countryById.get(round.answer)!.flag}</span>
-            {countryById.get(round.answer)!.name}
+            <span aria-hidden="true">{answerCountry.flag}</span>
+            {answerLocation.name}
           </span>
+          {mode === 'capitals' && <p className="answer-country">{answerCountry.name}</p>}
           <p className="dialog-description">
-            One mystery. {guesses.length}{' '}
+            {won ? 'One mystery.' : 'Answer revealed after'} {guesses.length}{' '}
             {guesses.length === 1 ? 'brilliant guess' : 'curious guesses'}.<br />A whole world well
-            explored.
+            explored.{!won && ' This round is complete. Try a fresh one whenever you’re ready.'}
           </p>
           <button className="primary" onClick={restart}>
             Let’s go somewhere new <ArrowRight size={17} />
           </button>
           <button className="secondary" onClick={share}>
             {copied ? <Check size={16} /> : <Heart size={16} />}
-            {copied ? 'Result copied' : 'Copy your discovery'}
+            {copied ? 'Result copied' : won ? 'Copy your discovery' : 'Copy your result'}
           </button>
         </Dialog>
       )}

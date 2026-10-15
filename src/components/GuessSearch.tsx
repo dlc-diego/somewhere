@@ -1,12 +1,20 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, Search, X } from 'lucide-react'
-import { exactCountry, searchCountries, type Country } from '../lib/countries'
+import {
+  exactLocation,
+  locationFor,
+  searchLocations,
+  type Country,
+  type GameMode,
+} from '../lib/countries'
 
-export default function CountrySearch({
+export default function GuessSearch({
+  mode,
   onGuess,
   guessed,
   disabled,
 }: {
+  mode: GameMode
   onGuess: (country: Country) => string | undefined
   guessed: string[]
   disabled: boolean
@@ -19,7 +27,8 @@ export default function CountrySearch({
   const input = useRef<HTMLInputElement>(null)
   const container = useRef<HTMLFormElement>(null)
   const id = useId()
-  const matches = searchCountries(query)
+  const matches = searchLocations(query, mode)
+  const item = mode === 'capitals' ? 'capital' : 'country'
 
   useEffect(() => {
     const close = (event: PointerEvent) => {
@@ -30,22 +39,22 @@ export default function CountrySearch({
   }, [])
 
   function pick(country: Country) {
-    setQuery(country.name)
+    setQuery(locationFor(country, mode).name)
     setSelected(country)
     setOpen(false)
     setError('')
     input.current?.focus()
   }
   function submit(country?: Country) {
-    const choice = country || selected || exactCountry(query)
+    const choice = country || selected || exactLocation(query, mode)
     if (!choice) {
-      setError('Select a country from the suggestions first.')
+      setError(`Select a ${item} from the suggestions first.`)
       setOpen(Boolean(query))
       input.current?.focus()
       return
     }
     if (guessed.includes(choice.id)) {
-      setError('Already explored! Try a different country.')
+      setError(`Already explored! Try a different ${item}.`)
       setOpen(false)
       return
     }
@@ -71,7 +80,7 @@ export default function CountrySearch({
       className="guess-form"
     >
       <label className="search-label" htmlFor={`${id}-search`}>
-        Where do you think it is?
+        {mode === 'capitals' ? 'Which capital do you think it is?' : 'Where do you think it is?'}
       </label>
       <div className={`search-control ${error ? 'has-error' : ''}`}>
         <Search size={19} aria-hidden="true" />
@@ -86,7 +95,7 @@ export default function CountrySearch({
           aria-activedescendant={open && matches[active] ? `${id}-option-${active}` : undefined}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : `${id}-hint`}
-          placeholder="Search for a country…"
+          placeholder={`Search for a ${item}…`}
           value={query}
           autoComplete="off"
           autoCorrect="off"
@@ -124,7 +133,7 @@ export default function CountrySearch({
           <button
             type="button"
             className="clear-search"
-            aria-label="Clear country search"
+            aria-label={`Clear ${item} search`}
             onClick={() => {
               setQuery('')
               setSelected(null)
@@ -142,7 +151,11 @@ export default function CountrySearch({
       {open && query && (
         <div className={`autocomplete ${matches.length ? '' : 'no-match-container'}`}>
           {matches.length ? (
-            <ul id={`${id}-list`} role="listbox" aria-label="Country suggestions">
+            <ul
+              id={`${id}-list`}
+              role="listbox"
+              aria-label={mode === 'capitals' ? 'Capital suggestions' : 'Country suggestions'}
+            >
               {matches.map((country, i) => (
                 <li
                   id={`${id}-option-${i}`}
@@ -157,8 +170,8 @@ export default function CountrySearch({
                     {country.flag}
                   </span>
                   <span>
-                    {country.name}
-                    <small>{country.region}</small>
+                    {locationFor(country, mode).name}
+                    <small>{mode === 'capitals' ? country.name : country.region}</small>
                   </span>
                   {guessed.includes(country.id) && (
                     <span className="already-guessed">
@@ -170,7 +183,9 @@ export default function CountrySearch({
             </ul>
           ) : (
             <p className="no-results">
-              No countries found. Try another name or an alias like “UK”.
+              {mode === 'capitals'
+                ? 'No capitals found. Try a city name, such as “Paris” or “Tokyo”.'
+                : 'No countries found. Try another name or an alias like “UK”.'}
             </p>
           )}
         </div>
