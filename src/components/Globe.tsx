@@ -14,15 +14,7 @@ const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
 type Focus = { country: Country; sequence: number } | null
 
-function Globe({
-  guesses,
-  focus,
-  onSelect,
-}: {
-  guesses: Guess[]
-  focus: Focus
-  onSelect: (country: Country) => void
-}) {
+function Globe({ guesses, focus }: { guesses: Guess[]; focus: Focus }) {
   const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
   const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -39,7 +31,7 @@ function Globe({
     flightDelay.current = null
   }, [])
   const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const gesture = useRef({ moved: false, multi: false, candidate: '', distance: 0, travel: 0 })
+  const gesture = useRef({ multi: false, distance: 0 })
   const colors = useMemo(
     () => new Map(guesses.map((g) => [g.country.id, temperatures[g.temperature].color])),
     [guesses],
@@ -123,12 +115,7 @@ function Globe({
     setRotation(initialRotation)
     setZoom(1)
   }
-  function endPointer(id: number, select = true) {
-    if (!pointers.current.has(id)) return
-    if (select && !gesture.current.moved && !gesture.current.multi) {
-      const country = countryByNumeric.get(gesture.current.candidate)
-      if (country) onSelect(country)
-    }
+  function endPointer(id: number) {
     pointers.current.delete(id)
     if (!pointers.current.size) gesture.current.multi = false
   }
@@ -177,16 +164,7 @@ function Globe({
               if (e.pointerType === 'mouse' && e.button !== 0) return
               cancelFlight()
               e.currentTarget.setPointerCapture(e.pointerId)
-              if (!pointers.current.size)
-                gesture.current = {
-                  moved: false,
-                  multi: false,
-                  candidate:
-                    (e.target as Element).closest('[data-country]')?.getAttribute('data-country') ||
-                    '',
-                  distance: 0,
-                  travel: 0,
-                }
+              if (!pointers.current.size) gesture.current = { multi: false, distance: 0 }
               pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
               if (pointers.current.size >= 2) {
                 gesture.current.multi = true
@@ -200,8 +178,6 @@ function Globe({
               const dx = e.clientX - previous.x,
                 dy = e.clientY - previous.y
               pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-              gesture.current.travel += Math.hypot(dx, dy)
-              if (gesture.current.travel > 5) gesture.current.moved = true
               if (pointers.current.size === 1 && !gesture.current.multi) {
                 setRotation((r) => [
                   (r[0] + (dx * 0.4) / zoom) % 360,
@@ -217,7 +193,7 @@ function Globe({
               }
             }}
             onPointerUp={(e) => endPointer(e.pointerId)}
-            onPointerCancel={(e) => endPointer(e.pointerId, false)}
+            onPointerCancel={(e) => endPointer(e.pointerId)}
             onLostPointerCapture={(e) => pointers.current.delete(e.pointerId)}
           >
             <defs>
@@ -333,7 +309,7 @@ function Globe({
       <div className="globe-caption">
         <Move size={15} />
         <span>
-          Drag to explore <span className="caption-dot">·</span> Tap a country to select it
+          Drag to explore <span className="caption-dot">·</span> Use search to guess
         </span>
       </div>
     </div>

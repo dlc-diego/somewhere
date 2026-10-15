@@ -9,12 +9,17 @@ export interface Country {
   lat: number
   lng: number
   small: boolean
+  borders: string[]
   aliases: string[]
 }
 
 export const countries: Country[] = data
 export const countryById = new Map(countries.map((c) => [c.id, c]))
 export const countryByNumeric = new Map(countries.map((c) => [c.numeric, c]))
+
+export function areAdjacent(a: Country, b: Country): boolean {
+  return a.id !== b.id && (a.borders.includes(b.id) || b.borders.includes(a.id))
+}
 
 export function normalizeName(value: string): string {
   return value

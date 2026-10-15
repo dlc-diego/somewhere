@@ -1,6 +1,6 @@
 import { Flag, MapPin, Navigation, Trophy } from 'lucide-react'
 import { formatDistance, temperatures } from '../lib/geo'
-import type { Guess } from '../lib/game'
+import { sortGuessesByDistance, type Guess } from '../lib/game'
 import type { Country } from '../lib/countries'
 
 export default function GuessHistory({
@@ -10,9 +10,8 @@ export default function GuessHistory({
   guesses: Guess[]
   onFocus: (country: Country) => void
 }) {
-  const closest = guesses.length
-    ? guesses.reduce((a, b) => (a.distance <= b.distance ? a : b))
-    : null
+  const sorted = sortGuessesByDistance(guesses)
+  const closest = sorted[0]
   return (
     <section className="history" aria-labelledby="history-title">
       <div className="history-heading">
@@ -44,13 +43,16 @@ export default function GuessHistory({
           </p>
         </div>
       ) : (
-        <ol className="guess-list" aria-label="Guesses, newest first">
-          {[...guesses].reverse().map((g) => (
-            <li key={g.country.id}>
+        <ol className="guess-list" aria-label="Guesses, closest first">
+          {sorted.map((g) => (
+            <li
+              key={g.country.id}
+              className={closest.country.id === g.country.id ? 'closest-guess' : undefined}
+            >
               <button
                 className="guess-row"
                 onClick={() => onFocus(g.country)}
-                aria-label={`${g.number}. ${g.country.name}, ${formatDistance(g.distance)} kilometers, ${temperatures[g.temperature].label}. Show on globe.`}
+                aria-label={`${g.number}. ${g.country.name}, ${formatDistance(g.distance)} kilometers, ${temperatures[g.temperature].label}. ${closest.country.id === g.country.id ? 'Closest guess. ' : ''}Show on globe.`}
               >
                 <span className="guess-number">{String(g.number).padStart(2, '0')}</span>
                 <span className="guess-country">

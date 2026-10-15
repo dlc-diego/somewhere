@@ -11,16 +11,18 @@ export function distanceKm(a: Coordinates, b: Coordinates): number {
   return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.max(0, Math.min(1, h))))
 }
 
-export type Temperature = 'found' | 'hot' | 'warm' | 'cool' | 'cold'
+export type Temperature = 'found' | 'adjacent' | 'hot' | 'warm' | 'cool' | 'cold'
 export const temperatures: Record<Temperature, { label: string; color: string; symbol: string }> = {
   found: { label: 'Found it!', color: '#28755b', symbol: '✓' },
+  adjacent: { label: 'Adjacent', color: '#9e2439', symbol: '◆' },
   hot: { label: 'Hot', color: '#c64e33', symbol: '●' },
   warm: { label: 'Warm', color: '#d78a36', symbol: '◕' },
   cool: { label: 'Cool', color: '#4e919f', symbol: '◑' },
   cold: { label: 'Cold', color: '#576ca6', symbol: '○' },
 }
-export function temperatureFor(distance: number, correct = false): Temperature {
+export function temperatureFor(distance: number, correct = false, adjacent = false): Temperature {
   if (correct) return 'found'
+  if (adjacent) return 'adjacent'
   if (distance < 1000) return 'hot'
   if (distance < 3000) return 'warm'
   if (distance < 7000) return 'cool'

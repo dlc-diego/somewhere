@@ -37,4 +37,9 @@ describe('temperature and display', () => {
     expect(formatDistance(0.3)).toBe('<1')
     expect(formatDistance(1234.6)).toBe('1,235')
   })
+  it('gives shared borders the hottest feedback regardless of center distance, without granting a win', () => {
+    expect(temperatureFor(15000, false, true)).toBe('adjacent')
+    expect(temperatureFor(500, false, true)).toBe('adjacent')
+    expect(temperatureFor(0, true, true)).toBe('found')
+  })
 })

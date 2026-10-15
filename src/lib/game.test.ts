@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { addGuess, guessDetails, hasWon, newRound, parseRound, type Round } from './game'
+import {
+  addGuess,
+  guessDetails,
+  hasWon,
+  newRound,
+  parseRound,
+  sortGuessesByDistance,
+  type Round,
+} from './game'
 import {
   countries,
+  areAdjacent,
   countryById,
   countryByNumeric,
   exactCountry,
@@ -39,6 +48,33 @@ describe('game rules', () => {
       expect(next.guesses).toEqual([])
     }
   })
+  it('marks neighboring countries adjacent even when their centers are far apart', () => {
+    const r: Round = { version: 1, answer: 'RUS', guesses: ['CHN', 'JPN', 'RUS'] }
+    const details = guessDetails(r)
+    expect(details[0].distance).toBeGreaterThan(1000)
+    expect(details[0]).toMatchObject({ adjacent: true, temperature: 'adjacent' })
+    expect(details[1].adjacent).toBe(false)
+    expect(details[2]).toMatchObject({ adjacent: false, temperature: 'found' })
+  })
+  it('puts the closest guess first without changing guess numbers or saved chronological order', () => {
+    const r: Round = { ...round, guesses: ['GBR', 'DEU', 'JPN'] }
+    const details = guessDetails(r)
+    const sorted = sortGuessesByDistance(details)
+    expect(sorted.map((g) => g.country.id)).toEqual(['DEU', 'GBR', 'JPN'])
+    expect(sorted.map((g) => g.number)).toEqual([2, 1, 3])
+    expect(details.map((g) => g.country.id)).toEqual(r.guesses)
+    expect(r.guesses).toEqual(['GBR', 'DEU', 'JPN'])
+    expect(
+      sortGuessesByDistance(guessDetails({ ...r, guesses: [...r.guesses, 'FRA'] }))[0].temperature,
+    ).toBe('found')
+  })
+  it('keeps equal-distance guesses in their original order', () => {
+    const details = guessDetails({ ...round, guesses: ['GBR', 'DEU'] }).map((g) => ({
+      ...g,
+      distance: 100,
+    }))
+    expect(sortGuessesByDistance([...details].reverse()).map((g) => g.number)).toEqual([1, 2])
+  })
 })
 
 describe('saved rounds', () => {
@@ -69,6 +105,28 @@ describe('saved rounds', () => {
 })
 
 describe('country metadata and aliases', () => {
+  it('has symmetric land borders containing only valid, distinct playable identities', () => {
+    for (const country of countries) {
+      expect(country.borders).not.toContain(country.id)
+      expect(new Set(country.borders).size).toBe(country.borders.length)
+      for (const neighbor of country.borders) {
+        expect(countryById.get(neighbor)?.borders).toContain(country.id)
+      }
+    }
+  })
+  it('handles overseas land borders and islands without treating sea crossings as adjacency', () => {
+    const adjacent = (a: string, b: string) => areAdjacent(countryById.get(a)!, countryById.get(b)!)
+    expect(adjacent('FRA', 'BRA')).toBe(true)
+    expect(adjacent('FRA', 'SUR')).toBe(true)
+    expect(adjacent('FRA', 'NLD')).toBe(true)
+    expect(adjacent('GBR', 'ESP')).toBe(true)
+    expect(adjacent('CAN', 'DNK')).toBe(true)
+    expect(adjacent('ITA', 'VAT')).toBe(true)
+    expect(adjacent('IND', 'LKA')).toBe(false)
+    expect(adjacent('GBR', 'FRA')).toBe(false)
+    expect(adjacent('JPN', 'KOR')).toBe(false)
+    expect(adjacent('FRA', 'FRA')).toBe(false)
+  })
   it('has 195 unique alpha-3 and numeric identities with valid coordinates', () => {
     expect(countries).toHaveLength(195)
     expect(countryById.size).toBe(195)

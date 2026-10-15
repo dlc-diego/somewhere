@@ -24,6 +24,29 @@ const extraAliases = {
   PSE: ['Palestine', 'State of Palestine'],
 }
 const names = { COG: 'Republic of the Congo', COD: 'DR Congo', VAT: 'Vatican City' }
+const playableIds = new Set(
+  countries.filter((c) => c.unMember || ['VAT', 'PSE'].includes(c.cca3)).map((c) => c.cca3),
+)
+// Shared land borders are symmetric. Include overseas land borders in the
+// sovereign country's record; do not infer disputed sovereignty from map labels.
+const sovereign = { GUF: 'FRA', MAF: 'FRA', SXM: 'NLD', GIB: 'GBR', HKG: 'CHN', MAC: 'CHN' }
+const borders = new Map([...playableIds].map((id) => [id, new Set()]))
+function addBorder(a, b) {
+  if (a === b || !playableIds.has(a) || !playableIds.has(b)) return
+  borders.get(a).add(b)
+  borders.get(b).add(a)
+}
+for (const country of countries) {
+  const id = sovereign[country.cca3] || country.cca3
+  for (const border of country.borders) {
+    const neighbor = sovereign[border] || border
+    // The source lists this pair on one side; Palk Strait is not a land border.
+    if ([id, neighbor].sort().join(':') === 'IND:LKA') continue
+    addBorder(id, neighbor)
+  }
+}
+// The 2022 Tartupaluk / Hans Island agreement created this shared land border.
+addBorder('CAN', 'DNK')
 const playable = countries
   .filter((c) => c.unMember || ['VAT', 'PSE'].includes(c.cca3))
   .map((c) => ({
@@ -35,6 +58,7 @@ const playable = countries
     lat: c.latlng[0],
     lng: c.latlng[1],
     small: c.area < 2500,
+    borders: [...borders.get(c.cca3)].sort(),
     aliases: [
       ...new Set([
         c.name.common,

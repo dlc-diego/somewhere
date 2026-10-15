@@ -225,13 +225,6 @@ h1 {
   stroke-width: 1;
   stroke-dasharray: 1 5;
 }
-.country-path:hover {
-  stroke: #fff8df;
-  stroke-width: 1.5;
-}
-.country-path {
-  cursor: crosshair;
-}
 .compass-n {
   position: absolute;
   top: 1.5%;
@@ -1443,4 +1436,50 @@ h1 {
   color: #b8886b;
   width: 25px;
   height: 25px;
+}
+
+.temperature-adjacent {
+  color: #9e2439;
+  font-weight: 650;
+}
+.guess-list .closest-guess {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 8px 0;
+  border: 1px solid #c0cfb3;
+  border-left: 3px solid #77905e;
+  border-radius: 8px;
+  background: #eaf0e2;
+}
+.closest-guess .guess-row {
+  padding: 13px 10px;
+}
+.closest-guess .guess-row:hover {
+  background: #e4ecda;
+}
+.closest-guess .guess-country {
+  font-weight: 650;
+}
+.closest-guess .guess-country small {
+  font-size: 10px;
+  font-weight: 600;
+}
+.closest-guess .temperature-warm {
+  color: #885315;
+}
+@media (max-width: 820px) {
+  .temperature-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 12px;
+  }
+  .legend-stops {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+  }
+  .legend-label:last-child {
+    text-align: right;
+  }
 }

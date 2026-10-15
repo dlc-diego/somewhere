@@ -26,7 +26,6 @@ export default function App() {
   const [round, setRound] = useState(initial.round)
   const [warning, setWarning] = useState(initial.warning)
   const [dialog, setDialog] = useState<DialogType>(null)
-  const [selection, setSelection] = useState<{ country: Country; sequence: number } | null>(null)
   const [focus, setFocus] = useState<{ country: Country; sequence: number } | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
@@ -70,10 +69,6 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [victoryPending])
 
-  const selectOnGlobe = useCallback(
-    (country: Country) => setSelection((s) => ({ country, sequence: (s?.sequence || 0) + 1 })),
-    [],
-  )
   const focusCountry = useCallback(
     (country: Country) => setFocus((f) => ({ country, sequence: (f?.sequence || 0) + 1 })),
     [],
@@ -91,7 +86,6 @@ export default function App() {
   }
   function restart() {
     setRound(newRound(round.answer))
-    setSelection(null)
     setFocus(null)
     setDialog(null)
     setCopied(false)
@@ -184,7 +178,6 @@ export default function App() {
                 onGuess={submit}
                 guessed={round.guesses}
                 disabled={won}
-                selection={selection}
               />
             )}
           </section>
@@ -197,12 +190,12 @@ export default function App() {
                 </div>
               }
             >
-              <Globe guesses={guesses} focus={focus} onSelect={selectOnGlobe} />
+              <Globe guesses={guesses} focus={focus} />
             </Suspense>
             <div className="temperature-legend" aria-label="Distance color key">
               <span className="legend-label">Far away</span>
               <div className="legend-stops">
-                {(['cold', 'cool', 'warm', 'hot'] as Temperature[]).map((t) => (
+                {(['cold', 'cool', 'warm', 'hot', 'adjacent'] as Temperature[]).map((t) => (
                   <span key={t}>
                     <i style={{ backgroundColor: temperatures[t].color }} />
                     <span>{temperatures[t].label}</span>
@@ -259,8 +252,8 @@ export default function App() {
               <div>
                 <strong>Pick a country</strong>
                 <p>
-                  Search a name or alias, or tap a country on the globe. Select it, then make your
-                  guess.
+                  Search a name or alias, select a suggestion, then make your guess. The globe is
+                  for exploring; tapping it never selects a guess.
                 </p>
               </div>
             </li>
@@ -270,7 +263,9 @@ export default function App() {
                 <strong>Follow the warmth</strong>
                 <p>
                   Each guess reveals its distance to the mystery country’s center. Cold is 7,000+
-                  km; cool is 3,000–7,000; warm is 1,000–3,000; hot is under 1,000.
+                  km; cool is 3,000–7,000; warm is 1,000–3,000; hot is under 1,000. Countries
+                  sharing a land border are marked “Adjacent” with the hottest color, regardless of
+                  center distance. Your closest guess stays highlighted at the top of the list.
                 </p>
               </div>
             </li>

@@ -6,12 +6,10 @@ export default function CountrySearch({
   onGuess,
   guessed,
   disabled,
-  selection,
 }: {
   onGuess: (country: Country) => string | undefined
   guessed: string[]
   disabled: boolean
-  selection: { country: Country; sequence: number } | null
 }) {
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Country | null>(null)
@@ -23,14 +21,6 @@ export default function CountrySearch({
   const id = useId()
   const matches = searchCountries(query)
 
-  useEffect(() => {
-    if (selection) {
-      setQuery(selection.country.name)
-      setSelected(selection.country)
-      setOpen(false)
-      setError('')
-    }
-  }, [selection])
   useEffect(() => {
     const close = (event: PointerEvent) => {
       if (!container.current?.contains(event.target as Node)) setOpen(false)

@@ -39,9 +39,9 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
   await guess(page, 'Japan', 'Japan')
   await expect(page.getByRole('alert')).toContainText('Already explored')
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
   await page.reload()
   await expect(page.getByRole('button', { name: /1\. Japan.*kilometers/ })).toBeVisible()
   expect(
@@ -73,15 +73,15 @@ test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({
   await input.press('Enter')
   await expect(input).toHaveValue('United Kingdom')
   await input.press('Enter')
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
   await page.getByRole('button', { name: 'New round' }).click()
   await expect(page.getByRole('dialog', { name: 'Start a new round?' })).toBeVisible()
   await page.getByRole('button', { name: 'Keep exploring this round' }).click()
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
   const globe = page.getByRole('group', { name: /Interactive globe/ })
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   const before = await page.locator('[data-country="250"]').first().getAttribute('d')
@@ -95,7 +95,9 @@ test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({
   ).toBeVisible()
 })
 
-test('mobile-safe layout, help dialog, drag and map selection', async ({ page }) => {
+test('mobile-safe layout, help dialog, drag and map taps never select guesses', async ({
+  page,
+}) => {
   await seed(page)
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
@@ -125,7 +127,7 @@ test('mobile-safe layout, help dialog, drag and map selection', async ({ page })
     box.x + (point[0] / 600) * box.width,
     box.y + (point[1] / 600) * box.height,
   )
-  await expect(page.getByRole('combobox')).toHaveValue('Egypt')
+  await expect(page.getByRole('combobox')).toHaveValue('')
   await expect(page.locator('[data-guessed="true"]')).toHaveCount(0)
 })
 
@@ -135,9 +137,9 @@ test('small islands and a failed globe load are handled', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('The globe couldn’t load.')).toBeVisible()
   await guess(page, 'Tuvalu', 'Tuvalu')
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
   await page.unroute('**/data/world.json')
   await page.getByRole('button', { name: 'Try again' }).click()
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
@@ -158,13 +160,13 @@ test('production assets work from a repository subdirectory', async ({ page }) =
   await page.goto('http://127.0.0.1:4174/wep-app/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await guess(page, 'Spain', 'Spain')
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
   await page.reload()
-  await expect(page.getByRole('list', { name: 'Guesses, newest first' }).locator('li')).toHaveCount(
-    1,
-  )
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
 })
 
 test('core screens have no automated accessibility violations', async ({ page }) => {
@@ -224,7 +226,7 @@ test('unavailable browser storage warns but does not prevent gameplay', async ({
   await guess(page, 'Japan', 'Japan')
   // A randomly selected Japan answer may win; history remains underneath the dialog.
   await expect(
-    page.getByRole('list', { name: 'Guesses, newest first', includeHidden: true }).locator('li'),
+    page.getByRole('list', { name: 'Guesses, closest first', includeHidden: true }).locator('li'),
   ).toHaveCount(1)
 })
 
@@ -299,4 +301,34 @@ test('manual globe controls cancel a pending flight and reduced motion skips it'
   await expect(marker).toBeVisible()
   expect(Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
   expect(Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+})
+
+test('adjacent guesses get the hottest feedback and the closest stays highlighted first', async ({
+  page,
+}) => {
+  await seed(page)
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  await guess(page, 'Germany', 'Germany')
+  await guess(page, 'Japan', 'Japan')
+  await guess(page, 'UK', 'United Kingdom')
+  const list = page.getByRole('list', { name: 'Guesses, closest first' })
+  const rows = list.locator('li')
+  await expect(rows).toHaveCount(3)
+  await expect(rows.nth(0).getByRole('button')).toHaveAccessibleName(
+    /1\. Germany.*Adjacent.*Closest guess/,
+  )
+  await expect(rows.nth(1)).toContainText('United Kingdom')
+  await expect(rows.nth(2)).toContainText('Japan')
+  expect(await rows.first().evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(
+    await rows.nth(1).evaluate((el) => getComputedStyle(el).backgroundColor),
+  )
+  await expect(page.locator('[data-country="276"]').first()).toHaveAttribute('fill', '#9e2439')
+  await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
+  await page.reload()
+  await expect(rows.nth(0).getByRole('button')).toHaveAccessibleName(
+    /1\. Germany.*Adjacent.*Closest guess/,
+  )
+  const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+  expect(a11y.violations).toEqual([])
 })

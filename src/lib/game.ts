@@ -1,4 +1,4 @@
-import { countries, countryById } from './countries'
+import { areAdjacent, countries, countryById } from './countries'
 import { distanceKm, temperatureFor } from './geo'
 
 export interface Round {
@@ -36,15 +36,21 @@ export function guessDetails(round: Round) {
   return round.guesses.map((id, i) => {
     const country = countryById.get(id)!
     const distance = distanceKm(country, answer)
+    const adjacent = areAdjacent(country, answer)
     return {
       country,
       distance,
-      temperature: temperatureFor(distance, id === answer.id),
+      adjacent,
+      temperature: temperatureFor(distance, id === answer.id, adjacent),
       number: i + 1,
     }
   })
 }
 export type Guess = ReturnType<typeof guessDetails>[number]
+
+export function sortGuessesByDistance(guesses: Guess[]): Guess[] {
+  return [...guesses].sort((a, b) => a.distance - b.distance || a.number - b.number)
+}
 
 export function parseRound(value: string | null): Round | null {
   if (!value) return null

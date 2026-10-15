@@ -23,15 +23,15 @@ React, React DOM, D3 Geo, TopoJSON client, and tree-shaken Lucide icons are the 
 
 1. Generate a checked-in 195-country list from `world-countries`, plus simplified 50m Natural Earth topology from `world-atlas`. Do not fetch gameplay metadata from a live service.
 2. Keep alpha-3 IDs canonical in game state. Join map features by ISO numeric code. Keep names exclusively for display and search.
-3. Keep Haversine, temperature thresholds, duplicate checks, win detection and saved-state validation in pure functions.
+3. Keep Haversine, shared-land-border adjacency, temperature thresholds, distance ranking, duplicate checks, win detection and saved-state validation in pure functions.
 4. Let the app hold one round. Persist IDs and answer in versioned browser storage; derive distances from validated metadata, rather than trusting stored distances.
-5. Pass only guessed countries to the globe. A tap selects a possible guess; only explicit submission records it. History interactions focus already-guessed countries.
+5. Pass only guessed countries to the globe. Globe taps never select or submit a guess; all guessing uses the search interface. History interactions focus already-guessed countries.
 6. Use native modal dialogs for focus containment and Escape support. Offer a complete keyboard search path and text/symbol temperature labels.
 7. Build static assets and verify both root and project-subdirectory serving before documenting deployment.
 
 ## Accuracy and privacy
 
-Center-to-center Haversine meets the requested rule and stays consistent for archipelagos and disconnected countries, but it differs from nearest-border distance. Metadata centers can be approximate and need not be inside every component. Natural Earth boundaries are generalized and make specific choices in disputed areas. This game does not settle geopolitical questions; the explicit UN-plus-observers answer list and all data limitations are documented in the README and in-game guide.
+Adjacent guesses receive the hottest feedback independently of distance, using an explicit symmetric ISO alpha-3 land-border graph (including documented overseas mappings and data corrections). History sorts by center distance and highlights/pins the closest entry without changing saved chronological guess order. Center-to-center Haversine meets the requested rule and stays consistent for archipelagos and disconnected countries, but it differs from nearest-border distance. Metadata centers can be approximate and need not be inside every component. Natural Earth boundaries are generalized and make specific choices in disputed areas. This game does not settle geopolitical questions; the explicit UN-plus-observers answer list and all data limitations are documented in the README and in-game guide.
 
 A browser-only game can keep the answer out of visible UI and out of the globe’s inputs, but cannot keep it secret from developer tools. A serverless answer/guess service could improve secrecy later, at the cost of an API, round/session handling, abuse controls and hosting quotas. That is unnecessary for this personal project.
 
