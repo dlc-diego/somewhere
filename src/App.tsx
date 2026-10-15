@@ -91,7 +91,7 @@ export default function App() {
 
   useEffect(() => {
     if (!resultPending) return
-    // Keep the victory dialog from covering the winning guess's arrival cue.
+    // Keep the result dialog from covering the answer's arrival cue.
     const timer = window.setTimeout(
       () => {
         setDialog('result')
@@ -99,13 +99,10 @@ export default function App() {
       },
       prefersReducedMotion()
         ? 0
-        : GLOBE_FOCUS_DELAY_MS +
-            GLOBE_FOCUS_DURATION_MS +
-            (won ? GUESS_BLINK_DURATION_MS : 0) +
-            100,
+        : GLOBE_FOCUS_DELAY_MS + GLOBE_FOCUS_DURATION_MS + GUESS_BLINK_DURATION_MS + 100,
     )
     return () => window.clearTimeout(timer)
-  }, [resultPending, won])
+  }, [resultPending])
 
   const focusCountry = useCallback(
     (country: Country, location: Location = country) =>

@@ -21,7 +21,7 @@ const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
 type Focus = { countryId: string; location: Location; sequence: number } | null
 type RevealedLocation = { country: Country; location: Location }
-const revealColor = '#a77332'
+const revealColor = temperatures.found.color
 
 function Globe({
   guesses,
@@ -41,8 +41,9 @@ function Globe({
   const [zoom, setZoom] = useState(1)
   const [blinkingCountryId, setBlinkingCountryId] = useState<string | null>(null)
   const blinkStopTimer = useRef<number | null>(null)
-  const guessedIds = useRef(new Set<string>())
-  guessedIds.current = new Set(guesses.map((g) => g.country.id))
+  const blinkableIds = useRef(new Set<string>())
+  blinkableIds.current = new Set(guesses.map((g) => g.country.id))
+  if (answerReveal) blinkableIds.current.add(answerReveal.country.id)
   const rotationRef = useRef(rotation)
   rotationRef.current = rotation
   const flightFrame = useRef<number | null>(null)
@@ -121,8 +122,7 @@ function Globe({
         else {
           flightFrame.current = null
           // Begin the cue only after the final camera frame has been reached.
-          // Only actual guesses blink; a give-up reveal is not a guessed location.
-          if (guessedIds.current.has(focus.countryId) && !prefersReducedMotion()) {
+          if (blinkableIds.current.has(focus.countryId) && !prefersReducedMotion()) {
             setBlinkingCountryId(focus.countryId)
             blinkStopTimer.current = window.setTimeout(() => {
               setBlinkingCountryId(null)
@@ -319,12 +319,10 @@ function Globe({
                       data-capital={mode === 'capitals' ? g.country.id : undefined}
                       data-revealed={g.revealed || undefined}
                       className={
-                        g.country.id === blinkingCountryId && !g.revealed
-                          ? 'guess-marker-blink'
-                          : undefined
+                        g.country.id === blinkingCountryId ? 'guess-marker-blink' : undefined
                       }
                       style={
-                        g.country.id === blinkingCountryId && !g.revealed
+                        g.country.id === blinkingCountryId
                           ? {
                               animationDuration: `${GUESS_BLINK_PERIOD_MS}ms`,
                               animationIterationCount: GUESS_BLINK_CYCLES,

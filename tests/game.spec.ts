@@ -36,6 +36,23 @@ async function guess(page: Page, query: string, name: string) {
   await page.getByRole('button', { name: 'Make a guess' }).click()
 }
 
+async function expectGreenAnswerBlink(page: Page, hasMarker = false) {
+  const path = page.locator('path[data-country="250"]')
+  await expect(path).not.toHaveClass(/guess-country-blink/)
+  await expect(path).toHaveClass(/guess-country-blink/)
+  await expect(path).toHaveAttribute('fill', '#28755b')
+  await expect(path).toHaveCSS('--guess-heat-color', '#28755b')
+  const arrivedPath = await path.getAttribute('d')
+  await page.waitForTimeout(180)
+  expect(await path.getAttribute('d')).toBe(arrivedPath)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  if (hasMarker) {
+    const marker = page.locator('circle[data-country="250"]')
+    await expect(marker).toHaveClass('guess-marker-blink')
+    await expect(marker).toHaveAttribute('fill', '#28755b')
+  }
+}
+
 test('complete journey: input, distance, duplicates, persistence, win and replay', async ({
   page,
 }) => {
@@ -65,6 +82,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
     await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.round.v1')!).answer),
   ).toBe('FRA')
   await guess(page, 'France', 'France')
+  await expectGreenAnswerBlink(page)
   await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible({
     timeout: 8000,
   })
@@ -394,6 +412,7 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
   await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
   await guess(page, 'Paris', 'Paris')
+  await expectGreenAnswerBlink(page, true)
   await expect(page.getByRole('dialog', { name: 'You found the mystery capital' })).toBeVisible({
     timeout: 8000,
   })
@@ -431,13 +450,17 @@ for (const mode of ['countries', 'capitals'] as const) {
     )
     await expect(page.locator('[data-revealed="true"]')).toHaveCount(0)
     await button.click()
-    await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible()
+    await expectGreenAnswerBlink(page, true)
+    await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible({
+      timeout: 8000,
+    })
+    await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
     const answer = mode === 'capitals' ? 'Paris' : 'France'
     await expect(page.getByRole('dialog')).toContainText(answer)
     await expect(page.getByRole('dialog')).toContainText('Answer revealed after 1')
     await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-guessed', 'false')
     await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-revealed', 'true')
-    await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#a77332')
+    await expect(page.locator('path[data-country="250"]')).toHaveCSS('fill', 'rgb(40, 117, 91)')
     const key = mode === 'capitals' ? 'somewhere.capitals.v1' : 'somewhere.round.v1'
     const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), key)
     expect(saved).toMatchObject({ revealed: true, guesses: ['JPN'], answer: 'FRA', mode })
