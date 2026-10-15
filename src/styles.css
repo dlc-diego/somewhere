@@ -190,8 +190,7 @@ h1 {
   font-size: 9px;
   white-space: nowrap;
 }
-.live-indicator > span,
-.round-status > span {
+.live-indicator > span {
   width: 5px;
   height: 5px;
   display: inline-block;
@@ -335,40 +334,6 @@ h1 {
   box-shadow: 0 3px 8px #283d3103;
   scroll-margin-top: 15px;
 }
-.search-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 23px;
-  gap: 8px;
-}
-.round-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #85624b;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.3px;
-  font-weight: 600;
-}
-.round-status > span {
-  background: #c59157;
-}
-.round-status.is-won {
-  color: #28755b;
-}
-.round-status.is-won > span {
-  background: #28755b;
-}
-.round-label {
-  color: #5e6a59;
-  font-size: 9px;
-  border: 1px solid #e5e8de;
-  border-radius: 20px;
-  padding: 5px 7px;
-  white-space: nowrap;
-}
 .search-card h2 {
   font-family: var(--serif);
   font-size: 26px;
@@ -460,13 +425,6 @@ h1 {
 .guess-button {
   margin-top: 12px;
   justify-content: space-between;
-}
-.search-hint {
-  text-align: center;
-  font-size: 9px;
-  margin: 13px 0 0;
-  color: #5e6a59;
-  letter-spacing: 0.2px;
 }
 .autocomplete {
   position: absolute;
@@ -700,17 +658,6 @@ h1 {
 }
 .closest-note strong {
   font-weight: 600;
-}
-.game-footnote {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 7px;
-  color: #5e6a59;
-  font-size: 9px;
-  line-height: 1.7;
-  margin: 23px 0 30px;
-  text-align: center;
 }
 .site-footer {
   border-top: 1px solid var(--line);
@@ -1148,9 +1095,6 @@ h1 {
     font-size: 13px;
     min-height: 48px;
   }
-  .search-hint {
-    font-size: 10px;
-  }
   .autocomplete {
     top: 78px;
   }
@@ -1188,14 +1132,6 @@ h1 {
   }
   .empty-history p {
     font-size: 11px;
-  }
-  .game-footnote {
-    font-size: 9px;
-    margin: 24px 10px 25px;
-    align-items: flex-start;
-  }
-  .game-footnote svg {
-    margin-top: 2px;
   }
   .globe-loading {
     min-height: 480px;
@@ -1317,21 +1253,11 @@ h1 {
     padding: 23px 22px 20px;
     border-radius: 13px;
   }
-  .search-card-top {
-    margin-bottom: 20px;
-  }
   .search-card h2 {
     font-size: 25px;
   }
   .card-description {
     font-size: 11px;
-  }
-  .round-status {
-    font-size: 8px;
-    letter-spacing: 1.1px;
-  }
-  .round-label {
-    font-size: 8px;
   }
   .history {
     margin-top: 25px;
@@ -1418,9 +1344,6 @@ h1 {
   }
   .site-footer {
     font-size: 9px;
-  }
-  .game-footnote {
-    font-size: 10px;
   }
 }
 
@@ -1515,7 +1438,7 @@ h1 {
 .give-up-area {
   display: flex;
   justify-content: center;
-  padding: 0 0 26px;
+  padding: 20px 0 0;
 }
 .give-up-button {
   background: none;
@@ -1538,9 +1461,6 @@ h1 {
   .mode-selector button {
     font-size: 12px;
     min-height: 44px;
-  }
-  .give-up-area {
-    padding-bottom: 24px;
   }
   .give-up-button {
     font-size: 12px;
@@ -1574,4 +1494,8 @@ h1 {
     fill-opacity: 0.15;
     stroke-opacity: 0.35;
   }
+}
+
+.app-shell > main {
+  padding-bottom: 24px;
 }

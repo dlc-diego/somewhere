@@ -121,7 +121,7 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await page.getByRole('button', { name: 'How to play' }).click()
+  await page.locator('header').getByRole('button', { name: 'How to play' }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Let’s explore' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
@@ -203,7 +203,7 @@ test('core screens have no automated accessibility violations', async ({ page })
   await check()
   await guess(page, 'Spain', 'Spain')
   await check()
-  await page.getByRole('button', { name: 'How to play' }).click()
+  await page.locator('header').getByRole('button', { name: 'How to play' }).click()
   await check()
 })
 
@@ -421,7 +421,9 @@ for (const mode of ['countries', 'capitals'] as const) {
     const button = page.getByRole('button', { name: 'Give up and reveal answer', exact: true })
     const footer = (await page.locator('footer').boundingBox())!
     const revealButton = (await button.boundingBox())!
-    expect(revealButton.y).toBeGreaterThanOrEqual(footer.y + footer.height)
+    const history = (await page.getByRole('region', { name: 'Your journey' }).boundingBox())!
+    expect(revealButton.y).toBeGreaterThanOrEqual(history.y + history.height)
+    expect(revealButton.y + revealButton.height).toBeLessThanOrEqual(footer.y)
     await guess(
       page,
       mode === 'capitals' ? 'Tokyo' : 'Japan',

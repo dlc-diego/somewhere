@@ -94,7 +94,7 @@ export default function GuessSearch({
           aria-controls={open && matches.length ? `${id}-list` : undefined}
           aria-activedescendant={open && matches[active] ? `${id}-option-${active}` : undefined}
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${id}-error` : `${id}-hint`}
+          aria-describedby={error ? `${id}-error` : undefined}
           placeholder={`Search for a ${item}…`}
           value={query}
           autoComplete="off"
@@ -198,9 +198,6 @@ export default function GuessSearch({
       <button className="primary guess-button" type="submit" disabled={disabled || !query.trim()}>
         Make a guess <ArrowRight size={18} />
       </button>
-      <p className="search-hint" id={`${id}-hint`}>
-        A little intuition. A little geography.
-      </p>
     </form>
   )
 }

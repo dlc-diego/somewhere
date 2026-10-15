@@ -221,13 +221,6 @@ export default function App() {
                 <MapPin size={15} /> Capitals
               </button>
             </div>
-            <div className="search-card-top">
-              <span className={`round-status ${won ? 'is-won' : ''}`}>
-                <span />{' '}
-                {won ? 'Mystery solved' : round.revealed ? 'Answer revealed' : 'The search is on'}
-              </span>
-              <span className="round-label">195 {mode}</span>
-            </div>
             {ended && (
               <>
                 <h2>
@@ -303,28 +296,22 @@ export default function App() {
             )}
           </div>
         </div>
-        <p className="game-footnote">
-          <Globe2 size={14} />{' '}
-          {mode === 'capitals'
-            ? 'Distances are measured between capital cities. Adjacent means their countries share a land border.'
-            : 'Distances are measured between country centers. Every direction is a possibility.'}
-        </p>
+        {!ended && (
+          <div className="give-up-area">
+            <button className="give-up-button" onClick={giveUp}>
+              Give up and reveal answer
+            </button>
+          </div>
+        )}
       </main>
       <footer className="site-footer">
         <span>
           Built for Val <Heart size={12} />
         </span>
         <button className="text-button" onClick={() => setDialog('help')}>
-          A small world, explained <ArrowRight size={13} />
+          How to play <ArrowRight size={13} />
         </button>
       </footer>
-      {!ended && (
-        <div className="give-up-area">
-          <button className="give-up-button" onClick={giveUp}>
-            Give up and reveal answer
-          </button>
-        </div>
-      )}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
@@ -373,7 +360,7 @@ export default function App() {
                 <strong>Find your somewhere</strong>
                 <p>
                   There’s no guess limit. Find the exact country or capital to win, then start a
-                  fresh adventure. Or use “Give up and reveal answer” at the very bottom to end a
+                  fresh adventure. Or use “Give up and reveal answer” below the guesses to end a
                   round and see its answer. Giving up keeps your guesses and is not a win. Your
                   rounds save in this browser.
                 </p>
