@@ -813,11 +813,33 @@ for (const [index, effect] of victoryEffects.entries()) {
       Object.assign(window, { victoryRandom: values })
     }, sequence)
     const answer = index % 3 === 1 ? 'Paris' : 'France'
-    await guess(page, answer, answer)
-    await expect(page.locator('.victory-celebration')).toHaveCount(0)
+    await page.getByRole('combobox').fill(answer)
+    await page
+      .getByRole('option', { name: new RegExp(answer) })
+      .first()
+      .click()
+    const arrival = await page.evaluate(async () => {
+      const path = document.querySelector('path[data-country="250"]')!
+      const before = path.getAttribute('d')
+      const started = performance.now()
+      document.querySelector<HTMLButtonElement>('.guess-button')!.click()
+      while (
+        !document.querySelector('.victory-celebration') &&
+        performance.now() - started < 2000
+      ) {
+        await new Promise(requestAnimationFrame)
+      }
+      return {
+        elapsed: performance.now() - started,
+        mapUnmoved: before === path.getAttribute('d'),
+        blinking: path.classList.contains('guess-country-blink'),
+      }
+    })
+    expect(arrival.elapsed).toBeLessThan(350)
+    expect(arrival.mapUnmoved).toBe(true)
+    expect(arrival.blinking).toBe(false)
     const canvas = page.locator('.victory-celebration')
     await expect(canvas).toHaveAttribute('data-effect', effect, { timeout: 8000 })
-    await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
     await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(canvas).toHaveAttribute('aria-hidden', 'true')
     await expect(canvas).toHaveCSS('pointer-events', 'none')
@@ -920,11 +942,11 @@ test('wins queue in order and each finishes across immediate restarts, new round
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
   await guess(page, 'France', 'France')
-  // Restart before the camera has arrived; that earned celebration must survive.
+  // Restart before the camera has arrived; the effect already playing must survive.
   await page.getByRole('button', { name: 'Explore another round' }).click()
   await page.getByRole('button', { name: 'Capitals', exact: true }).click()
   await guess(page, 'Paris', 'Paris')
-  await page.clock.runFor(1400)
+  await page.clock.runFor(100)
   const canvas = page.locator('.victory-celebration')
   await expect(canvas).toHaveCount(1)
   const first = (await canvas.elementHandle())!
@@ -967,7 +989,7 @@ for (const pause of ['hidden-tab', 'reduced-motion'] as const) {
     await page.clock.install()
     await page.clock.pauseAt(new Date(Date.now() + 1000))
     await guess(page, 'France', 'France')
-    await page.clock.runFor(1600)
+    await page.clock.runFor(300)
     const canvas = page.locator('.victory-celebration')
     await expect(canvas).toHaveCount(1)
     const original = (await canvas.elementHandle())!
