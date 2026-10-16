@@ -9,11 +9,9 @@ import {
   Heart,
   MapPin,
   RotateCcw,
-  Trophy,
 } from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
 import FlagChallenge from './components/FlagChallenge'
-import FlagImage from './components/FlagImage'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
 import VictoryCelebration from './components/VictoryCelebration'
@@ -39,15 +37,10 @@ import {
   type Location,
 } from './lib/countries'
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
-import {
-  GLOBE_FOCUS_DELAY_MS,
-  GLOBE_FOCUS_DURATION_MS,
-  GUESS_BLINK_DURATION_MS,
-  prefersReducedMotion,
-} from './lib/motion'
+import { prefersReducedMotion } from './lib/motion'
 
 const Globe = lazy(() => import('./components/Globe'))
-type DialogType = 'help' | 'restart' | 'result' | null
+type DialogType = 'help' | 'restart' | null
 
 export default function App() {
   const [initial] = useState(loadRound)
@@ -61,10 +54,11 @@ export default function App() {
   } | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
-  const [resultPending, setResultPending] = useState(false)
   const [pickCelebration] = useState(() => createCelebrationPicker())
   const [celebration, setCelebration] = useState<Celebration | null>(null)
   const finishCelebration = useCallback(() => setCelebration(null), [])
+  const pendingVictory = useRef<number | null>(null)
+  const focusSequence = useRef(0)
   const globePanel = useRef<HTMLElement>(null)
   const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
   const guesses = guessDetails(round)
@@ -98,46 +92,36 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [focus])
 
-  useEffect(() => {
-    if (!resultPending) return
-    // Keep the result dialog from covering the answer's arrival cue.
-    const timer = window.setTimeout(
-      () => {
-        setDialog('result')
-        setResultPending(false)
-      },
-      prefersReducedMotion()
-        ? 0
-        : GLOBE_FOCUS_DELAY_MS + GLOBE_FOCUS_DURATION_MS + GUESS_BLINK_DURATION_MS + 100,
-    )
-    return () => window.clearTimeout(timer)
-  }, [resultPending])
-
-  const focusCountry = useCallback(
-    (country: Country, location: Location = country) =>
-      setFocus((f) => ({ countryId: country.id, location, sequence: (f?.sequence || 0) + 1 })),
-    [],
+  const focusCountry = useCallback((country: Country, location: Location = country) => {
+    const sequence = ++focusSequence.current
+    setFocus({ countryId: country.id, location, sequence })
+    return sequence
+  }, [])
+  const onFocusArrived = useCallback(
+    (sequence: number) => {
+      if (pendingVictory.current !== sequence) return
+      pendingVictory.current = null
+      if (!prefersReducedMotion()) setCelebration(pickCelebration())
+    },
+    [pickCelebration],
   )
   function submit(country: Country) {
     const result = addGuess(round, country.id)
     if (result.error) return result.error
     setRound(result.round)
     const latest = guessDetails(result.round).at(-1)!
-    focusCountry(country, latest.location)
+    const sequence = focusCountry(country, latest.location)
+    pendingVictory.current = hasWon(result.round) ? sequence : null
     setAnnouncement(
       `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
-    if (hasWon(result.round)) {
-      setCelebration(prefersReducedMotion() ? null : pickCelebration())
-      setResultPending(true)
-    }
   }
   function restart() {
     setRound(newRound(round.answer, mode))
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    setResultPending(false)
+    pendingVictory.current = null
     setCelebration(null)
     setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
@@ -155,7 +139,7 @@ export default function App() {
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    setResultPending(false)
+    pendingVictory.current = null
     setCelebration(null)
     setAnnouncement(`Now guessing ${nextMode}. Each mode keeps its own round.`)
   }
@@ -163,7 +147,6 @@ export default function App() {
     if (ended) return
     setRound(revealAnswer(round))
     focusCountry(answerCountry, answerLocation)
-    setResultPending(true)
     setAnnouncement(
       `Answer revealed: ${answerLocation.name}${mode === 'capitals' ? `, ${answerCountry.name}` : ''}. Round complete.`,
     )
@@ -274,8 +257,9 @@ export default function App() {
                 <button className="primary" onClick={restart}>
                   Explore another round <ArrowRight size={18} />
                 </button>
-                <button className="text-button" onClick={() => setDialog('result')}>
-                  {won ? <Trophy size={15} /> : <Globe2 size={15} />} See your discovery
+                <button className="text-button" onClick={share}>
+                  {copied ? <Check size={15} /> : <Heart size={15} />}
+                  {copied ? 'Result copied' : won ? 'Copy your discovery' : 'Copy your result'}
                 </button>
               </div>
             ) : (
@@ -300,6 +284,7 @@ export default function App() {
               <Globe
                 guesses={guesses}
                 focus={focus}
+                onFocusArrived={onFocusArrived}
                 mode={mode}
                 answerReveal={
                   round.revealed ? { country: answerCountry, location: answerLocation } : null
@@ -476,48 +461,8 @@ export default function App() {
           </button>
         </Dialog>
       )}
-      {dialog === 'result' && (
-        <Dialog
-          title={won ? `You found the mystery ${item}` : 'Answer revealed'}
-          onClose={() => {
-            setDialog(null)
-            setCelebration(null)
-          }}
-          className="win-dialog"
-        >
-          {won && celebration && (
-            <VictoryCelebration effect={celebration} onComplete={finishCelebration} />
-          )}
-          <span className="victory-symbol">
-            {won ? <Trophy size={32} strokeWidth={1.5} /> : <Globe2 size={32} strokeWidth={1.5} />}
-          </span>
-          <p className="eyebrow">{won ? 'Oh, there you are' : 'A little discovery'}</p>
-          <h2>
-            {won ? 'You found your' : 'Here’s your'}
-            <br />
-            <em>somewhere.</em>
-          </h2>
-          <span className="victory-country">
-            <FlagImage country={answerCountry} className="victory-flag" />
-            {answerLocation.name}
-          </span>
-          {mode === 'capitals' && <p className="answer-country">{answerCountry.name}</p>}
-          <p className="dialog-description">
-            {won ? 'One mystery.' : 'Answer revealed after'} {guesses.length}{' '}
-            {guesses.length === 1 ? 'brilliant guess' : 'curious guesses'}.<br />A whole world well
-            explored.{!won && ' This round is complete. Try a fresh one whenever you’re ready.'}
-          </p>
-          {mode === 'flags' && round.hintUsed && (
-            <p className="answer-country">Continent hint used</p>
-          )}
-          <button className="primary" onClick={restart}>
-            Let’s go somewhere new <ArrowRight size={17} />
-          </button>
-          <button className="secondary" onClick={share}>
-            {copied ? <Check size={16} /> : <Heart size={16} />}
-            {copied ? 'Result copied' : won ? 'Copy your discovery' : 'Copy your result'}
-          </button>
-        </Dialog>
+      {won && celebration && (
+        <VictoryCelebration effect={celebration} onComplete={finishCelebration} />
       )}
     </div>
   )

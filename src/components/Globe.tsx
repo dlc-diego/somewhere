@@ -38,11 +38,13 @@ function Globe({
   focus,
   mode,
   answerReveal,
+  onFocusArrived,
 }: {
   guesses: Guess[]
   focus: Focus
   mode: GameMode
   answerReveal: RevealedLocation | null
+  onFocusArrived: (sequence: number) => void
 }) {
   const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
   const [error, setError] = useState(false)
@@ -118,6 +120,7 @@ function Globe({
     if (prefersReducedMotion()) {
       setRotation(target)
       setZoom(targetZoom)
+      onFocusArrived(focus.sequence)
       return
     }
     flightDelay.current = window.setTimeout(() => {
@@ -145,12 +148,13 @@ function Globe({
               blinkStopTimer.current = null
             }, GUESS_BLINK_DURATION_MS)
           }
+          onFocusArrived(focus.sequence)
         }
       }
       flightFrame.current = requestAnimationFrame(frame)
     }, GLOBE_FOCUS_DELAY_MS)
     return cancelMotion
-  }, [focus, cancelMotion])
+  }, [focus, cancelMotion, onFocusArrived])
 
   const projection = useMemo(
     () =>

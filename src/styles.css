@@ -799,35 +799,6 @@ h1 {
   margin-top: 10px;
   font-size: 12px;
 }
-.win-dialog {
-  text-align: center;
-}
-.win-dialog .dialog-inner {
-  padding: 40px 35px 30px;
-}
-.victory-symbol {
-  display: grid;
-  place-items: center;
-  background: #f3e5c7;
-  width: 76px;
-  height: 76px;
-  color: #85624b;
-  border-radius: 50%;
-  margin: 3px auto 26px;
-  outline: 1px solid #e8d8b7;
-  outline-offset: 7px;
-}
-.victory-country {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 5px;
-}
-.win-dialog .dialog-description {
-  font-size: 12px;
-}
 .completed-actions {
   display: grid;
   gap: 8px;
@@ -1453,11 +1424,6 @@ h1 {
 .give-up-button:hover {
   background: #f0f1e8;
 }
-.answer-country {
-  color: #5e6a59;
-  margin: 0 0 10px;
-  font-size: 12px;
-}
 @media (max-width: 480px) {
   .mode-selector button {
     font-size: 12px;
@@ -1513,10 +1479,6 @@ h1 {
   height: 120px;
   margin: 12px auto 20px;
   filter: drop-shadow(0 1px 2px #263c3920);
-}
-.victory-flag {
-  width: 40px;
-  height: 30px;
 }
 .flag-error {
   min-height: 152px;

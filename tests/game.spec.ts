@@ -72,6 +72,15 @@ async function expectGreenAnswerBlink(page: Page, hasMarker = false) {
   }
 }
 
+async function expectInlineResult(page: Page, answer: string, count: number) {
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.locator('.search-card')).toContainText(answer)
+  await expect(
+    page.getByRole('region', { name: 'Your journey' }).locator('.history-heading'),
+  ).toContainText(`${count} ${count === 1 ? 'guess' : 'guesses'}`)
+  await expect(page.getByRole('button', { name: 'Explore another round' })).toBeVisible()
+}
+
 test('complete journey: input, distance, duplicates, persistence, win and replay', async ({
   page,
 }) => {
@@ -103,11 +112,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   ).toBe('FRA')
   await guess(page, 'France', 'France')
   await expectGreenAnswerBlink(page)
-  await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible({
-    timeout: 8000,
-  })
-  await expect(page.getByText('2 curious guesses.')).toBeVisible()
-  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await expectInlineResult(page, 'France', 2)
   await expect(page.getByRole('heading', { name: 'You found your somewhere.' })).toBeVisible()
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#28755b')
@@ -289,7 +294,7 @@ test('unavailable browser storage warns but does not prevent gameplay', async ({
   await page.goto('/')
   await expect(page.getByText('Browser storage is unavailable.', { exact: false })).toBeVisible()
   await guess(page, 'Japan', 'Japan')
-  // A randomly selected Japan answer may win; history remains underneath the dialog.
+  // A randomly selected Japan answer may win; the inline history remains available.
   await expect(
     page.getByRole('list', { name: 'Guesses, closest first', includeHidden: true }).locator('li'),
   ).toHaveCount(1)
@@ -492,12 +497,7 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
   await guess(page, 'Paris', 'Paris')
   await expectGreenAnswerBlink(page, true)
-  await expect(page.getByRole('dialog', { name: 'You found the mystery capital' })).toBeVisible({
-    timeout: 8000,
-  })
-  await expect(page.getByRole('dialog')).toContainText('Paris')
-  await expect(page.getByRole('dialog')).toContainText('3 curious guesses')
-  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await expectInlineResult(page, 'Paris', 3)
   await expect(page.getByRole('button', { name: 'Give up and reveal answer' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Explore another round' }).click()
   await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
@@ -530,14 +530,13 @@ for (const mode of ['countries', 'capitals'] as const) {
     await expect(page.locator('[data-revealed="true"]')).toHaveCount(0)
     await button.click()
     await expectGreenAnswerBlink(page, true)
-    await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible({
-      timeout: 8000,
-    })
+    await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(page.locator('.victory-celebration')).toHaveCount(0)
-    await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+    await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0, {
+      timeout: 6500,
+    })
     const answer = mode === 'capitals' ? 'Paris' : 'France'
-    await expect(page.getByRole('dialog')).toContainText(answer)
-    await expect(page.getByRole('dialog')).toContainText('Answer revealed after 1')
+    await expectInlineResult(page, answer, 1)
     await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-guessed', 'false')
     await expect(page.locator('path[data-country="250"]')).toHaveAttribute('data-revealed', 'true')
     await expect(page.locator('path[data-country="250"]')).toHaveCSS('fill', 'rgb(40, 117, 91)')
@@ -548,7 +547,6 @@ for (const mode of ['countries', 'capitals'] as const) {
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze()
     expect(a11y.violations).toEqual([])
-    await page.getByRole('button', { name: 'Close dialog' }).click()
     await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(button).toHaveCount(0)
     await page.reload()
@@ -563,7 +561,7 @@ for (const mode of ['countries', 'capitals'] as const) {
   })
 }
 
-test('giving up without guesses works and mode switching cancels a pending result', async ({
+test('giving up without guesses works and mode switching preserves its inline result', async ({
   page,
 }) => {
   await seed(page)
@@ -709,12 +707,8 @@ test('flags: local images, hidden suggestion flags, persistent hint, independent
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await guess(page, 'France', 'France')
   await expectGreenAnswerBlink(page)
-  await expect(page.getByRole('dialog', { name: 'You found the mystery flag' })).toBeVisible({
-    timeout: 8000,
-  })
-  await expect(page.getByRole('dialog')).toContainText('France')
-  await expect(page.getByRole('dialog')).toContainText('Continent hint used')
-  await expect(page.getByRole('dialog')).toContainText('2 curious guesses')
+  await expectInlineResult(page, 'France', 2)
+  await expect(page.locator('.continent-hint')).toContainText('Europe')
   const saved = await page.evaluate(() => ({
     flags: JSON.parse(localStorage.getItem('somewhere.flags.v1')!),
     countries: JSON.parse(localStorage.getItem('somewhere.round.v1')!),
@@ -728,7 +722,7 @@ test('flags: local images, hidden suggestion flags, persistent hint, independent
   })
   expect(saved.countries.guesses).toEqual(['ESP'])
   expect(saved.capitals.guesses).toEqual(['JPN'])
-  await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+  await page.getByRole('button', { name: 'Explore another round' }).click()
   await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).not.toHaveAttribute(
     'src',
     /\/flags\/FRA\.svg$/,
@@ -767,9 +761,9 @@ test('flags: hint-free win, hint-only restart protection and giving up without a
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await guess(page, 'France', 'France')
-  await expect(page.getByRole('dialog', { name: 'You found the mystery flag' })).toBeVisible()
-  await expect(page.getByRole('dialog')).not.toContainText('Continent hint used')
-  await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+  await expectInlineResult(page, 'France', 1)
+  await expect(page.locator('.continent-hint')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Explore another round' }).click()
   await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
   const hint = await page.locator('.continent-hint').textContent()
   await page.getByRole('button', { name: 'New round' }).click()
@@ -777,12 +771,13 @@ test('flags: hint-free win, hint-only restart protection and giving up without a
   await page.getByRole('button', { name: 'Keep exploring this round' }).click()
   await expect(page.locator('.continent-hint')).toHaveText(hint!)
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
-  await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible()
-  await expect(page.getByRole('dialog')).toContainText('Answer revealed after 0')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(
+    page.getByRole('region', { name: 'Your journey' }).locator('.history-heading'),
+  ).toContainText('0 guesses')
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.flags.v1')!))
   expect(saved).toMatchObject({ mode: 'flags', revealed: true, hintUsed: true, guesses: [] })
   await expect(page.locator('[data-revealed="true"]').first()).toHaveAttribute('fill', '#28755b')
-  await page.getByRole('button', { name: 'Close dialog' }).click()
   await page.reload()
   await expect(page.getByRole('combobox')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toHaveCount(0)
@@ -822,6 +817,8 @@ for (const [index, effect] of victoryEffects.entries()) {
     await expect(page.locator('.victory-celebration')).toHaveCount(0)
     const canvas = page.locator('.victory-celebration')
     await expect(canvas).toHaveAttribute('data-effect', effect, { timeout: 8000 })
+    await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(canvas).toHaveAttribute('aria-hidden', 'true')
     await expect(canvas).toHaveCSS('pointer-events', 'none')
     const viewport = page.viewportSize()!
@@ -830,23 +827,23 @@ for (const [index, effect] of victoryEffects.entries()) {
     expect(box.y).toBeCloseTo(0, 0)
     expect(box.width).toBeCloseTo(viewport.width, 0)
     expect(box.height).toBeCloseTo(viewport.height, 0)
-    // Check actual drawing across the viewport, including beyond the result card.
+    // Check actual drawing across the viewport, including beyond the globe.
     await expect
       .poll(() =>
         canvas.evaluate((node) => {
           const el = node as HTMLCanvasElement
           const data = el.getContext('2d')!.getImageData(0, 0, el.width, el.height).data
-          const dialog = el.closest('dialog')!.getBoundingClientRect()
+          const globe = document.querySelector('.globe-viewport')!.getBoundingClientRect()
           const ratio = el.width / innerWidth
           let outside = 0
           for (let y = 0; y < el.height; y += 8) {
             for (let x = 0; x < el.width; x += 8) {
               if (
                 data[(y * el.width + x) * 4 + 3] > 10 &&
-                (x / ratio < dialog.left ||
-                  x / ratio > dialog.right ||
-                  y / ratio < dialog.top ||
-                  y / ratio > dialog.bottom)
+                (x / ratio < globe.left ||
+                  x / ratio > globe.right ||
+                  y / ratio < globe.top ||
+                  y / ratio > globe.bottom)
               )
                 outside++
             }
@@ -857,21 +854,31 @@ for (const [index, effect] of victoryEffects.entries()) {
       .toBeGreaterThan(0)
     if (index === 0) {
       await expect(canvas).toHaveCount(0, { timeout: 6500 })
-      await expect(page.getByRole('dialog')).toBeVisible()
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await page
+        .getByRole('list', { name: 'Guesses, closest first' })
+        .getByRole('button')
+        .first()
+        .click()
+      await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
+      await expect(canvas).toHaveCount(0)
     }
     if (index === 3) {
       await page.emulateMedia({ reducedMotion: 'reduce' })
       await expect(canvas).toHaveCount(0)
     }
     if (index === 1) {
-      await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+      await page.getByRole('button', { name: 'Explore another round' }).click()
       await expect(canvas).toHaveCount(0)
       await expect(page.getByRole('combobox')).toBeVisible()
     } else {
-      // Normal clicks must work while the overlay is still painting.
-      await page.getByRole('button', { name: 'Close dialog' }).click()
-      await expect(canvas).toHaveCount(0)
-      await page.getByRole('button', { name: 'See your discovery' }).click()
+      // Mode-switch clicks must work while the overlay is still painting.
+      await page
+        .getByRole('button', {
+          name: index % 3 === 0 ? 'Capitals' : 'Countries',
+          exact: true,
+        })
+        .click()
       await expect(canvas).toHaveCount(0)
       await page.reload()
       await expect(canvas).toHaveCount(0)
@@ -887,9 +894,8 @@ test('victory effects respect reduced motion and cancel when the mode changes du
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await guess(page, 'France', 'France')
-  await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible()
+  await expectInlineResult(page, 'France', 1)
   await expect(page.locator('.victory-celebration')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Close dialog' }).click()
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.getByRole('button', { name: 'Capitals', exact: true }).click()
   await page.clock.install()
