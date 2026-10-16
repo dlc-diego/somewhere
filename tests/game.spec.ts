@@ -149,7 +149,9 @@ test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({
   const before = await page.locator('[data-country="250"]').first().getAttribute('d')
   await globe.focus()
   await globe.press('ArrowRight')
-  expect(await page.locator('[data-country="250"]').first().getAttribute('d')).not.toBe(before)
+  await expect
+    .poll(() => page.locator('[data-country="250"]').first().getAttribute('d'))
+    .not.toBe(before)
   await page.getByRole('button', { name: 'New round' }).click()
   await page.getByRole('button', { name: 'Start a fresh round' }).click()
   await expect(
@@ -177,7 +179,7 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
   await page.mouse.down()
   await page.mouse.move(box.x + box.width / 2 + 65, box.y + box.height / 2, { steps: 8 })
   await page.mouse.up()
-  expect(await france.getAttribute('d')).not.toBe(before)
+  await expect.poll(() => france.getAttribute('d')).not.toBe(before)
   await expect(page.getByRole('combobox')).toHaveValue('')
   await page.getByRole('button', { name: 'Reset globe view' }).click()
   // D3 projects Egypt's interior to a stable visible point in the initial view.
@@ -395,16 +397,19 @@ for (const mode of ['countries', 'capitals'] as const) {
     await expect(ocean).toHaveAttribute('r', String(265 * 32))
     await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
     await page.getByRole('button', { name: 'Zoom out', exact: true }).click()
-    expect(Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
+    await expect.poll(async () => Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
     const globe = page.getByRole('group', { name: /Interactive globe/ })
     await globe.press('+')
     await expect(ocean).toHaveAttribute('r', String(265 * 32))
     await globe.press('ArrowRight')
+    await expect
+      .poll(async () => Number(await page.locator('circle[data-country="702"]').getAttribute('cx')))
+      .toBeGreaterThan(300)
     const markerX = Number(await page.locator('circle[data-country="702"]').getAttribute('cx'))
     expect(markerX).toBeGreaterThan(300)
     expect(markerX).toBeLessThan(420)
     await globe.press('-')
-    expect(Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
+    await expect.poll(async () => Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
 
     await guess(
       page,
@@ -1042,3 +1047,21 @@ for (const pause of ['hidden-tab', 'reduced-motion'] as const) {
     await expect(canvas).toHaveCount(0)
   })
 }
+
+test('globe stays playable when its background renderer cannot load', async ({ page }) => {
+  await seed(page)
+  let workerBlocked = false
+  await page.route('**/globe.worker-*.js', (route) => {
+    workerBlocked = true
+    return route.abort()
+  })
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  expect(workerBlocked).toBe(true)
+  await guess(page, 'France', 'France')
+  await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
+  await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#28755b')
+  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await expect(page.locator('circle[fill="url(#ocean)"]')).toHaveAttribute('r', '265')
+  await expect(page.locator('.guess-country-blink')).toHaveCount(0)
+})

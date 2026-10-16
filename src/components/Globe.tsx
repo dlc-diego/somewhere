@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { geoDistance, geoGraticule10, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo'
+import { geoDistance, geoInterpolate, geoOrthographic } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
@@ -12,6 +12,7 @@ import {
   type Location,
 } from '../lib/countries'
 import { temperatures } from '../lib/geo'
+import { useGlobeFrame } from '../lib/useGlobeFrame'
 import type { Guess } from '../lib/game'
 import {
   GLOBE_FOCUS_DELAY_MS,
@@ -26,7 +27,6 @@ import {
   prefersReducedMotion,
 } from '../lib/motion'
 
-const graticule = geoGraticule10()
 const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
 type Focus = { countryId: string; location: Location; sequence: number } | null
@@ -50,6 +50,12 @@ function Globe({
   const [rotation, setRotation] = useState(initialRotation)
   const [zoom, setZoom] = useState(1)
   const [blinkingCountryId, setBlinkingCountryId] = useState<string | null>(null)
+  const pendingBlink = useRef<{
+    sequence: number
+    countryId: string
+    rotation: [number, number, number]
+    zoom: number
+  } | null>(null)
   const blinkStopTimer = useRef<number | null>(null)
   const blinkableIds = useRef(new Set<string>())
   blinkableIds.current = new Set(guesses.map((g) => g.country.id))
@@ -64,6 +70,7 @@ function Globe({
     if (flightFrame.current !== null) cancelAnimationFrame(flightFrame.current)
     if (flightDelay.current !== null) window.clearTimeout(flightDelay.current)
     if (blinkStopTimer.current !== null) window.clearTimeout(blinkStopTimer.current)
+    pendingBlink.current = null
     flightFrame.current = null
     flightDelay.current = null
     blinkStopTimer.current = null
@@ -137,13 +144,12 @@ function Globe({
         if (progress < 1) flightFrame.current = requestAnimationFrame(frame)
         else {
           flightFrame.current = null
-          // Begin the cue only after the final camera frame has been reached.
-          if (blinkableIds.current.has(focus.countryId) && !prefersReducedMotion()) {
-            setBlinkingCountryId(focus.countryId)
-            blinkStopTimer.current = window.setTimeout(() => {
-              setBlinkingCountryId(null)
-              blinkStopTimer.current = null
-            }, GUESS_BLINK_DURATION_MS)
+          // The worker must finish displaying this camera before the cue begins.
+          pendingBlink.current = {
+            sequence: focus.sequence,
+            countryId: focus.countryId,
+            rotation: target,
+            zoom: targetZoom,
           }
         }
       }
@@ -152,31 +158,53 @@ function Globe({
     return cancelMotion
   }, [focus, cancelMotion])
 
+  const camera = useMemo(() => ({ rotation, zoom }), [rotation, zoom])
+  const rendered = useGlobeFrame(world, camera)
+  const renderedRotation = rendered?.rotation ?? rotation
+  const renderedZoom = rendered?.zoom ?? zoom
+
+  useEffect(() => {
+    const pending = pendingBlink.current
+    if (!pending || !rendered || pending.sequence !== focus?.sequence) return
+    if (
+      rendered.zoom !== pending.zoom ||
+      rendered.rotation.some((value, i) => value !== pending.rotation[i])
+    )
+      return
+    pendingBlink.current = null
+    if (!blinkableIds.current.has(pending.countryId) || prefersReducedMotion()) return
+    setBlinkingCountryId(pending.countryId)
+    blinkStopTimer.current = window.setTimeout(() => {
+      setBlinkingCountryId(null)
+      blinkStopTimer.current = null
+    }, GUESS_BLINK_DURATION_MS)
+  }, [rendered, focus])
+
   const projection = useMemo(
     () =>
       geoOrthographic()
         .translate([300, 300])
-        .scale(265 * zoom)
-        .rotate(rotation)
-        .clipAngle(90)
-        .clipExtent([
-          [0, 0],
-          [600, 600],
-        ])
-        .precision(0.6),
-    [rotation, zoom],
+        .scale(265 * renderedZoom)
+        .rotate(renderedRotation),
+    [renderedRotation, renderedZoom],
   )
-  const path = useMemo(() => geoPath(projection), [projection])
-  const mapPaths = useMemo(
+  const features = useMemo(
     () =>
       world?.features.map((f, index) => ({
         key: `${f.id ?? 'unmapped'}-${index}`,
         country: countryByNumeric.get(String(f.id).padStart(3, '0')),
-        d: path(f) || '',
-      })),
-    [world, path],
+      })) ?? [],
+    [world],
   )
-  const center: [number, number] = [-rotation[0], -rotation[1]]
+  const mapPaths = useMemo(
+    () =>
+      features.map((f, i) => ({
+        ...f,
+        d: rendered?.paths[i] ?? '',
+      })),
+    [features, rendered],
+  )
+  const center: [number, number] = [-renderedRotation[0], -renderedRotation[1]]
 
   function changeZoom(factor: number) {
     cancelMotion()
@@ -201,7 +229,7 @@ function Globe({
           <span /> Free play
         </span>
       </div>
-      <div className="globe-viewport" data-testid="globe" data-ready={Boolean(world)}>
+      <div className="globe-viewport" data-testid="globe" data-ready={Boolean(world && rendered)}>
         <span className="compass-n" aria-hidden="true">
           N
         </span>
@@ -281,14 +309,14 @@ function Globe({
                 <stop offset="1" stopColor="#001927" stopOpacity="0.42" />
               </radialGradient>
               <clipPath id="globe-clip">
-                <circle cx="300" cy="300" r={265 * zoom} />
+                <circle cx="300" cy="300" r={265 * renderedZoom} />
               </clipPath>
             </defs>
             <circle className="orbit" cx="300" cy="300" r="285" />
-            <circle cx="300" cy="300" r={265 * zoom} fill="url(#ocean)" />
+            <circle cx="300" cy="300" r={265 * renderedZoom} fill="url(#ocean)" />
             <g clipPath="url(#globe-clip)">
               <path
-                d={path(graticule) || ''}
+                d={rendered?.graticule ?? ''}
                 fill="none"
                 stroke="#7995a2"
                 strokeOpacity="0.15"
@@ -327,7 +355,13 @@ function Globe({
                   <title>{f.country?.name || 'Territory (not in the playable list)'}</title>
                 </path>
               ))}
-              <circle cx="300" cy="300" r={265 * zoom} fill="url(#shade)" pointerEvents="none" />
+              <circle
+                cx="300"
+                cy="300"
+                r={265 * renderedZoom}
+                fill="url(#shade)"
+                pointerEvents="none"
+              />
               {markers
                 .filter((g) => geoDistance([g.location.lng, g.location.lat], center) < Math.PI / 2)
                 .map((g) => {
@@ -367,7 +401,7 @@ function Globe({
             </g>
           </svg>
         </div>
-        {!world && (
+        {(!world || !rendered) && (
           <div className="map-status" role="status">
             {error ? (
               <>
