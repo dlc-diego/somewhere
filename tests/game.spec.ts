@@ -863,13 +863,9 @@ for (const [index, effect] of victoryEffects.entries()) {
       await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
       await expect(canvas).toHaveCount(0)
     }
-    if (index === 3) {
-      await page.emulateMedia({ reducedMotion: 'reduce' })
-      await expect(canvas).toHaveCount(0)
-    }
+    const originalCanvas = index === 0 ? null : await canvas.elementHandle()
     if (index === 1) {
       await page.getByRole('button', { name: 'Explore another round' }).click()
-      await expect(canvas).toHaveCount(0)
       await expect(page.getByRole('combobox')).toBeVisible()
     } else {
       // Mode-switch clicks must work while the overlay is still painting.
@@ -879,14 +875,18 @@ for (const [index, effect] of victoryEffects.entries()) {
           exact: true,
         })
         .click()
-      await expect(canvas).toHaveCount(0)
-      await page.reload()
-      await expect(canvas).toHaveCount(0)
     }
+    if (index !== 0) {
+      await expect(canvas).toHaveAttribute('data-effect', effect)
+      expect(await originalCanvas!.evaluate((node) => node.isConnected)).toBe(true)
+      await expect(canvas).toHaveCount(0, { timeout: 6500 })
+    }
+    await page.reload()
+    await expect(canvas).toHaveCount(0)
   })
 }
 
-test('victory effects respect reduced motion and cancel when the mode changes during arrival', async ({
+test('reduced-motion wins stay static; later wins survive mode changes during arrival', async ({
   page,
 }) => {
   await seed(page)
@@ -901,7 +901,118 @@ test('victory effects respect reduced motion and cancel when the mode changes du
   await page.clock.install()
   await guess(page, 'Paris', 'Paris')
   await page.getByRole('button', { name: 'Flags', exact: true }).click()
-  await page.clock.fastForward(6500)
+  await page.clock.runFor(1400)
   await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.locator('.victory-celebration')).toHaveCount(1)
+  await page.clock.runFor(5000)
   await expect(page.locator('.victory-celebration')).toHaveCount(0)
 })
+
+test('wins queue in order and each finishes across immediate restarts, new rounds and modes', async ({
+  page,
+}) => {
+  await seed(page)
+  await seedCapitals(page)
+  await seedFlags(page)
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  await page.clock.install()
+  await page.clock.pauseAt(new Date(Date.now() + 1000))
+  await guess(page, 'France', 'France')
+  // Restart before the camera has arrived; that earned celebration must survive.
+  await page.getByRole('button', { name: 'Explore another round' }).click()
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await guess(page, 'Paris', 'Paris')
+  await page.clock.runFor(1400)
+  const canvas = page.locator('.victory-celebration')
+  await expect(canvas).toHaveCount(1)
+  const first = (await canvas.elementHandle())!
+  const firstEffect = await canvas.getAttribute('data-effect')
+  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page.getByRole('button', { name: 'New round' }).click()
+  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await guess(page, 'France', 'France')
+  await page.clock.fastForward(4300)
+  expect(await first.evaluate((node) => node.isConnected)).toBe(true)
+  await page.clock.runFor(550)
+  expect(await first.evaluate((node) => node.isConnected)).toBe(false)
+  await expect(canvas).toHaveCount(1)
+  await expect(canvas).not.toHaveAttribute('data-effect', firstEffect!)
+  const second = (await canvas.elementHandle())!
+  const secondEffect = await canvas.getAttribute('data-effect')
+  await page.clock.fastForward(4100)
+  expect(await second.evaluate((node) => node.isConnected)).toBe(true)
+  await page.clock.runFor(800)
+  expect(await second.evaluate((node) => node.isConnected)).toBe(false)
+  await expect(canvas).toHaveCount(1)
+  await expect(canvas).not.toHaveAttribute('data-effect', secondEffect!)
+  const third = (await canvas.elementHandle())!
+  await page.clock.fastForward(4100)
+  expect(await third.evaluate((node) => node.isConnected)).toBe(true)
+  await page.clock.runFor(800)
+  await expect(canvas).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Explore another round' })).toBeEnabled()
+  await page.clock.fastForward(10000)
+  await expect(canvas).toHaveCount(0)
+})
+
+for (const pause of ['hidden-tab', 'reduced-motion'] as const) {
+  test(`a winning effect pauses for ${pause} and resumes for its remaining duration`, async ({
+    page,
+  }) => {
+    await seed(page)
+    await page.goto('/')
+    await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+    await page.clock.install()
+    await page.clock.pauseAt(new Date(Date.now() + 1000))
+    await guess(page, 'France', 'France')
+    await page.clock.runFor(1600)
+    const canvas = page.locator('.victory-celebration')
+    await expect(canvas).toHaveCount(1)
+    const original = (await canvas.elementHandle())!
+    async function changeMotion(value: 'reduce' | 'no-preference') {
+      // Chromium dispatches the media-query event after updating CSS. Wait for
+      // that native event before advancing the paused test clock.
+      await page.evaluate(() => {
+        Object.assign(window, {
+          motionChanged: new Promise<void>((resolve) => {
+            matchMedia('(prefers-reduced-motion: reduce)').addEventListener(
+              'change',
+              () => resolve(),
+              { once: true },
+            )
+          }),
+        })
+      })
+      await page.emulateMedia({ reducedMotion: value })
+      await page.evaluate(() => (window as Window & { motionChanged: Promise<void> }).motionChanged)
+    }
+    if (pause === 'hidden-tab') {
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'hidden', { configurable: true, value: true })
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+    } else {
+      await changeMotion('reduce')
+      await page.clock.runFor(32)
+      await expect(canvas).toBeHidden()
+    }
+    await page.clock.fastForward(10000)
+    expect(await original.evaluate((node) => node.isConnected)).toBe(true)
+    if (pause === 'hidden-tab') {
+      await page.evaluate(() => {
+        Reflect.deleteProperty(document, 'hidden')
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+    } else {
+      await changeMotion('no-preference')
+    }
+    await page.clock.runFor(32)
+    await expect(canvas).toBeVisible()
+    await page.clock.fastForward(4100)
+    expect(await original.evaluate((node) => node.isConnected)).toBe(true)
+    await page.clock.runFor(800)
+    await expect(canvas).toHaveCount(0)
+  })
+}

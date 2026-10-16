@@ -37,10 +37,11 @@ import {
   type Location,
 } from './lib/countries'
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
-import { prefersReducedMotion } from './lib/motion'
+import { GLOBE_FOCUS_DELAY_MS, GLOBE_FOCUS_DURATION_MS, prefersReducedMotion } from './lib/motion'
 
 const Globe = lazy(() => import('./components/Globe'))
 type DialogType = 'help' | 'restart' | null
+type QueuedCelebration = { sequence: number; effect: Celebration; ready: boolean }
 
 export default function App() {
   const [initial] = useState(loadRound)
@@ -55,9 +56,10 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
   const [pickCelebration] = useState(() => createCelebrationPicker())
-  const [celebration, setCelebration] = useState<Celebration | null>(null)
-  const finishCelebration = useCallback(() => setCelebration(null), [])
-  const pendingVictory = useRef<number | null>(null)
+  const [celebrations, setCelebrations] = useState<QueuedCelebration[]>([])
+  const celebration = celebrations[0]
+  const finishCelebration = useCallback(() => setCelebrations((queue) => queue.slice(1)), [])
+  const pendingVictoryTimers = useRef(new Map<number, number>())
   const focusSequence = useRef(0)
   const globePanel = useRef<HTMLElement>(null)
   const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
@@ -69,6 +71,14 @@ export default function App() {
   const answerCountry = countryById.get(round.answer)!
   const answerLocation = locationFor(answerCountry, mode)
   const closest = guesses.length ? Math.min(...guesses.map((g) => g.distance)) : null
+
+  useEffect(() => {
+    const timers = pendingVictoryTimers.current
+    return () => {
+      for (const timer of timers.values()) window.clearTimeout(timer)
+      timers.clear()
+    }
+  }, [])
 
   useEffect(() => {
     try {
@@ -97,21 +107,34 @@ export default function App() {
     setFocus({ countryId: country.id, location, sequence })
     return sequence
   }, [])
-  const onFocusArrived = useCallback(
-    (sequence: number) => {
-      if (pendingVictory.current !== sequence) return
-      pendingVictory.current = null
-      if (!prefersReducedMotion()) setCelebration(pickCelebration())
-    },
-    [pickCelebration],
-  )
+  const onFocusArrived = useCallback((sequence: number) => {
+    const timer = pendingVictoryTimers.current.get(sequence)
+    if (timer === undefined) return
+    window.clearTimeout(timer)
+    pendingVictoryTimers.current.delete(sequence)
+    setCelebrations((queue) =>
+      queue.map((entry) => (entry.sequence === sequence ? { ...entry, ready: true } : entry)),
+    )
+  }, [])
   function submit(country: Country) {
     const result = addGuess(round, country.id)
     if (result.error) return result.error
     setRound(result.round)
     const latest = guessDetails(result.round).at(-1)!
     const sequence = focusCountry(country, latest.location)
-    pendingVictory.current = hasWon(result.round) ? sequence : null
+    if (hasWon(result.round) && !prefersReducedMotion()) {
+      const effect = pickCelebration()
+      setCelebrations((queue) => [...queue, { sequence, effect, ready: false }])
+      // Arrival starts the cue normally. A fallback preserves the earned celebration
+      // when a new round, mode switch, or manual map control interrupts the flight.
+      pendingVictoryTimers.current.set(
+        sequence,
+        window.setTimeout(
+          () => onFocusArrived(sequence),
+          GLOBE_FOCUS_DELAY_MS + GLOBE_FOCUS_DURATION_MS + 100,
+        ),
+      )
+    }
     setAnnouncement(
       `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
@@ -121,8 +144,6 @@ export default function App() {
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    pendingVictory.current = null
-    setCelebration(null)
     setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
   function requestRestart() {
@@ -139,8 +160,6 @@ export default function App() {
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    pendingVictory.current = null
-    setCelebration(null)
     setAnnouncement(`Now guessing ${nextMode}. Each mode keeps its own round.`)
   }
   function giveUp() {
@@ -461,8 +480,12 @@ export default function App() {
           </button>
         </Dialog>
       )}
-      {won && celebration && (
-        <VictoryCelebration effect={celebration} onComplete={finishCelebration} />
+      {celebration?.ready && (
+        <VictoryCelebration
+          key={celebration.sequence}
+          effect={celebration.effect}
+          onComplete={finishCelebration}
+        />
       )}
     </div>
   )

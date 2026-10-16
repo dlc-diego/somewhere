@@ -182,7 +182,7 @@ export default function VictoryCelebration({
     const node = canvas.current!
     const ctx = node.getContext('2d')
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (!ctx || motion.matches || document.hidden) {
+    if (!ctx) {
       onComplete()
       return
     }
@@ -191,6 +191,8 @@ export default function VictoryCelebration({
     let height = 0
     let frame = 0
     let stopped = false
+    let elapsed = 0
+    let previousFrame: number | null = null
     function resize() {
       width = window.innerWidth
       height = window.innerHeight
@@ -205,32 +207,37 @@ export default function VictoryCelebration({
       cancelAnimationFrame(frame)
       onComplete()
     }
-    function preferenceChanged() {
-      if (motion.matches) stop()
-    }
-    function visibilityChanged() {
-      if (document.hidden) stop()
-    }
     resize()
-    const started = performance.now()
     function tick(now: number) {
-      if (now - started >= CELEBRATION_DURATION_MS) {
+      if (document.hidden || motion.matches) {
+        previousFrame = null
+        return
+      }
+      if (previousFrame !== null) elapsed += now - previousFrame
+      previousFrame = now
+      if (elapsed >= CELEBRATION_DURATION_MS) {
         stop()
         return
       }
-      draw(ctx!, width, height, (now - started) / 1000)
+      draw(ctx!, width, height, elapsed / 1000)
       frame = requestAnimationFrame(tick)
     }
-    frame = requestAnimationFrame(tick)
+    function updatePlayback() {
+      if (stopped) return
+      cancelAnimationFrame(frame)
+      previousFrame = null
+      if (!document.hidden && !motion.matches) frame = requestAnimationFrame(tick)
+    }
+    updatePlayback()
     window.addEventListener('resize', resize)
-    motion.addEventListener('change', preferenceChanged)
-    document.addEventListener('visibilitychange', visibilityChanged)
+    motion.addEventListener('change', updatePlayback)
+    document.addEventListener('visibilitychange', updatePlayback)
     return () => {
       stopped = true
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', resize)
-      motion.removeEventListener('change', preferenceChanged)
-      document.removeEventListener('visibilitychange', visibilityChanged)
+      motion.removeEventListener('change', updatePlayback)
+      document.removeEventListener('visibilitychange', updatePlayback)
     }
   }, [effect, onComplete])
 
