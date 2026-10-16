@@ -986,7 +986,11 @@ for (const pause of ['hidden-tab', 'reduced-motion'] as const) {
         })
       })
       await page.emulateMedia({ reducedMotion: value })
-      await page.evaluate(() => (window as Window & { motionChanged: Promise<void> }).motionChanged)
+      await page.evaluate(() => {
+        const pending = (window as Window & { motionChanged?: Promise<void> }).motionChanged
+        if (!pending) throw new Error('Motion change listener was not registered')
+        return pending
+      })
     }
     if (pause === 'hidden-tab') {
       await page.evaluate(() => {
