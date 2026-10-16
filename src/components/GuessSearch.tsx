@@ -80,12 +80,8 @@ export default function GuessSearch({
       }}
       className="guess-form"
     >
-      <label className="search-label" htmlFor={`${id}-search`}>
-        {mode === 'flags'
-          ? 'Which country does this flag belong to?'
-          : mode === 'capitals'
-            ? 'Which capital do you think it is?'
-            : 'Where do you think it is?'}
+      <label className="sr-only" htmlFor={`${id}-search`}>
+        Search for a {item}
       </label>
       <div className={`search-control ${error ? 'has-error' : ''}`}>
         <Search size={19} aria-hidden="true" />

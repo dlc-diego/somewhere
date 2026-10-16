@@ -181,7 +181,7 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
   await page.mouse.up()
   await expect.poll(() => france.getAttribute('d')).not.toBe(before)
   await expect(page.getByRole('combobox')).toHaveValue('')
-  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
   // D3 projects Egypt's interior to a stable visible point in the initial view.
   const module = await import('d3-geo')
   const point = module.geoOrthographic().translate([300, 300]).scale(265).rotate([-12, -18, 0])([
@@ -312,6 +312,10 @@ test('compact Val layout, animated guess arrival and mobile globe centering', as
   await expect(page.locator('footer')).toContainText('Built for Val')
   await expect(page.getByText('A hunch is a good start.')).toHaveCount(0)
   await expect(page.getByText('Follow your curiosity')).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: /^(Zoom in|Zoom out|Reset globe view)$/ }),
+  ).toHaveCount(0)
+  await expect(page.locator('.search-label, .closest-note')).toHaveCount(0)
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   const search = (await page.getByRole('region', { name: 'Country search' }).boundingBox())!
   const map = (await page.getByRole('region', { name: 'Explore the world' }).boundingBox())!
@@ -363,7 +367,7 @@ test('manual globe controls cancel a pending flight and reduced motion skips it'
   const france = page.locator('[data-country="250"]').first()
   const initial = await france.getAttribute('d')
   await guess(page, 'Japan', 'Japan')
-  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
   // A canceled flight must stay canceled even after its original finish time.
   await page.waitForTimeout(1350)
   await expect(france).toHaveAttribute('d', initial!)
@@ -391,14 +395,12 @@ for (const mode of ['countries', 'capitals'] as const) {
     const smallRadius = Number(await ocean.getAttribute('r'))
     expect(smallRadius).toBeGreaterThan(265 * 8)
 
-    const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true })
-    for (let step = 0; step < 5 && (await zoomIn.isEnabled()); step++) await zoomIn.click()
-    await expect(zoomIn).toBeDisabled()
+    const globe = page.getByRole('group', { name: /Interactive globe/ })
+    for (let step = 0; step < 5; step++) await globe.press('+')
     await expect(ocean).toHaveAttribute('r', String(265 * 32))
     await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
-    await page.getByRole('button', { name: 'Zoom out', exact: true }).click()
+    await globe.press('-')
     await expect.poll(async () => Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
-    const globe = page.getByRole('group', { name: /Interactive globe/ })
     await globe.press('+')
     await expect(ocean).toHaveAttribute('r', String(265 * 32))
     await globe.press('ArrowRight')
@@ -425,7 +427,7 @@ for (const mode of ['countries', 'capitals'] as const) {
     const revealRadius = Number(await ocean.getAttribute('r'))
     expect(revealRadius).toBeGreaterThan(largeRadius)
     expect(revealRadius).toBeLessThan(smallRadius)
-    await page.getByRole('button', { name: 'Reset globe view' }).click()
+    await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
     await expect(ocean).toHaveAttribute('r', '265')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   })
@@ -438,6 +440,8 @@ test('adjacent guesses get the hottest feedback and the closest stays highlighte
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await guess(page, 'Germany', 'Germany')
+  await expect(page.locator('.closest-note')).toHaveCount(0)
+  await expect(page.getByText(/Your closest guess is/)).toHaveCount(0)
   await guess(page, 'Japan', 'Japan')
   await guess(page, 'UK', 'United Kingdom')
   const list = page.getByRole('list', { name: 'Guesses, closest first' })
@@ -650,7 +654,7 @@ test('another guess replaces the blink and manual controls cancel it', async ({ 
   await expect(page.locator('path[data-country="392"]')).not.toHaveClass(/guess-country-blink/)
   await expect(page.locator('path[data-country="276"]')).toHaveClass(/guess-country-blink/)
   await expect(page.locator('path[data-country="276"]')).toHaveAttribute('fill', '#9e2439')
-  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
   await page.waitForTimeout(1500)
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
@@ -1061,7 +1065,7 @@ test('globe stays playable when its background renderer cannot load', async ({ p
   await guess(page, 'France', 'France')
   await expect(page.locator('path[data-country="250"]')).toHaveClass(/guess-country-blink/)
   await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#28755b')
-  await page.getByRole('button', { name: 'Reset globe view' }).click()
+  await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
   await expect(page.locator('circle[fill="url(#ocean)"]')).toHaveAttribute('r', '265')
   await expect(page.locator('.guess-country-blink')).toHaveCount(0)
 })

@@ -3,7 +3,7 @@ import { geoDistance, geoInterpolate, geoOrthographic } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
-import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-react'
+import { LocateFixed, Move, RefreshCw } from 'lucide-react'
 import {
   countryById,
   countryByNumeric,
@@ -419,28 +419,6 @@ function Globe({
             )}
           </div>
         )}
-        <div className="globe-tools">
-          <button
-            className="icon-button"
-            aria-label="Zoom in"
-            disabled={zoom >= MAX_GLOBE_ZOOM}
-            onClick={() => changeZoom(GLOBE_ZOOM_STEP)}
-          >
-            <Plus size={18} />
-          </button>
-          <button
-            className="icon-button"
-            aria-label="Zoom out"
-            disabled={zoom <= MIN_GLOBE_ZOOM}
-            onClick={() => changeZoom(1 / GLOBE_ZOOM_STEP)}
-          >
-            <Minus size={18} />
-          </button>
-          <span />
-          <button className="icon-button" aria-label="Reset globe view" onClick={reset}>
-            <RotateCcw size={17} />
-          </button>
-        </div>
         <span className="globe-coordinate" aria-hidden="true">
           <LocateFixed size={13} /> The next stop is up to you
         </span>

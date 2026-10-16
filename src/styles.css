@@ -13,6 +13,7 @@
   -webkit-font-smoothing: antialiased;
   --muted: #737e76;
   --accent: #bd4a2e;
+  --logo-accent: #e9855e;
   --line: #e4e5db;
   --serif: Georgia, 'Times New Roman', serif;
 }
@@ -20,6 +21,7 @@
   box-sizing: border-box;
 }
 body {
+  isolation: isolate;
   margin: 0;
   min-width: 320px;
 }
@@ -86,7 +88,7 @@ button:hover:not(:disabled) {
   font-weight: 700;
 }
 .brand-icon {
-  background: #e9855e;
+  background: var(--logo-accent);
   color: #fff9eb;
   display: grid;
   place-items: center;
@@ -232,18 +234,6 @@ h1 {
   color: #5e6a59;
   font-weight: 600;
 }
-.globe-tools {
-  position: absolute;
-  right: 2px;
-  bottom: 12%;
-  display: flex;
-  flex-direction: column;
-  background: #fafbf7;
-  border: 1px solid #dce3d5;
-  box-shadow: 0 3px 12px #263c3907;
-  border-radius: 8px;
-  padding: 3px;
-}
 .icon-button {
   display: flex;
   align-items: center;
@@ -253,15 +243,6 @@ h1 {
   background: none;
   border-radius: 5px;
   color: #5d6e61;
-}
-.globe-tools > .icon-button {
-  width: 34px;
-  height: 34px;
-}
-.globe-tools > span {
-  height: 1px;
-  background: #e3e7dc;
-  margin: 2px 5px;
 }
 .globe-coordinate {
   position: absolute;
@@ -350,13 +331,6 @@ h1 {
 }
 .guess-form {
   position: relative;
-}
-.search-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #55644f;
 }
 .search-control {
   display: flex;
@@ -648,19 +622,6 @@ h1 {
 }
 .temperature-found {
   color: #28755b;
-}
-.closest-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: #5e6a59;
-  font-size: 10px;
-  margin-top: 17px;
-  line-height: 1.7;
-}
-.closest-note strong {
-  font-weight: 600;
 }
 .site-footer {
   border-top: 1px solid var(--line);
@@ -1040,9 +1001,6 @@ h1 {
     bottom: 2%;
     left: 10px;
   }
-  .globe-tools {
-    right: 0;
-  }
   .search-card {
     padding: 24px 27px;
   }
@@ -1052,9 +1010,6 @@ h1 {
   .card-description {
     font-size: 12px;
     margin-bottom: 24px;
-  }
-  .search-label {
-    font-size: 11px;
   }
   .search-control {
     height: 52px;
@@ -1184,14 +1139,6 @@ h1 {
   .globe-coordinate {
     display: none;
   }
-  .globe-tools {
-    right: 0;
-    bottom: 5%;
-  }
-  .globe-tools > .icon-button {
-    height: 32px;
-    width: 32px;
-  }
   .globe-caption {
     font-size: 9px;
     margin: 6px -5px 16px;
@@ -1290,10 +1237,6 @@ h1 {
 }
 
 @media (max-width: 480px) {
-  .globe-tools > .icon-button {
-    width: 40px;
-    height: 40px;
-  }
   .legend-stops > span {
     font-size: 10px;
   }
@@ -1525,4 +1468,88 @@ h1 {
 .continent-hint {
   margin: 0;
   flex-wrap: wrap;
+}
+
+.val-heart-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin-left: -5px;
+  background: transparent;
+  border-radius: 50%;
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.val-heart-button .title-heart {
+  transition:
+    fill 200ms ease,
+    color 200ms ease;
+  fill: transparent;
+}
+.val-heart-button.is-beating .title-heart {
+  color: var(--logo-accent);
+  fill: currentColor;
+  filter: drop-shadow(0 0 8px #e9855e55);
+  animation:
+    val-heartbeat 900ms ease-in-out 4,
+    val-heart-tint var(--heart-duration) ease-in-out both;
+}
+.val-heart-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--logo-accent);
+  clip-path: circle(0px at var(--heart-x) var(--heart-y));
+  animation: val-heart-bloom var(--heart-duration) ease-in-out both;
+}
+@keyframes val-heartbeat {
+  0%,
+  30%,
+  60%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.22);
+  }
+  45% {
+    transform: scale(1.13);
+  }
+}
+@keyframes val-heart-tint {
+  0%,
+  25%,
+  100% {
+    color: var(--logo-accent);
+  }
+  50%,
+  70% {
+    color: #fff9eb;
+  }
+}
+@keyframes val-heart-bloom {
+  0%,
+  25% {
+    clip-path: circle(0px at var(--heart-x) var(--heart-y));
+    opacity: 1;
+  }
+  50%,
+  70% {
+    clip-path: circle(var(--heart-radius) at var(--heart-x) var(--heart-y));
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(var(--heart-radius) at var(--heart-x) var(--heart-y));
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .val-heart-backdrop {
+    clip-path: none;
+    opacity: 0.2;
+  }
 }

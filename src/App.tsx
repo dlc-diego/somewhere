@@ -11,6 +11,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
+import ValHeart from './components/ValHeart'
 import FlagChallenge from './components/FlagChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
@@ -69,7 +70,6 @@ export default function App() {
   const item = mode === 'flags' ? 'flag' : mode === 'capitals' ? 'capital' : 'country'
   const answerCountry = countryById.get(round.answer)!
   const answerLocation = locationFor(answerCountry, mode)
-  const closest = guesses.length ? Math.min(...guesses.map((g) => g.distance)) : null
 
   useEffect(() => {
     try {
@@ -189,7 +189,7 @@ export default function App() {
       <main>
         <section className="intro" aria-labelledby="page-title">
           <h1 id="page-title">
-            Built for Val <Heart className="title-heart" aria-hidden="true" strokeWidth={1.5} />
+            Built for Val <ValHeart />
           </h1>
         </section>
         {warning && (
@@ -298,14 +298,6 @@ export default function App() {
 
           <div className="history-column">
             <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
-            {closest !== null && !ended && (
-              <div className="closest-note">
-                <MapPin size={14} />
-                <span>
-                  Your closest guess is <strong>{formatDistance(closest)} km</strong> away.
-                </span>
-              </div>
-            )}
           </div>
         </div>
         {!ended && (
@@ -349,8 +341,9 @@ export default function App() {
                   flag image. In Flags, “Hint: reveal continent” gives a clue without ending your
                   round or using a guess. Search a name or alias, select a suggestion, then make
                   your guess. Each mode keeps its own saved round. The globe is for exploring;
-                  tapping it never selects a guess. Pinch or use +/− to zoom up to 32×. Each guess
-                  or reveal automatically zooms to suit the country’s size.
+                  tapping it never selects a guess. Pinch to zoom up to 32×. With the globe focused,
+                  keyboard users can use +/− to zoom and Home to reset the view. Each guess or
+                  reveal automatically zooms to suit the country’s size.
                 </p>
               </div>
             </li>
