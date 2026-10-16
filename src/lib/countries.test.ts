@@ -24,3 +24,14 @@ describe('bundled boundary identity matching', () => {
     expect(countryByNumeric.has('-99')).toBe(false)
   })
 })
+
+describe('bundled flag images', () => {
+  it('provides a local SVG for every playable ISO country ID', () => {
+    for (const country of countries) {
+      const svg = readFileSync(`public/flags/${country.id}.svg`, 'utf8')
+      expect(svg).toMatch(/<svg\b/)
+      expect(svg).toMatch(/viewBox="[^"]+"/)
+    }
+    expect(readFileSync('public/flags/LICENSE.txt', 'utf8')).toContain('The MIT License')
+  })
+})

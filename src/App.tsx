@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
 import FlagChallenge from './components/FlagChallenge'
+import FlagImage from './components/FlagImage'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
 import {
@@ -236,6 +237,7 @@ export default function App() {
             </div>
             {mode === 'flags' && (
               <FlagChallenge
+                key={round.answer}
                 country={answerCountry}
                 hintUsed={Boolean(round.hintUsed)}
                 ended={ended}
@@ -358,7 +360,7 @@ export default function App() {
                 <strong>Choose countries, capitals or flags</strong>
                 <p>
                   Use the mode buttons to guess a country, a capital city, or the country behind a
-                  flag emoji. In Flags, “Hint: reveal continent” gives a clue without ending your
+                  flag image. In Flags, “Hint: reveal continent” gives a clue without ending your
                   round or using a guess. Search a name or alias, select a suggestion, then make
                   your guess. Each mode keeps its own saved round. The globe is for exploring;
                   tapping it never selects a guess. Pinch or use +/− to zoom up to 32×. Each guess
@@ -407,11 +409,12 @@ export default function App() {
               limitations.
             </p>
             <p>
-              Flag emojis depend on your device and may display as letter codes on some computers.
-              Continent hints follow the country data’s geographic grouping, splitting the Americas
-              into North and South America. Central America and the Caribbean count as North
-              America; transcontinental countries use one group, such as Europe for Russia and Asia
-              for Türkiye.
+              Flags use bundled images so they display consistently across devices. Similar flags
+              can be hard to distinguish; continent and distance clues can help. Continent hints
+              follow the country data’s geographic grouping, splitting the Americas into North and
+              South America. Central America and the Caribbean count as North America;
+              transcontinental countries use one group, such as Europe for Russia and Asia for
+              Türkiye.
             </p>
             <p>
               The answer stays unmarked until guessed correctly or revealed by giving up. As a
@@ -431,7 +434,12 @@ export default function App() {
                 mledoze/countries
               </a>{' '}
               (<a href={`${import.meta.env.BASE_URL}data/ODbL.txt`}>ODbL</a>);{' '}
-              <a href={`${import.meta.env.BASE_URL}data/countries.json`}>download adapted data</a>.
+              <a href={`${import.meta.env.BASE_URL}data/countries.json`}>download adapted data</a>.{' '}
+              Flags:{' '}
+              <a href="https://flagicons.lipis.dev/" target="_blank" rel="noreferrer">
+                flag-icons
+              </a>{' '}
+              (<a href={`${import.meta.env.BASE_URL}flags/LICENSE.txt`}>MIT</a>).
             </p>
           </div>
           <button className="primary" onClick={() => setDialog(null)}>
@@ -474,7 +482,7 @@ export default function App() {
             <em>somewhere.</em>
           </h2>
           <span className="victory-country">
-            <span aria-hidden="true">{answerCountry.flag}</span>
+            <FlagImage country={answerCountry} className="victory-flag" />
             {answerLocation.name}
           </span>
           {mode === 'capitals' && <p className="answer-country">{answerCountry.name}</p>}

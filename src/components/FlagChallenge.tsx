@@ -1,5 +1,7 @@
 import { Lightbulb } from 'lucide-react'
+import { useState } from 'react'
 import type { Country } from '../lib/countries'
+import FlagImage from './FlagImage'
 
 export default function FlagChallenge({
   country,
@@ -12,15 +14,24 @@ export default function FlagChallenge({
   ended: boolean
   onHint: () => void
 }) {
+  const [imageFailed, setImageFailed] = useState(false)
   return (
     <div className="flag-challenge">
-      <span
-        className="mystery-flag"
-        role="img"
-        aria-label={ended ? `${country.name} flag` : 'Mystery flag'}
-      >
-        <span aria-hidden="true">{country.flag}</span>
-      </span>
+      {imageFailed ? (
+        <div className="flag-error" role="alert">
+          <p>The flag couldn’t load.</p>
+          <button className="text-button" onClick={() => setImageFailed(false)}>
+            Try flag again
+          </button>
+        </div>
+      ) : (
+        <FlagImage
+          country={country}
+          className="mystery-flag"
+          alt={ended ? `${country.name} flag` : 'Mystery flag'}
+          onError={() => setImageFailed(true)}
+        />
+      )}
       {hintUsed ? (
         <p className="continent-hint" role="status">
           <Lightbulb size={15} aria-hidden="true" /> Continent: <strong>{country.continent}</strong>

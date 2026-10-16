@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, Search, X } from 'lucide-react'
+import FlagImage from './FlagImage'
 import {
   exactLocation,
   locationFor,
@@ -170,11 +171,7 @@ export default function GuessSearch({
                   onClick={() => pick(country)}
                   onMouseMove={() => setActive(i)}
                 >
-                  {mode !== 'flags' && (
-                    <span className="country-flag" aria-hidden="true">
-                      {country.flag}
-                    </span>
-                  )}
+                  {mode !== 'flags' && <FlagImage country={country} />}
                   <span>
                     {locationFor(country, mode).name}
                     <small>{mode === 'capitals' ? country.name : country.region}</small>

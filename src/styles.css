@@ -465,9 +465,12 @@ h1 {
   font-size: 9px;
 }
 .country-flag {
-  font-size: 20px;
-  line-height: 1.2;
+  width: 24px;
+  height: 18px;
   flex-shrink: 0;
+}
+.flag-image {
+  object-fit: contain;
 }
 .already-guessed {
   display: flex;
@@ -821,9 +824,6 @@ h1 {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 5px;
-}
-.victory-country > span {
-  font-size: 28px;
 }
 .win-dialog .dialog-description {
   font-size: 12px;
@@ -1297,9 +1297,6 @@ h1 {
   .guess-country {
     gap: 7px;
   }
-  .guess-country .country-flag {
-    font-size: 19px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1512,9 +1509,23 @@ h1 {
 }
 .mystery-flag {
   display: block;
-  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
-  font-size: 100px;
-  line-height: 1.4;
+  width: 160px;
+  height: 120px;
+  margin: 12px auto 20px;
+  filter: drop-shadow(0 1px 2px #263c3920);
+}
+.victory-flag {
+  width: 40px;
+  height: 30px;
+}
+.flag-error {
+  min-height: 152px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #5e6a59;
 }
 .flag-hint-button,
 .continent-hint {

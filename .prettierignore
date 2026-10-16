@@ -3,6 +3,7 @@ dist
 package-lock.json
 src/data
 public/data
+public/flags
 test-results
 playwright-report
 *.tsbuildinfo

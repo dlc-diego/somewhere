@@ -91,6 +91,15 @@ const playable = countries
 if (playable.length !== 195) throw new Error('Check country membership before updating data')
 mkdirSync('src/data', { recursive: true })
 mkdirSync('public/data', { recursive: true })
+mkdirSync('public/flags', { recursive: true })
+for (const country of playable) {
+  const original = countries.find((c) => c.cca3 === country.id)
+  copyFileSync(
+    `node_modules/flag-icons/flags/4x3/${original.cca2.toLowerCase()}.svg`,
+    `public/flags/${country.id}.svg`,
+  )
+}
+copyFileSync('node_modules/flag-icons/LICENSE', 'public/flags/LICENSE.txt')
 writeFileSync('src/data/countries.json', JSON.stringify(playable))
 // Serve the derivative metadata database and its license for reuse and attribution.
 writeFileSync('public/data/countries.json', JSON.stringify(playable))

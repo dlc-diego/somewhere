@@ -2,6 +2,7 @@ import { Flag, MapPin, Navigation, Trophy } from 'lucide-react'
 import { formatDistance, temperatures } from '../lib/geo'
 import { sortGuessesByDistance, type Guess } from '../lib/game'
 import type { Country, GameMode, Location } from '../lib/countries'
+import FlagImage from './FlagImage'
 
 export default function GuessHistory({
   guesses,
@@ -58,9 +59,7 @@ export default function GuessHistory({
               >
                 <span className="guess-number">{String(g.number).padStart(2, '0')}</span>
                 <span className="guess-country">
-                  <span className="country-flag" aria-hidden="true">
-                    {g.country.flag}
-                  </span>
+                  <FlagImage country={g.country} />
                   <span>
                     {g.location.name}
                     {mode === 'capitals' && <small>{g.country.name}</small>}

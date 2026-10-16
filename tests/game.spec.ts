@@ -223,6 +223,14 @@ test('production assets work from a repository subdirectory', async ({ page }) =
   await expect(
     page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
   ).toHaveCount(1)
+  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
+  expect(await flag.evaluate((el) => new URL((el as HTMLImageElement).src).pathname)).toMatch(
+    /^\/wep-app\/flags\/[A-Z]{3}\.svg$/,
+  )
+  await expect
+    .poll(() => flag.evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0)
 })
 
 test('core screens have no automated accessibility violations', async ({ page }) => {
@@ -643,7 +651,7 @@ test('another guess replaces the blink and manual controls cancel it', async ({ 
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
 })
 
-test('flags: hidden suggestion emojis, optional persistent hint, independent modes and a win', async ({
+test('flags: local images, hidden suggestion flags, persistent hint, independent modes and a win', async ({
   page,
 }) => {
   await seed(page)
@@ -657,7 +665,11 @@ test('flags: hidden suggestion emojis, optional persistent hint, independent mod
     'Capitals',
     'Flags',
   ])
-  await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).toHaveText('🇫🇷')
+  const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
+  await expect(flag).toHaveAttribute('src', /\/flags\/FRA\.svg$/)
+  await expect
+    .poll(() => flag.evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0)
   await expect(page.getByRole('img', { name: /France/ })).toHaveCount(0)
   await expect(page.getByText('Continent:', { exact: false })).toHaveCount(0)
   await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#bcc6b6')
@@ -715,9 +727,35 @@ test('flags: hidden suggestion emojis, optional persistent hint, independent mod
   expect(saved.countries.guesses).toEqual(['ESP'])
   expect(saved.capitals.guesses).toEqual(['JPN'])
   await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
-  await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).not.toHaveText('🇫🇷')
+  await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).not.toHaveAttribute(
+    'src',
+    /\/flags\/FRA\.svg$/,
+  )
   await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toBeVisible()
   await expect(page.locator('.continent-hint')).toHaveCount(0)
+})
+
+test('a failed flag image can be retried without revealing the country or resetting its hint', async ({
+  page,
+}) => {
+  await seedFlags(page)
+  await page.route('**/flags/FRA.svg', (route) => route.abort())
+  await page.goto('/')
+  await expect(page.getByRole('alert')).toHaveText(/The flag couldn’t load/)
+  await expect(page.getByRole('alert')).not.toContainText('France')
+  await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
+  await expect(page.locator('.continent-hint')).toContainText('Europe')
+  await page.unroute('**/flags/FRA.svg')
+  await page.getByRole('button', { name: 'Try flag again' }).click()
+  const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
+  await expect
+    .poll(() => flag.evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByRole('combobox')).toBeEnabled()
+  await expect(page.locator('.continent-hint')).toContainText('Europe')
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.flags.v1')!))
+  expect(saved).toMatchObject({ answer: 'FRA', guesses: [], hintUsed: true, revealed: false })
 })
 
 test('flags: hint-free win, hint-only restart protection and giving up without a guess', async ({
