@@ -65,7 +65,7 @@ test('a long hold beats, blooms from the heart, and resets without changing the 
       after: style.clipPath,
       x: parseFloat(style.getPropertyValue('--heart-x')),
       y: parseFloat(style.getPropertyValue('--heart-y')),
-      radius: parseFloat(style.getPropertyValue('--heart-radius')),
+      radius: Number(style.clipPath.match(/^circle\(([\d.]+)px/)?.[1]),
       width: innerWidth,
       height: innerHeight,
     }
@@ -134,4 +134,50 @@ test('keyboard holds work, early release and dragging cancel, and reduced motion
   await expect(target).toHaveClass(/is-beating/)
   await page.keyboard.up('Space')
   await expect(backdrop).toHaveCount(1)
+})
+
+test('heart wave covers the whole screen after viewport growth and rotation', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 560 })
+  await page.goto('/')
+  await heart(page).focus()
+  await page.keyboard.down('Space')
+  const backdrop = page.locator('.val-heart-backdrop')
+  await expect(backdrop).toHaveCount(1)
+  await page.keyboard.up('Space')
+  await backdrop.evaluate((node) => {
+    const animation = node.getAnimations()[0]
+    animation.pause()
+    animation.currentTime = 2100
+  })
+  // Browser chrome/keyboard dismissal can enlarge the viewport after a hold starts.
+  // Check rendered geometry rather than the dimensions saved at activation.
+  for (const viewport of [
+    { width: 390, height: 1040 },
+    { width: 1040, height: 390 },
+    { width: 390, height: 1040 },
+  ]) {
+    await page.setViewportSize(viewport)
+    const coverage = await backdrop.evaluate((node) => {
+      const rect = node.getBoundingClientRect()
+      const style = getComputedStyle(node)
+      return {
+        width: rect.width,
+        height: rect.height,
+        radius: Number(style.clipPath.match(/^circle\(([\d.]+)px/)?.[1]),
+        x: Math.min(rect.width, Math.max(0, parseFloat(style.getPropertyValue('--heart-x')))),
+        y: Math.min(rect.height, Math.max(0, parseFloat(style.getPropertyValue('--heart-y')))),
+        viewportWidth: innerWidth,
+        viewportHeight: innerHeight,
+      }
+    })
+    expect(coverage.width).toBeGreaterThanOrEqual(coverage.viewportWidth)
+    expect(coverage.height).toBeGreaterThanOrEqual(coverage.viewportHeight)
+    expect(coverage.radius).toBeGreaterThanOrEqual(
+      Math.hypot(
+        Math.max(coverage.x, coverage.width - coverage.x),
+        Math.max(coverage.y, coverage.height - coverage.y),
+      ),
+    )
+  }
+  await expect(backdrop).toHaveCount(0, { timeout: 5000 })
 })

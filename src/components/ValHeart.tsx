@@ -30,12 +30,10 @@ export default function ValHeart() {
       const rect = button.current.getBoundingClientRect()
       const cx = rect.left + rect.width / 2
       const cy = rect.top + rect.height / 2
-      const radius = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy))
       playing.current = true
       setBloom({
         '--heart-x': `${cx}px`,
         '--heart-y': `${cy}px`,
-        '--heart-radius': `${Math.ceil(radius) + 2}px`,
         '--heart-duration': `${REVEAL_MS}ms`,
       } as CSSProperties)
       resetTimer.current = window.setTimeout(() => {

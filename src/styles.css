@@ -1519,10 +1519,17 @@ h1 {
 .val-heart-backdrop {
   position: fixed;
   inset: 0;
+  /* Cover the space mobile browser bars can expose during the animation. */
+  min-height: 100vh;
+  min-height: 100lvh;
+  /* The viewport diagonal is at most sqrt(2) * vmax, even from a corner. */
+  --heart-radius: 150vmax;
+  --heart-origin-x: clamp(0px, var(--heart-x), 100%);
+  --heart-origin-y: clamp(0px, var(--heart-y), 100%);
   z-index: -1;
   pointer-events: none;
   background: var(--logo-accent);
-  clip-path: circle(0px at var(--heart-x) var(--heart-y));
+  clip-path: circle(0px at var(--heart-origin-x) var(--heart-origin-y));
   animation: val-heart-bloom var(--heart-duration) ease-in-out both;
 }
 @keyframes val-heartbeat {
@@ -1553,16 +1560,16 @@ h1 {
 @keyframes val-heart-bloom {
   0%,
   25% {
-    clip-path: circle(0px at var(--heart-x) var(--heart-y));
+    clip-path: circle(0px at var(--heart-origin-x) var(--heart-origin-y));
     opacity: 1;
   }
   50%,
   70% {
-    clip-path: circle(var(--heart-radius) at var(--heart-x) var(--heart-y));
+    clip-path: circle(var(--heart-radius) at var(--heart-origin-x) var(--heart-origin-y));
     opacity: 1;
   }
   100% {
-    clip-path: circle(var(--heart-radius) at var(--heart-x) var(--heart-y));
+    clip-path: circle(var(--heart-radius) at var(--heart-origin-x) var(--heart-origin-y));
     opacity: 0;
   }
 }
