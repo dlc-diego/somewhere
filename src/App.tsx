@@ -332,7 +332,9 @@ export default function App() {
                 <p>
                   Use the mode buttons to guess a country or a capital city. Search a name or alias,
                   select a suggestion, then make your guess. Each mode keeps its own saved round.
-                  The globe is for exploring; tapping it never selects a guess.
+                  The globe is for exploring; tapping it never selects a guess. Pinch or use +/− to
+                  zoom up to 32×. Each guess or reveal automatically zooms to suit the country’s
+                  size.
                 </p>
               </div>
             </li>

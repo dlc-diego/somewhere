@@ -239,11 +239,11 @@ test('pinch gestures zoom without recording a guess', async ({ page, context }) 
     { x: center.x + spread, y: center.y, id: 2 },
   ]
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(30) })
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(65) })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(120) })
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
   await expect
     .poll(async () => Number(await page.locator('circle[fill="url(#ocean)"]').getAttribute('r')))
-    .toBeGreaterThan(265)
+    .toBeGreaterThan(265 * 2.2)
   await expect(page.getByRole('combobox')).toHaveValue('')
   await expect(page.locator('[data-guessed="true"]')).toHaveCount(0)
   await cdp.detach()
@@ -333,6 +333,7 @@ test('manual globe controls cancel a pending flight and reduced motion skips it'
   await page.waitForTimeout(1350)
   await expect(france).toHaveAttribute('d', initial!)
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+  await expect(page.locator('circle[fill="url(#ocean)"]')).toHaveAttribute('r', '265')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await guess(page, 'Tuvalu', 'Tuvalu')
   const marker = page.locator('circle[data-country="798"]')
@@ -340,7 +341,57 @@ test('manual globe controls cancel a pending flight and reduced motion skips it'
   expect(Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
   expect(Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+  await expect(page.locator('circle[fill="url(#ocean)"]')).toHaveAttribute('r', String(265 * 16))
 })
+
+for (const mode of ['countries', 'capitals'] as const) {
+  test(`${mode} size-aware zoom, reveal framing and extended manual zoom`, async ({ page }) => {
+    await seed(page)
+    await seedCapitals(page, mode === 'capitals')
+    await page.goto('/')
+    await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+    const ocean = page.locator('circle[fill="url(#ocean)"]')
+    await guess(page, 'Singapore', 'Singapore')
+    await expect(page.locator('circle[data-country="702"]')).toHaveClass('guess-marker-blink')
+    const smallRadius = Number(await ocean.getAttribute('r'))
+    expect(smallRadius).toBeGreaterThan(265 * 8)
+
+    const zoomIn = page.getByRole('button', { name: 'Zoom in', exact: true })
+    for (let step = 0; step < 5 && (await zoomIn.isEnabled()); step++) await zoomIn.click()
+    await expect(zoomIn).toBeDisabled()
+    await expect(ocean).toHaveAttribute('r', String(265 * 32))
+    await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Zoom out', exact: true }).click()
+    expect(Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
+    const globe = page.getByRole('group', { name: /Interactive globe/ })
+    await globe.press('+')
+    await expect(ocean).toHaveAttribute('r', String(265 * 32))
+    await globe.press('ArrowRight')
+    const markerX = Number(await page.locator('circle[data-country="702"]').getAttribute('cx'))
+    expect(markerX).toBeGreaterThan(300)
+    expect(markerX).toBeLessThan(420)
+    await globe.press('-')
+    expect(Number(await ocean.getAttribute('r'))).toBeLessThan(265 * 32)
+
+    await guess(
+      page,
+      mode === 'capitals' ? 'Moscow' : 'Russia',
+      mode === 'capitals' ? 'Moscow' : 'Russia',
+    )
+    await expect(page.locator('path[data-country="643"]')).toHaveClass(/guess-country-blink/)
+    const largeRadius = Number(await ocean.getAttribute('r'))
+    expect(largeRadius).toBeLessThan(smallRadius / 2)
+
+    await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+    await expectGreenAnswerBlink(page, true)
+    const revealRadius = Number(await ocean.getAttribute('r'))
+    expect(revealRadius).toBeGreaterThan(largeRadius)
+    expect(revealRadius).toBeLessThan(smallRadius)
+    await page.getByRole('button', { name: 'Reset globe view' }).click()
+    await expect(ocean).toHaveAttribute('r', '265')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  })
+}
 
 test('adjacent guesses get the hottest feedback and the closest stays highlighted first', async ({
   page,

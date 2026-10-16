@@ -16,6 +16,7 @@ export interface Country {
   lat: number
   lng: number
   small: boolean
+  area: number
   borders: string[]
   aliases: string[]
   capital: Location & { aliases: string[] }

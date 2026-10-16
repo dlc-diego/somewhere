@@ -4,7 +4,13 @@ import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
 import { LocateFixed, Minus, Plus, RotateCcw, Move, RefreshCw } from 'lucide-react'
-import { countryByNumeric, type Country, type GameMode, type Location } from '../lib/countries'
+import {
+  countryById,
+  countryByNumeric,
+  type Country,
+  type GameMode,
+  type Location,
+} from '../lib/countries'
 import { temperatures } from '../lib/geo'
 import type { Guess } from '../lib/game'
 import {
@@ -13,6 +19,10 @@ import {
   GUESS_BLINK_CYCLES,
   GUESS_BLINK_DURATION_MS,
   GUESS_BLINK_PERIOD_MS,
+  MIN_GLOBE_ZOOM,
+  MAX_GLOBE_ZOOM,
+  GLOBE_ZOOM_STEP,
+  focusZoomForArea,
   prefersReducedMotion,
 } from '../lib/motion'
 
@@ -46,6 +56,8 @@ function Globe({
   if (answerReveal) blinkableIds.current.add(answerReveal.country.id)
   const rotationRef = useRef(rotation)
   rotationRef.current = rotation
+  const zoomRef = useRef(zoom)
+  zoomRef.current = zoom
   const flightFrame = useRef<number | null>(null)
   const flightDelay = useRef<number | null>(null)
   const cancelMotion = useCallback(() => {
@@ -102,8 +114,10 @@ function Globe({
       return
     }
     const target: [number, number, number] = [-focus.location.lng, -focus.location.lat, 0]
+    const targetZoom = focusZoomForArea(countryById.get(focus.countryId)?.area ?? 0)
     if (prefersReducedMotion()) {
       setRotation(target)
+      setZoom(targetZoom)
       return
     }
     flightDelay.current = window.setTimeout(() => {
@@ -111,6 +125,7 @@ function Globe({
       // Interpolate the viewing center over the shortest great-circle route,
       // including when a guess crosses the date line.
       const from = rotationRef.current
+      const fromZoom = zoomRef.current
       const route = geoInterpolate([-from[0], -from[1]], [focus.location.lng, focus.location.lat])
       const started = performance.now()
       const frame = (now: number) => {
@@ -118,6 +133,7 @@ function Globe({
         const eased = progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2
         const [lng, lat] = route(eased)
         setRotation(progress === 1 ? target : [-lng, -lat, 0])
+        setZoom(progress === 1 ? targetZoom : fromZoom * (targetZoom / fromZoom) ** eased)
         if (progress < 1) flightFrame.current = requestAnimationFrame(frame)
         else {
           flightFrame.current = null
@@ -143,6 +159,10 @@ function Globe({
         .scale(265 * zoom)
         .rotate(rotation)
         .clipAngle(90)
+        .clipExtent([
+          [0, 0],
+          [600, 600],
+        ])
         .precision(0.6),
     [rotation, zoom],
   )
@@ -157,6 +177,11 @@ function Globe({
     [world, path],
   )
   const center: [number, number] = [-rotation[0], -rotation[1]]
+
+  function changeZoom(factor: number) {
+    cancelMotion()
+    setZoom((z) => Math.max(MIN_GLOBE_ZOOM, Math.min(MAX_GLOBE_ZOOM, z * factor)))
+  }
 
   function reset() {
     cancelMotion()
@@ -194,12 +219,13 @@ function Globe({
               e.preventDefault()
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(e.key))
               cancelMotion()
-            if (e.key === 'ArrowLeft') setRotation((r) => [r[0] - 12, r[1], 0])
-            if (e.key === 'ArrowRight') setRotation((r) => [r[0] + 12, r[1], 0])
-            if (e.key === 'ArrowUp') setRotation((r) => [r[0], Math.min(85, r[1] + 12), 0])
-            if (e.key === 'ArrowDown') setRotation((r) => [r[0], Math.max(-85, r[1] - 12), 0])
-            if (e.key === '+' || e.key === '=') setZoom((z) => Math.min(2.2, z + 0.2))
-            if (e.key === '-') setZoom((z) => Math.max(1, z - 0.2))
+            if (e.key === 'ArrowLeft') setRotation((r) => [r[0] - 12 / zoom, r[1], 0])
+            if (e.key === 'ArrowRight') setRotation((r) => [r[0] + 12 / zoom, r[1], 0])
+            if (e.key === 'ArrowUp') setRotation((r) => [r[0], Math.min(85, r[1] + 12 / zoom), 0])
+            if (e.key === 'ArrowDown')
+              setRotation((r) => [r[0], Math.max(-85, r[1] - 12 / zoom), 0])
+            if (e.key === '+' || e.key === '=') changeZoom(GLOBE_ZOOM_STEP)
+            if (e.key === '-') changeZoom(1 / GLOBE_ZOOM_STEP)
             if (e.key === 'Home') reset()
           }}
         >
@@ -236,7 +262,7 @@ function Globe({
                 const [a, b] = [...pointers.current.values()]
                 const distance = Math.hypot(a.x - b.x, a.y - b.y)
                 const ratio = gesture.current.distance ? distance / gesture.current.distance : 1
-                setZoom((z) => Math.max(1, Math.min(2.2, z * ratio)))
+                setZoom((z) => Math.max(MIN_GLOBE_ZOOM, Math.min(MAX_GLOBE_ZOOM, z * ratio)))
                 gesture.current.distance = distance
               }
             }}
@@ -363,16 +389,16 @@ function Globe({
           <button
             className="icon-button"
             aria-label="Zoom in"
-            disabled={zoom >= 2.2}
-            onClick={() => setZoom((z) => Math.min(2.2, z + 0.2))}
+            disabled={zoom >= MAX_GLOBE_ZOOM}
+            onClick={() => changeZoom(GLOBE_ZOOM_STEP)}
           >
             <Plus size={18} />
           </button>
           <button
             className="icon-button"
             aria-label="Zoom out"
-            disabled={zoom <= 1}
-            onClick={() => setZoom((z) => Math.max(1, z - 0.2))}
+            disabled={zoom <= MIN_GLOBE_ZOOM}
+            onClick={() => changeZoom(1 / GLOBE_ZOOM_STEP)}
           >
             <Minus size={18} />
           </button>

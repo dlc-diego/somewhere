@@ -239,6 +239,8 @@ describe('country metadata and aliases', () => {
       expect(c.numeric).toMatch(/^\d{3}$/)
       expect(Math.abs(c.lat)).toBeLessThanOrEqual(90)
       expect(Math.abs(c.lng)).toBeLessThanOrEqual(180)
+      expect(Number.isFinite(c.area)).toBe(true)
+      expect(c.area).toBeGreaterThan(0)
     }
   })
   it.each([

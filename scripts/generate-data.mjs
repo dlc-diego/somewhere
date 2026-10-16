@@ -62,6 +62,7 @@ const playable = countries
     lat: c.latlng[0],
     lng: c.latlng[1],
     small: c.area < 2500,
+    area: c.area,
     borders: [...borders.get(c.cca3)].sort(),
     capital: {
       name: capitals[c.cca3].name,
