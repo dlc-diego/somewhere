@@ -1657,9 +1657,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
   min-height: 44px;
-  padding: 9px 13px;
+  padding: 6px 12px;
   border: 1px solid var(--border-button);
   border-radius: 7px;
   background: transparent;
@@ -1669,10 +1668,12 @@ h1 {
   white-space: nowrap;
 }
 .theme-icons {
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: 20px 12px 20px;
   align-items: center;
-  gap: 7px;
-  padding: 5px;
+  justify-items: center;
+  gap: 6px;
+  padding: 6px;
   border-radius: 20px;
   background: var(--surface-muted);
   position: relative;
@@ -1681,15 +1682,22 @@ h1 {
 .theme-icons::before {
   content: '';
   position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 21px;
-  height: 21px;
+  left: 3px;
+  top: 3px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--surface);
   box-shadow: 0 1px 4px #0002;
   transition: transform 180ms ease;
   z-index: -1;
+}
+.theme-divider {
+  color: var(--text-muted);
+  opacity: 0.65;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
 }
 .theme-icons svg:first-child {
   color: var(--accent);
@@ -1698,7 +1706,7 @@ h1 {
   color: var(--text-muted);
 }
 :root[data-theme='dark'] .theme-icons::before {
-  transform: translateX(22px);
+  transform: translateX(44px);
 }
 :root[data-theme='dark'] .theme-icons svg:first-child {
   color: var(--text-muted);
@@ -1711,13 +1719,6 @@ h1 {
 }
 @media (max-width: 480px) {
   .theme-toggle {
-    gap: 6px;
-    padding: 8px;
-    font-size: 11px;
-  }
-}
-@media (max-width: 360px) {
-  .theme-toggle > span:last-child {
-    display: none;
+    padding: 6px 10px;
   }
 }

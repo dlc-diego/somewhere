@@ -165,10 +165,10 @@ export default function App() {
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <span className="theme-icons" aria-hidden="true">
-              <Sun size={15} />
-              <Moon size={15} />
+              <Sun size={18} />
+              <span className="theme-divider">/</span>
+              <Moon size={18} />
             </span>
-            <span>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span>
           </button>
         </nav>
       </header>
