@@ -59,6 +59,12 @@ const playable = countries
     name: names[c.cca3] || c.name.common,
     flag: c.flag,
     region: c.region,
+    continent:
+      c.region === 'Americas'
+        ? c.subregion === 'South America'
+          ? 'South America'
+          : 'North America'
+        : c.region,
     lat: c.latlng[0],
     lng: c.latlng[1],
     small: c.area < 2500,

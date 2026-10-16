@@ -1,6 +1,6 @@
 import data from '../data/countries.json'
 
-export type GameMode = 'countries' | 'capitals'
+export type GameMode = 'countries' | 'capitals' | 'flags'
 export interface Location {
   name: string
   lat: number
@@ -13,6 +13,7 @@ export interface Country {
   name: string
   flag: string
   region: string
+  continent: string
   lat: number
   lng: number
   small: boolean

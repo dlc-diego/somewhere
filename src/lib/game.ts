@@ -7,11 +7,12 @@ export interface Round {
   revealed: boolean
   answer: string
   guesses: string[]
+  hintUsed?: boolean
 }
 export const STORAGE_KEY = 'somewhere.round.v1'
 export const MODE_KEY = 'somewhere.mode.v1'
 export const storageKeyFor = (mode: GameMode) =>
-  mode === 'capitals' ? 'somewhere.capitals.v1' : STORAGE_KEY
+  mode === 'countries' ? STORAGE_KEY : `somewhere.${mode}.v1`
 
 export function newRound(previousAnswer?: string, mode: GameMode = 'countries'): Round {
   const pool = countries.filter((c) => c.id !== previousAnswer)
@@ -27,6 +28,7 @@ export function newRound(previousAnswer?: string, mode: GameMode = 'countries'):
     revealed: false,
     answer: pool[sample[0] % pool.length].id,
     guesses: [],
+    ...(mode === 'flags' ? { hintUsed: false } : {}),
   }
 }
 
@@ -37,6 +39,12 @@ export function hasWon(round: Round): boolean {
 export const hasEnded = (round: Round) => round.revealed || hasWon(round)
 export function revealAnswer(round: Round): Round {
   return hasEnded(round) ? round : { ...round, revealed: true }
+}
+
+export function revealContinentHint(round: Round): Round {
+  return round.mode !== 'flags' || hasEnded(round) || round.hintUsed
+    ? round
+    : { ...round, hintUsed: true }
 }
 
 export function addGuess(round: Round, id: string): { round: Round; error?: string } {
@@ -83,7 +91,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
     const revealed = version === 1 ? false : raw.revealed
     if (
       (version !== 1 && version !== 2) ||
-      (mode !== 'countries' && mode !== 'capitals') ||
+      (mode !== 'countries' && mode !== 'capitals' && mode !== 'flags') ||
       (expectedMode !== undefined && mode !== expectedMode) ||
       typeof revealed !== 'boolean' ||
       typeof answer !== 'string' ||
@@ -91,6 +99,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
       !Array.isArray(guesses)
     )
       return null
+    if (raw.hintUsed !== undefined && typeof raw.hintUsed !== 'boolean') return null
     if (
       guesses.length > countries.length ||
       guesses.some((g) => typeof g !== 'string' || !countryById.has(g))
@@ -99,7 +108,14 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
     if (new Set(guesses).size !== guesses.length) return null
     if (guesses.includes(answer) && guesses.at(-1) !== answer) return null
     if (revealed && guesses.includes(answer)) return null
-    return { version: 2, mode, revealed, answer, guesses }
+    return {
+      version: 2,
+      mode,
+      revealed,
+      answer,
+      guesses,
+      ...(mode === 'flags' ? { hintUsed: raw.hintUsed === true } : {}),
+    }
   } catch {
     return null
   }
@@ -108,7 +124,10 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
 export function loadRound(requestedMode?: GameMode): { round: Round; warning: string } {
   let mode = requestedMode || 'countries'
   try {
-    if (!requestedMode && localStorage.getItem(MODE_KEY) === 'capitals') mode = 'capitals'
+    if (!requestedMode) {
+      const savedMode = localStorage.getItem(MODE_KEY)
+      if (savedMode === 'capitals' || savedMode === 'flags') mode = savedMode
+    }
     const saved = localStorage.getItem(storageKeyFor(mode))
     const restored = parseRound(saved, mode)
     return {

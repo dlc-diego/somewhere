@@ -80,7 +80,11 @@ export default function GuessSearch({
       className="guess-form"
     >
       <label className="search-label" htmlFor={`${id}-search`}>
-        {mode === 'capitals' ? 'Which capital do you think it is?' : 'Where do you think it is?'}
+        {mode === 'flags'
+          ? 'Which country does this flag belong to?'
+          : mode === 'capitals'
+            ? 'Which capital do you think it is?'
+            : 'Where do you think it is?'}
       </label>
       <div className={`search-control ${error ? 'has-error' : ''}`}>
         <Search size={19} aria-hidden="true" />
@@ -166,9 +170,11 @@ export default function GuessSearch({
                   onClick={() => pick(country)}
                   onMouseMove={() => setActive(i)}
                 >
-                  <span className="country-flag" aria-hidden="true">
-                    {country.flag}
-                  </span>
+                  {mode !== 'flags' && (
+                    <span className="country-flag" aria-hidden="true">
+                      {country.flag}
+                    </span>
+                  )}
                   <span>
                     {locationFor(country, mode).name}
                     <small>{mode === 'capitals' ? country.name : country.region}</small>

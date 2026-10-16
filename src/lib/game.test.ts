@@ -8,6 +8,7 @@ import {
   newRound,
   parseRound,
   revealAnswer,
+  revealContinentHint,
   storageKeyFor,
   MODE_KEY,
   sortGuessesByDistance,
@@ -26,6 +27,57 @@ import {
 
 const round: Round = { version: 2, mode: 'countries', revealed: false, answer: 'FRA', guesses: [] }
 afterEach(() => vi.unstubAllGlobals())
+
+describe('flag rounds and continent hints', () => {
+  const flagRound: Round = { ...round, mode: 'flags', hintUsed: false }
+  it('reveals a persistent hint without changing the answer, guesses, or completion state', () => {
+    const hinted = revealContinentHint(flagRound)
+    expect(hinted).toEqual({ ...flagRound, hintUsed: true })
+    expect(flagRound.hintUsed).toBe(false)
+    expect(hasEnded(hinted)).toBe(false)
+    expect(revealContinentHint(hinted)).toBe(hinted)
+    const guessed = addGuess(hinted, 'JPN').round
+    expect(guessed).toMatchObject({ answer: 'FRA', guesses: ['JPN'], hintUsed: true })
+    expect(addGuess(guessed, 'JPN').error).toMatch(/already/)
+    expect(guessDetails(guessed)[0]).toEqual(guessDetails({ ...round, guesses: ['JPN'] })[0])
+    const won = addGuess(guessed, 'FRA').round
+    expect(hasWon(won)).toBe(true)
+    expect(revealContinentHint(won)).toBe(won)
+    expect(parseRound(JSON.stringify(won), 'flags')).toEqual(won)
+  })
+  it('keeps hints out of other modes and does not turn giving up into a win', () => {
+    expect(revealContinentHint(round)).toBe(round)
+    const revealed = revealAnswer(revealContinentHint(flagRound))
+    expect(hasEnded(revealed)).toBe(true)
+    expect(hasWon(revealed)).toBe(false)
+    expect(revealed.guesses).toEqual([])
+    expect(revealContinentHint(revealed)).toBe(revealed)
+    expect(parseRound(JSON.stringify(revealed), 'flags')).toEqual(revealed)
+    expect(addGuess(revealed, 'FRA').error).toMatch(/complete/)
+  })
+  it('restores flags and hints separately from existing saves, and rejects invalid hint state', () => {
+    const flags = { ...flagRound, hintUsed: true, guesses: ['GBR'] }
+    const values = new Map([
+      [storageKeyFor('flags'), JSON.stringify(flags)],
+      [storageKeyFor('countries'), JSON.stringify(round)],
+      [MODE_KEY, 'flags'],
+    ])
+    vi.stubGlobal('localStorage', { getItem: (key: string) => values.get(key) || null })
+    expect(loadRound().round).toEqual(flags)
+    expect(loadRound('countries').round).toEqual(round)
+    expect(storageKeyFor('flags')).not.toBe(storageKeyFor('capitals'))
+    expect(parseRound(JSON.stringify(flags), 'capitals')).toBeNull()
+    expect(parseRound(JSON.stringify({ ...flags, hintUsed: 'yes' }))).toBeNull()
+    expect(parseRound(JSON.stringify({ ...flagRound, hintUsed: undefined }))).toEqual(flagRound)
+    expect(newRound('FRA', 'flags')).toMatchObject({ mode: 'flags', guesses: [], hintUsed: false })
+    expect(newRound('FRA', 'flags').answer).not.toBe('FRA')
+  })
+  it('searches country names and aliases in flag mode, never capital names', () => {
+    expect(exactLocation('UK', 'flags')?.id).toBe('GBR')
+    expect(searchLocations('Ivory Coast', 'flags')[0]?.id).toBe('CIV')
+    expect(searchLocations('Paris', 'flags')).toEqual([])
+  })
+})
 
 describe('capital rounds and giving up', () => {
   const capitalRound: Round = { ...round, mode: 'capitals' }
@@ -241,7 +293,18 @@ describe('country metadata and aliases', () => {
       expect(Math.abs(c.lng)).toBeLessThanOrEqual(180)
       expect(Number.isFinite(c.area)).toBe(true)
       expect(c.area).toBeGreaterThan(0)
+      expect(['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania']).toContain(
+        c.continent,
+      )
+      expect(c.flag).toMatch(/^[\u{1F1E6}-\u{1F1FF}]{2}$/u)
     }
+  })
+  it('uses consistent continent hints, with North and South America separated', () => {
+    expect(countryById.get('USA')?.continent).toBe('North America')
+    expect(countryById.get('JAM')?.continent).toBe('North America')
+    expect(countryById.get('BRA')?.continent).toBe('South America')
+    expect(countryById.get('RUS')?.continent).toBe('Europe')
+    expect(countryById.get('TUR')?.continent).toBe('Asia')
   })
   it.each([
     ['uk', 'GBR'],

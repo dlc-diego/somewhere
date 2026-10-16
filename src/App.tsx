@@ -4,6 +4,7 @@ import {
   Check,
   CircleHelp,
   Compass,
+  Flag,
   Globe2,
   Heart,
   MapPin,
@@ -11,6 +12,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
+import FlagChallenge from './components/FlagChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
 import {
@@ -21,6 +23,7 @@ import {
   loadRound,
   newRound,
   revealAnswer,
+  revealContinentHint,
   storageKeyFor,
   MODE_KEY,
   type Round,
@@ -62,7 +65,7 @@ export default function App() {
   const won = hasWon(round)
   const ended = hasEnded(round)
   const mode = round.mode
-  const item = mode === 'capitals' ? 'capital' : 'country'
+  const item = mode === 'flags' ? 'flag' : mode === 'capitals' ? 'capital' : 'country'
   const answerCountry = countryById.get(round.answer)!
   const answerLocation = locationFor(answerCountry, mode)
   const closest = guesses.length ? Math.min(...guesses.map((g) => g.distance)) : null
@@ -129,7 +132,7 @@ export default function App() {
     setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
   function requestRestart() {
-    if (round.guesses.length && !ended) setDialog('restart')
+    if ((round.guesses.length || round.hintUsed) && !ended) setDialog('restart')
     else restart()
   }
   function changeMode(nextMode: GameMode) {
@@ -153,6 +156,10 @@ export default function App() {
     setAnnouncement(
       `Answer revealed: ${answerLocation.name}${mode === 'capitals' ? `, ${answerCountry.name}` : ''}. Round complete.`,
     )
+  }
+  function showContinentHint() {
+    setRound(revealContinentHint(round))
+    setAnnouncement(`Continent hint: ${answerCountry.continent}. Keep guessing!`)
   }
   async function share() {
     const text = `${won ? 'I found' : 'I revealed'} ${answerLocation.name} (${mode}) ${won ? 'in' : 'after'} ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'} on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
@@ -208,7 +215,13 @@ export default function App() {
           <section
             className="search-card"
             id="country-search"
-            aria-label={mode === 'capitals' ? 'Capital search' : 'Country search'}
+            aria-label={
+              mode === 'flags'
+                ? 'Flag search'
+                : mode === 'capitals'
+                  ? 'Capital search'
+                  : 'Country search'
+            }
           >
             <div className="mode-selector" role="group" aria-label="Game mode">
               <button aria-pressed={mode === 'countries'} onClick={() => changeMode('countries')}>
@@ -217,7 +230,18 @@ export default function App() {
               <button aria-pressed={mode === 'capitals'} onClick={() => changeMode('capitals')}>
                 <MapPin size={15} /> Capitals
               </button>
+              <button aria-pressed={mode === 'flags'} onClick={() => changeMode('flags')}>
+                <Flag size={15} /> Flags
+              </button>
             </div>
+            {mode === 'flags' && (
+              <FlagChallenge
+                country={answerCountry}
+                hintUsed={Boolean(round.hintUsed)}
+                ended={ended}
+                onHint={showContinentHint}
+              />
+            )}
             {ended && (
               <>
                 <h2>
@@ -225,7 +249,10 @@ export default function App() {
                 </h2>
                 <p className="card-description">
                   {answerLocation.name}
-                  {mode === 'capitals' ? `, ${answerCountry.name},` : ''} was the mystery {item}.{' '}
+                  {mode === 'capitals' ? `, ${answerCountry.name},` : ''}{' '}
+                  {mode === 'flags'
+                    ? 'was the country behind the flag.'
+                    : `was the mystery ${item}.`}{' '}
                   {won ? 'Beautifully explored.' : 'A new discovery for your next adventure.'}
                 </p>
               </>
@@ -328,13 +355,14 @@ export default function App() {
             <li>
               <span>01</span>
               <div>
-                <strong>Choose countries or capitals</strong>
+                <strong>Choose countries, capitals or flags</strong>
                 <p>
-                  Use the mode buttons to guess a country or a capital city. Search a name or alias,
-                  select a suggestion, then make your guess. Each mode keeps its own saved round.
-                  The globe is for exploring; tapping it never selects a guess. Pinch or use +/− to
-                  zoom up to 32×. Each guess or reveal automatically zooms to suit the country’s
-                  size.
+                  Use the mode buttons to guess a country, a capital city, or the country behind a
+                  flag emoji. In Flags, “Hint: reveal continent” gives a clue without ending your
+                  round or using a guess. Search a name or alias, select a suggestion, then make
+                  your guess. Each mode keeps its own saved round. The globe is for exploring;
+                  tapping it never selects a guess. Pinch or use +/− to zoom up to 32×. Each guess
+                  or reveal automatically zooms to suit the country’s size.
                 </p>
               </div>
             </li>
@@ -343,7 +371,7 @@ export default function App() {
               <div>
                 <strong>Follow the warmth</strong>
                 <p>
-                  Country rounds measure center-to-center distance; capital rounds measure
+                  Country and flag rounds measure center-to-center distance; capital rounds measure
                   city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm is
                   1,000–3,000; hot is under 1,000. Countries sharing a land border are marked
                   “Adjacent” with the hottest color, regardless of distance. In capital mode,
@@ -359,9 +387,9 @@ export default function App() {
                 <strong>Find your somewhere</strong>
                 <p>
                   There’s no guess limit. Find the exact country or capital to win, then start a
-                  fresh adventure. Or use “Give up and reveal answer” below the guesses to end a
-                  round and see its answer. Giving up keeps your guesses and is not a win. Your
-                  rounds save in this browser.
+                  fresh adventure. In Flags, name the country whose flag you see. Or use “Give up
+                  and reveal answer” below the guesses to end a round and see its answer. Giving up
+                  keeps your guesses and is not a win. Your rounds save in this browser.
                 </p>
               </div>
             </li>
@@ -377,6 +405,13 @@ export default function App() {
               government district; Palestine uses Ramallah as its administrative seat. Other
               co-capitals are not separate guesses. See the README for the full data choices and
               limitations.
+            </p>
+            <p>
+              Flag emojis depend on your device and may display as letter codes on some computers.
+              Continent hints follow the country data’s geographic grouping, splitting the Americas
+              into North and South America. Central America and the Caribbean count as North
+              America; transcontinental countries use one group, such as Europe for Russia and Asia
+              for Türkiye.
             </p>
             <p>
               The answer stays unmarked until guessed correctly or revealed by giving up. As a
@@ -412,8 +447,8 @@ export default function App() {
           <h2>A new direction?</h2>
           <p className="dialog-description">
             Your current journey has {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}.
-            Starting over will replace this round with a new mystery {item}. Your other mode's round
-            will be kept.
+            Starting over will replace this round with a new mystery {item}. Your other modes'
+            rounds will be kept.
           </p>
           <button className="primary" onClick={restart}>
             Start a fresh round <ArrowRight size={17} />
@@ -448,6 +483,9 @@ export default function App() {
             {guesses.length === 1 ? 'brilliant guess' : 'curious guesses'}.<br />A whole world well
             explored.{!won && ' This round is complete. Try a fresh one whenever you’re ready.'}
           </p>
+          {mode === 'flags' && round.hintUsed && (
+            <p className="answer-country">Continent hint used</p>
+          )}
           <button className="primary" onClick={restart}>
             Let’s go somewhere new <ArrowRight size={17} />
           </button>

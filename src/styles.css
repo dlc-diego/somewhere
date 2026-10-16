@@ -1420,14 +1420,18 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 4px;
   flex: 1;
   background: none;
-  padding: 10px 8px;
+  padding: 10px 4px;
   min-height: 40px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 11px;
   color: #5e6a59;
+}
+.mode-selector button svg {
+  width: 13px;
+  flex-shrink: 0;
 }
 .mode-selector button[aria-pressed='true'] {
   background: #fffefa;
@@ -1498,4 +1502,41 @@ h1 {
 
 .app-shell > main {
   padding-bottom: 24px;
+}
+
+.flag-challenge {
+  margin: 0 0 22px;
+  padding: 8px 0 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+.mystery-flag {
+  display: block;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 100px;
+  line-height: 1.4;
+}
+.flag-hint-button,
+.continent-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 9px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #425b46;
+}
+.flag-hint-button {
+  background: #eef1e7;
+  border: 1px solid #dce3d2;
+  border-radius: 7px;
+}
+.flag-hint-button:hover {
+  background: #e4ebdc;
+}
+.continent-hint {
+  margin: 0;
+  flex-wrap: wrap;
 }

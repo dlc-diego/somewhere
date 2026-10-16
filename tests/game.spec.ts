@@ -27,6 +27,25 @@ async function seedCapitals(page: Page, active = false) {
       localStorage.setItem('somewhere.mode.v1', 'capitals')
   }, active)
 }
+async function seedFlags(page: Page) {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('somewhere.flags.v1')) {
+      localStorage.setItem(
+        'somewhere.flags.v1',
+        JSON.stringify({
+          version: 2,
+          mode: 'flags',
+          answer: 'FRA',
+          guesses: [],
+          revealed: false,
+          hintUsed: false,
+        }),
+      )
+    }
+    if (!localStorage.getItem('somewhere.mode.v1'))
+      localStorage.setItem('somewhere.mode.v1', 'flags')
+  })
+}
 async function guess(page: Page, query: string, name: string) {
   await page.getByRole('combobox').fill(query)
   await page
@@ -622,4 +641,112 @@ test('another guess replaces the blink and manual controls cancel it', async ({ 
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
   await page.waitForTimeout(1500)
   await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
+})
+
+test('flags: hidden suggestion emojis, optional persistent hint, independent modes and a win', async ({
+  page,
+}) => {
+  await seed(page)
+  await seedCapitals(page)
+  await seedFlags(page)
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  const modes = page.getByRole('group', { name: 'Game mode' }).getByRole('button')
+  expect((await modes.allTextContents()).map((text) => text.trim())).toEqual([
+    'Countries',
+    'Capitals',
+    'Flags',
+  ])
+  await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).toHaveText('🇫🇷')
+  await expect(page.getByRole('img', { name: /France/ })).toHaveCount(0)
+  await expect(page.getByText('Continent:', { exact: false })).toHaveCount(0)
+  await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#bcc6b6')
+  await page.getByRole('combobox').fill('France')
+  await expect(page.getByRole('option').locator('.country-flag')).toHaveCount(0)
+  await expect(page.getByRole('option')).not.toContainText('🇫🇷')
+  await guess(page, 'Japan', 'Japan')
+  await guess(page, 'Japan', 'Japan')
+  await expect(page.getByRole('alert')).toContainText('Already explored')
+  await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
+  await expect(page.locator('.continent-hint')).toHaveText('Continent: Europe')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('combobox')).toBeEnabled()
+  await expect(
+    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
+  ).toHaveCount(1)
+  await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#bcc6b6')
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Flags', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('.continent-hint')).toContainText('Europe')
+  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await guess(page, 'Spain', 'Spain')
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await guess(page, 'Tokyo', 'Tokyo')
+  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  const history = page.getByRole('list', { name: 'Guesses, closest first' })
+  await expect(history.locator('li')).toHaveCount(1)
+  await expect(history).toContainText('Japan')
+  await expect(page.locator('.continent-hint')).toContainText('Europe')
+  const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+  expect(a11y.violations).toEqual([])
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await guess(page, 'France', 'France')
+  await expectGreenAnswerBlink(page)
+  await expect(page.getByRole('dialog', { name: 'You found the mystery flag' })).toBeVisible({
+    timeout: 8000,
+  })
+  await expect(page.getByRole('dialog')).toContainText('France')
+  await expect(page.getByRole('dialog')).toContainText('Continent hint used')
+  await expect(page.getByRole('dialog')).toContainText('2 curious guesses')
+  const saved = await page.evaluate(() => ({
+    flags: JSON.parse(localStorage.getItem('somewhere.flags.v1')!),
+    countries: JSON.parse(localStorage.getItem('somewhere.round.v1')!),
+    capitals: JSON.parse(localStorage.getItem('somewhere.capitals.v1')!),
+  }))
+  expect(saved.flags).toMatchObject({
+    answer: 'FRA',
+    hintUsed: true,
+    guesses: ['JPN', 'FRA'],
+    revealed: false,
+  })
+  expect(saved.countries.guesses).toEqual(['ESP'])
+  expect(saved.capitals.guesses).toEqual(['JPN'])
+  await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+  await expect(page.getByRole('img', { name: 'Mystery flag', exact: true })).not.toHaveText('🇫🇷')
+  await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toBeVisible()
+  await expect(page.locator('.continent-hint')).toHaveCount(0)
+})
+
+test('flags: hint-free win, hint-only restart protection and giving up without a guess', async ({
+  page,
+}) => {
+  await seedFlags(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await guess(page, 'France', 'France')
+  await expect(page.getByRole('dialog', { name: 'You found the mystery flag' })).toBeVisible()
+  await expect(page.getByRole('dialog')).not.toContainText('Continent hint used')
+  await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+  await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
+  const hint = await page.locator('.continent-hint').textContent()
+  await page.getByRole('button', { name: 'New round' }).click()
+  await expect(page.getByRole('dialog', { name: 'Start a new round?' })).toBeVisible()
+  await page.getByRole('button', { name: 'Keep exploring this round' }).click()
+  await expect(page.locator('.continent-hint')).toHaveText(hint!)
+  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible()
+  await expect(page.getByRole('dialog')).toContainText('Answer revealed after 0')
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.flags.v1')!))
+  expect(saved).toMatchObject({ mode: 'flags', revealed: true, hintUsed: true, guesses: [] })
+  await expect(page.locator('[data-revealed="true"]').first()).toHaveAttribute('fill', '#28755b')
+  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await page.reload()
+  await expect(page.getByRole('combobox')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Explore another round' }).click()
+  await expect(page.getByRole('combobox')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toBeVisible()
 })
