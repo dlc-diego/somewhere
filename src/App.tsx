@@ -16,6 +16,8 @@ import FlagChallenge from './components/FlagChallenge'
 import FlagImage from './components/FlagImage'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
+import VictoryCelebration from './components/VictoryCelebration'
+import { createCelebrationPicker, type Celebration } from './lib/celebrations'
 import {
   addGuess,
   guessDetails,
@@ -60,6 +62,9 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('')
   const [copied, setCopied] = useState(false)
   const [resultPending, setResultPending] = useState(false)
+  const [pickCelebration] = useState(() => createCelebrationPicker())
+  const [celebration, setCelebration] = useState<Celebration | null>(null)
+  const finishCelebration = useCallback(() => setCelebration(null), [])
   const globePanel = useRef<HTMLElement>(null)
   const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
   const guesses = guessDetails(round)
@@ -122,7 +127,10 @@ export default function App() {
     setAnnouncement(
       `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
-    if (hasWon(result.round)) setResultPending(true)
+    if (hasWon(result.round)) {
+      setCelebration(prefersReducedMotion() ? null : pickCelebration())
+      setResultPending(true)
+    }
   }
   function restart() {
     setRound(newRound(round.answer, mode))
@@ -130,6 +138,7 @@ export default function App() {
     setDialog(null)
     setCopied(false)
     setResultPending(false)
+    setCelebration(null)
     setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
   function requestRestart() {
@@ -147,6 +156,7 @@ export default function App() {
     setDialog(null)
     setCopied(false)
     setResultPending(false)
+    setCelebration(null)
     setAnnouncement(`Now guessing ${nextMode}. Each mode keeps its own round.`)
   }
   function giveUp() {
@@ -469,9 +479,15 @@ export default function App() {
       {dialog === 'result' && (
         <Dialog
           title={won ? `You found the mystery ${item}` : 'Answer revealed'}
-          onClose={() => setDialog(null)}
+          onClose={() => {
+            setDialog(null)
+            setCelebration(null)
+          }}
           className="win-dialog"
         >
+          {won && celebration && (
+            <VictoryCelebration effect={celebration} onComplete={finishCelebration} />
+          )}
           <span className="victory-symbol">
             {won ? <Trophy size={32} strokeWidth={1.5} /> : <Globe2 size={32} strokeWidth={1.5} />}
           </span>

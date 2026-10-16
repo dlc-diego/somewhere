@@ -87,6 +87,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   await page.getByRole('button', { name: 'Make a guess' }).click()
   await expect(page.getByRole('alert')).toContainText('Select a country')
   await guess(page, 'Japan', 'Japan')
+  await expect(page.locator('.victory-celebration')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /1\. Japan.*kilometers, Cold/ })).toBeVisible()
   await expect(page.locator('[data-country="392"]').first()).toHaveAttribute('data-guessed', 'true')
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
@@ -532,6 +533,7 @@ for (const mode of ['countries', 'capitals'] as const) {
     await expect(page.getByRole('dialog', { name: 'Answer revealed' })).toBeVisible({
       timeout: 8000,
     })
+    await expect(page.locator('.victory-celebration')).toHaveCount(0)
     await expect(page.locator('.guess-country-blink, .guess-marker-blink')).toHaveCount(0)
     const answer = mode === 'capitals' ? 'Paris' : 'France'
     await expect(page.getByRole('dialog')).toContainText(answer)
@@ -787,4 +789,113 @@ test('flags: hint-free win, hint-only restart protection and giving up without a
   await page.getByRole('button', { name: 'Explore another round' }).click()
   await expect(page.getByRole('combobox')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toBeVisible()
+})
+
+const victoryEffects = [
+  'confetti',
+  'fireworks',
+  'emoji-parade',
+  'heart-fountains',
+  'shooting-stars',
+  'rainbow-bubbles',
+]
+for (const [index, effect] of victoryEffects.entries()) {
+  test(`full-screen victory: ${effect}`, async ({ page }) => {
+    await seed(page)
+    if (index % 3 === 1) await seedCapitals(page, true)
+    if (index % 3 === 2) await seedFlags(page)
+    // Control only the shuffled bag, outside the app. Particle positions remain random.
+    await page.addInitScript(() => {
+      const original = Math.random
+      const state = window as Window & { victoryRandom?: number[] }
+      Math.random = () => state.victoryRandom?.shift() ?? original()
+    })
+    await page.goto('/')
+    await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+    const sequence = Array(5).fill(0.999)
+    if (index) sequence[5 - index] = 0
+    await page.evaluate((values) => {
+      Object.assign(window, { victoryRandom: values })
+    }, sequence)
+    const answer = index % 3 === 1 ? 'Paris' : 'France'
+    await guess(page, answer, answer)
+    await expect(page.locator('.victory-celebration')).toHaveCount(0)
+    const canvas = page.locator('.victory-celebration')
+    await expect(canvas).toHaveAttribute('data-effect', effect, { timeout: 8000 })
+    await expect(canvas).toHaveAttribute('aria-hidden', 'true')
+    await expect(canvas).toHaveCSS('pointer-events', 'none')
+    const viewport = page.viewportSize()!
+    const box = (await canvas.boundingBox())!
+    expect(box.x).toBeCloseTo(0, 0)
+    expect(box.y).toBeCloseTo(0, 0)
+    expect(box.width).toBeCloseTo(viewport.width, 0)
+    expect(box.height).toBeCloseTo(viewport.height, 0)
+    // Check actual drawing across the viewport, including beyond the result card.
+    await expect
+      .poll(() =>
+        canvas.evaluate((node) => {
+          const el = node as HTMLCanvasElement
+          const data = el.getContext('2d')!.getImageData(0, 0, el.width, el.height).data
+          const dialog = el.closest('dialog')!.getBoundingClientRect()
+          const ratio = el.width / innerWidth
+          let outside = 0
+          for (let y = 0; y < el.height; y += 8) {
+            for (let x = 0; x < el.width; x += 8) {
+              if (
+                data[(y * el.width + x) * 4 + 3] > 10 &&
+                (x / ratio < dialog.left ||
+                  x / ratio > dialog.right ||
+                  y / ratio < dialog.top ||
+                  y / ratio > dialog.bottom)
+              )
+                outside++
+            }
+          }
+          return outside
+        }),
+      )
+      .toBeGreaterThan(0)
+    if (index === 0) {
+      await expect(canvas).toHaveCount(0, { timeout: 6500 })
+      await expect(page.getByRole('dialog')).toBeVisible()
+    }
+    if (index === 3) {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await expect(canvas).toHaveCount(0)
+    }
+    if (index === 1) {
+      await page.getByRole('button', { name: 'Let’s go somewhere new' }).click()
+      await expect(canvas).toHaveCount(0)
+      await expect(page.getByRole('combobox')).toBeVisible()
+    } else {
+      // Normal clicks must work while the overlay is still painting.
+      await page.getByRole('button', { name: 'Close dialog' }).click()
+      await expect(canvas).toHaveCount(0)
+      await page.getByRole('button', { name: 'See your discovery' }).click()
+      await expect(canvas).toHaveCount(0)
+      await page.reload()
+      await expect(canvas).toHaveCount(0)
+    }
+  })
+}
+
+test('victory effects respect reduced motion and cancel when the mode changes during arrival', async ({
+  page,
+}) => {
+  await seed(page)
+  await seedCapitals(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await guess(page, 'France', 'France')
+  await expect(page.getByRole('dialog', { name: 'You found the mystery country' })).toBeVisible()
+  await expect(page.locator('.victory-celebration')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page.clock.install()
+  await guess(page, 'Paris', 'Paris')
+  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page.clock.fastForward(6500)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.locator('.victory-celebration')).toHaveCount(0)
 })

@@ -36,6 +36,7 @@ In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm 
 - Only an exact country or selected-capital match wins. A tiny nonzero distance is displayed as `<1 km`.
 - Guess history is sorted by unrounded distance for the selected mode, closest first, with original guess numbers preserved. The closest row has a highlighted background and a “Closest guess” badge; it stays pinned while the desktop list scrolls. Distance ties keep the original guess order. Tap a history entry to center it on the globe. Duplicate guesses are rejected. On phones, search sits above the globe; submitting a guess closes the keyboard and smoothly centers the globe on screen. After a short pause, the globe glides to your guess and zooms based on country area: smaller countries get a closer view, larger ones retain regional context. Automatic zoom ranges from 1.3× to 16×; manual controls reach 32×. Capital guesses use the area of their country while centering the city. Only after that movement finishes, the guessed country and any capital/tiny-country marker blink slowly in their heat color three times (about four seconds), then stay solid. A new guess, manual rotation, or resetting cancels the previous cue. Reduced-motion preferences skip both movement and blinking. Correct guesses and revealed answers blink green. The result dialog waits for the cue to finish so it does not cover the location.
 - The **Give up and reveal answer** button is below the guesses and above the footer. It ends the current mode’s round, reveals the answer on the globe in green, and preserves the guess history. The reveal uses the same size-aware zoom. After the globe arrives, the answer and its marker blink three times, then stay green. It does not add a winning guess or count as a win, and it works before any guesses. Other modes are unaffected.
+- Correct guesses in all three modes get one of six full-screen victory effects: **Confetti shower**, **Fireworks**, **Emoji parade**, **Heart fountains**, **Shooting stars**, or **Rainbow bubbles**. A shuffled bag shared across modes uses all six before reshuffling and prevents an immediate repeat at the boundary. Effects begin with the result dialog after the green globe cue, last 4.8 seconds, and leave controls clickable. Wrong guesses, give-up reveals, reopening results, and refreshing a completed game do not launch effects. Closing the dialog, starting another round, switching mode, hiding the tab, or enabling reduced motion cancels them; reduced-motion users get the normal static win screen. Emoji parade uses standard celebration/heart/globe emojis, with no flag emoji dependency.
 - A completed round shows the answer, guess count, and replay controls. A new round during an active game requires confirmation.
 - All three rounds, all guesses, the selected mode, and revealed/completed states are saved in this browser’s `localStorage`. Invalid saves recover with a message. If storage is disabled or full, gameplay continues with a warning. Progress is local to the browser and is not synced between devices or tabs.
 
@@ -45,7 +46,7 @@ Daily challenges are deliberately deferred; replayable random rounds cover the c
 
 Cloudflare Pages serves this app as static files with HTTPS and a free `pages.dev` address. There is no custom domain requirement and no game server to run. Hosting and build quotas remain subject to the provider’s current free-plan terms; the app itself makes no metered map or country API calls.
 
-1. Commit this project and push it to your GitHub repository, `dlc-diego/wep-app`. The initial checkout was empty; the full application must be present on the connected branch before deployment.
+1. Commit this project and push it to your GitHub repository, `dlc-diego/somewhere`. The initial checkout was empty; the full application must be present on the connected branch before deployment.
 2. Sign in to Cloudflare and create a **Pages** project connected to that Git repository. Choose the branch containing the app (normally `main`).
 3. Configure:
 
@@ -69,9 +70,9 @@ A deployment workflow is included at [.github/workflows/deploy-pages.yml](.githu
 1. Push the app to `main` in your GitHub repository.
 2. In the repository’s **Settings → Pages**, choose **GitHub Actions** as the deployment source.
 3. In **Actions**, run **Deploy to GitHub Pages**, or push another commit to `main`.
-4. Wait for the deployment job to succeed, then use the URL provided by GitHub Pages (typically `https://dlc-diego.github.io/wep-app/`).
+4. Wait for the deployment job to succeed, then use the URL provided by GitHub Pages (typically `https://dlc-diego.github.io/somewhere/`).
 
-Vite’s relative base (`./`) and relative map-data paths support both domain-root hosting and the `/wep-app/` project path. No client-side router or rewrite rules are needed. The app’s nested-path loading is covered by a browser test.
+Vite’s relative base (`./`) and relative map-data paths support both domain-root hosting and the `/somewhere/` project path. No client-side router or rewrite rules are needed. The app’s nested-path loading is covered by a browser test.
 
 ### Netlify alternative
 
@@ -92,7 +93,7 @@ On Linux you may need Playwright’s documented browser system dependencies. In 
 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm run test:e2e
 ```
 
-Browser tests cover country, capital, and flag win/replay journeys, flag hint persistence, hidden autocomplete flags, image loading/retry, and flag assets under repository subpaths, giving up (including with no guesses), preserving separate modes, old-save migration, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement without map-based guess selection, adjacent-country heat, closest-first ranking and highlighting, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, animated guess arrival, post-arrival heat-color blinking and automatic stop, mobile globe centering, reduced-motion behavior, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
+Browser tests cover country, capital, and flag win/replay journeys, flag hint persistence, hidden autocomplete flags, image loading/retry, and flag assets under repository subpaths, giving up (including with no guesses), preserving separate modes, old-save migration, duplicate handling, aliases and keyboard input, refresh persistence, restart confirmation, globe movement without map-based guess selection, adjacent-country heat, closest-first ranking and highlighting, tiny-island markers, map loading failure and retry, corrupt storage, responsive overflow, animated guess arrival, post-arrival heat-color blinking and automatic stop, mobile globe centering, reduced-motion behavior, full-screen rendering of all six victory effects, animation cleanup and reduced-motion cancellation, and automated accessibility checks. Tests inject a known round through browser storage; the production app contains no answer override or test-only endpoint. The tests do not establish Safari/iOS compatibility or real-device performance; those still deserve a quick check on the phone used to play.
 
 ## Data, accuracy, and licensing
 
@@ -135,7 +136,7 @@ tests/            Browser tests using production assets
 
 **Answer privacy:** The globe receives guesses and only receives the answer location after the player explicitly gives up; correct guesses already appear in the guess list. It does not pan to or mark an answer before a correct guess or giving up. However, a fully static game must calculate distances in the browser, so the answer exists in memory and saved storage. A player using developer tools can find it. Obfuscation would not solve this. Strong secrecy requires a server to hold the answer and evaluate guesses; that complexity is intentionally avoided for this personal game.
 
-**Performance:** Country boundaries and D3 are loaded separately from the initial game UI. Search works while the map loads and after map failures. Geometry is simplified ahead of time, projection paths are memoized, there is no animation/render loop when idle, and no remote imagery or web fonts. SVG is a shaded orthographic projection with 3D-like rotation, not a WebGL 3D scene. Current measurements and limits are recorded in the technical plan.
+**Performance:** Country boundaries and D3 are loaded separately from the initial game UI. Search works while the map loads and after map failures. Geometry is simplified ahead of time, projection paths are memoized, there is no animation/render loop when idle, and no remote imagery or web fonts. Victory effects use a short-lived canvas with a capped pixel ratio and particle count; no animation runs after the effect completes. SVG is a shaded orthographic projection with 3D-like rotation, not a WebGL 3D scene. Current measurements and limits are recorded in the technical plan.
 
 Once GitHub Pages is configured to use GitHub Actions, pushes to `main` automatically rebuild and deploy the site. The deployment workflow reports its published URL. A local build alone does not publish the app.
 
