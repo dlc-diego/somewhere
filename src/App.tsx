@@ -1,15 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ArrowRight,
-  Check,
-  CircleHelp,
-  Compass,
-  Flag,
-  Globe2,
-  Heart,
-  MapPin,
-  RotateCcw,
-} from 'lucide-react'
+import { ArrowRight, Check, Compass, Flag, Globe2, Heart, MapPin, Sun, Moon } from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
 import ValHeart from './components/ValHeart'
 import FlagChallenge from './components/FlagChallenge'
@@ -39,12 +29,14 @@ import {
 } from './lib/countries'
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
 import { prefersReducedMotion } from './lib/motion'
+import { useTheme } from './lib/useTheme'
 
 const Globe = lazy(() => import('./components/Globe'))
-type DialogType = 'help' | 'restart' | null
+type DialogType = 'help' | null
 type QueuedCelebration = { sequence: number; effect: Celebration }
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme()
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
   const [warning, setWarning] = useState(initial.warning)
@@ -119,10 +111,6 @@ export default function App() {
     setCopied(false)
     setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
   }
-  function requestRestart() {
-    if ((round.guesses.length || round.hintUsed) && !ended) setDialog('restart')
-    else restart()
-  }
   function changeMode(nextMode: GameMode) {
     if (nextMode === mode) return
     roundsCache.current.set(mode, round)
@@ -170,18 +158,17 @@ export default function App() {
           somewhere<span className="brand-dot">.</span>
         </a>
         <span className="brand-tagline">A little world of discovery</span>
-        <nav aria-label="Game actions">
+        <nav aria-label="Appearance">
           <button
-            className="help-button"
-            aria-label="How to play"
-            onClick={() => setDialog('help')}
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <CircleHelp size={17} />
-            <span>How to play</span>
-          </button>
-          <button className="new-game" onClick={requestRestart}>
-            <RotateCcw size={15} />
-            <span>New round</span>
+            <span className="theme-icons" aria-hidden="true">
+              <Sun size={15} />
+              <Moon size={15} />
+            </span>
+            <span>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span>
           </button>
         </nav>
       </header>
@@ -423,25 +410,6 @@ export default function App() {
           </div>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s explore <ArrowRight size={17} />
-          </button>
-        </Dialog>
-      )}
-      {dialog === 'restart' && (
-        <Dialog title="Start a new round?" onClose={() => setDialog(null)}>
-          <span className="dialog-emblem">
-            <RotateCcw size={28} />
-          </span>
-          <h2>A new direction?</h2>
-          <p className="dialog-description">
-            Your current journey has {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}.
-            Starting over will replace this round with a new mystery {item}. Your other modes'
-            rounds will be kept.
-          </p>
-          <button className="primary" onClick={restart}>
-            Start a fresh round <ArrowRight size={17} />
-          </button>
-          <button className="secondary" onClick={() => setDialog(null)}>
-            Keep exploring this round
           </button>
         </Dialog>
       )}

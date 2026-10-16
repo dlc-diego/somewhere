@@ -127,7 +127,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   expect(errors).toEqual([])
 })
 
-test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({ page }) => {
+test('keyboard autocomplete, aliases, reveal/replay and keyboard globe', async ({ page }) => {
   await seed(page)
   await page.goto('/')
   const input = page.getByRole('combobox')
@@ -138,12 +138,7 @@ test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({
   await expect(
     page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
   ).toHaveCount(1)
-  await page.getByRole('button', { name: 'New round' }).click()
-  await expect(page.getByRole('dialog', { name: 'Start a new round?' })).toBeVisible()
-  await page.getByRole('button', { name: 'Keep exploring this round' }).click()
-  await expect(
-    page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
-  ).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'New round' })).toHaveCount(0)
   const globe = page.getByRole('group', { name: /Interactive globe/ })
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   const before = await page.locator('[data-country="250"]').first().getAttribute('d')
@@ -152,8 +147,8 @@ test('keyboard autocomplete, aliases, safe restart and keyboard globe', async ({
   await expect
     .poll(() => page.locator('[data-country="250"]').first().getAttribute('d'))
     .not.toBe(before)
-  await page.getByRole('button', { name: 'New round' }).click()
-  await page.getByRole('button', { name: 'Start a fresh round' }).click()
+  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await page.getByRole('button', { name: 'Explore another round' }).click()
   await expect(
     page.getByRole('heading', { name: 'Every adventure starts somewhere.' }),
   ).toBeVisible()
@@ -166,7 +161,10 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await page.locator('header').getByRole('button', { name: 'How to play' }).click()
+  await page
+    .locator('footer')
+    .getByRole('button', { name: /How to play/ })
+    .click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Let’s explore' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
@@ -256,7 +254,10 @@ test('core screens have no automated accessibility violations', async ({ page })
   await check()
   await guess(page, 'Spain', 'Spain')
   await check()
-  await page.locator('header').getByRole('button', { name: 'How to play' }).click()
+  await page
+    .locator('footer')
+    .getByRole('button', { name: /How to play/ })
+    .click()
   await check()
 })
 
@@ -763,7 +764,7 @@ test('a failed flag image can be retried without revealing the country or resett
   expect(saved).toMatchObject({ answer: 'FRA', guesses: [], hintUsed: true, revealed: false })
 })
 
-test('flags: hint-free win, hint-only restart protection and giving up without a guess', async ({
+test('flags: hint-free win, hint-only persistence and giving up without a guess', async ({
   page,
 }) => {
   await seedFlags(page)
@@ -775,9 +776,8 @@ test('flags: hint-free win, hint-only restart protection and giving up without a
   await page.getByRole('button', { name: 'Explore another round' }).click()
   await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
   const hint = await page.locator('.continent-hint').textContent()
-  await page.getByRole('button', { name: 'New round' }).click()
-  await expect(page.getByRole('dialog', { name: 'Start a new round?' })).toBeVisible()
-  await page.getByRole('button', { name: 'Keep exploring this round' }).click()
+  await expect(page.getByRole('button', { name: 'New round' })).toHaveCount(0)
+  await page.reload()
   await expect(page.locator('.continent-hint')).toHaveText(hint!)
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
@@ -961,7 +961,8 @@ test('wins queue in order and each finishes across immediate restarts, new round
   const first = (await canvas.elementHandle())!
   const firstEffect = await canvas.getAttribute('data-effect')
   await page.getByRole('button', { name: 'Countries', exact: true }).click()
-  await page.getByRole('button', { name: 'New round' }).click()
+  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await page.getByRole('button', { name: 'Explore another round' }).click()
   await page.getByRole('button', { name: 'Flags', exact: true }).click()
   await guess(page, 'France', 'France')
   await page.clock.fastForward(4300)

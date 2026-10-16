@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f8f7f2" />
+    <script>
+      // Apply the saved palette before the first paint, including on a slow connection.
+      let theme
+      try {
+        theme = localStorage.getItem('somewhere.theme.v1')
+      } catch {}
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.dataset.theme = theme
+      document.documentElement.style.colorScheme = theme
+      document.querySelector('meta[name="theme-color"]').content =
+        theme === 'dark' ? '#101c20' : '#f8f7f2'
+    </script>
     <meta
       name="description"
       content="One world. One mystery. Find a secret country or capital with a little curiosity and a warmer-or-colder globe. A free geography guessing game."
