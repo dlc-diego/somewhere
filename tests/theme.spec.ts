@@ -12,8 +12,16 @@ test('system theme, explicit choice, persistence and early paint agree', async (
   await expect(page.getByRole('button', { name: 'New round' })).toHaveCount(0)
   await page.emulateMedia({ colorScheme: 'light' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /\/favicon\.svg$/)
   await header.getByRole('button', { name: 'Switch to dark mode' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  const favicon = page.locator('link[rel="icon"]')
+  await expect(favicon).toHaveAttribute('href', /\/favicon-dark\.svg$/)
+  const iconResponse = await page.request.get(
+    new URL((await favicon.getAttribute('href'))!, page.url()).href,
+  )
+  expect(iconResponse.ok()).toBe(true)
+  expect(await iconResponse.text()).toContain('#62e99a')
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#101c20')
   expect(await page.evaluate(() => localStorage.getItem('somewhere.theme.v1'))).toBe('dark')
   await page.reload()

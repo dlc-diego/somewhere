@@ -22,6 +22,12 @@ export function useTheme() {
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
     document
+      .querySelector('link[rel="icon"]')
+      ?.setAttribute(
+        'href',
+        `${import.meta.env.BASE_URL}favicon${theme === 'dark' ? '-dark' : ''}.svg`,
+      )
+    document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', theme === 'dark' ? '#101c20' : '#f8f7f2')
   }, [theme])

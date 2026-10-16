@@ -72,6 +72,10 @@
   --muted: #737e76;
   --accent: #bd4a2e;
   --logo-accent: #e9855e;
+  --brand-ink: #fff9eb;
+  --brand-dot: #d36e49;
+  --detail-accent: #85624b;
+  --heart-highlight: #fff9eb;
   --line: #e4e5db;
   --serif: Georgia, 'Times New Roman', serif;
 }
@@ -147,7 +151,7 @@ button:hover:not(:disabled) {
 }
 .brand-icon {
   background: var(--logo-accent);
-  color: #fff9eb;
+  color: var(--brand-ink);
   display: grid;
   place-items: center;
   width: 37px;
@@ -156,7 +160,7 @@ button:hover:not(:disabled) {
   margin-right: 9px;
 }
 .brand-dot {
-  color: #d36e49;
+  color: var(--brand-dot);
 }
 .brand-tagline {
   font-size: 11px;
@@ -678,7 +682,7 @@ h1 {
   gap: 6px;
 }
 .site-footer > span svg {
-  color: var(--heat-warm-text);
+  color: var(--detail-accent);
 }
 .text-button {
   display: inline-flex;
@@ -758,7 +762,7 @@ h1 {
 .help-steps li > span {
   font-size: 10px;
   padding-top: 3px;
-  color: var(--heat-warm-text);
+  color: var(--detail-accent);
 }
 .help-steps strong {
   font-size: 13px;
@@ -1511,7 +1515,7 @@ h1 {
 .val-heart-button.is-beating .title-heart {
   color: var(--logo-accent);
   fill: currentColor;
-  filter: drop-shadow(0 0 8px #e9855e55);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--logo-accent) 33%, transparent));
   animation:
     val-heartbeat 900ms ease-in-out 4,
     val-heart-tint var(--heart-duration) ease-in-out both;
@@ -1554,7 +1558,7 @@ h1 {
   }
   50%,
   70% {
-    color: #fff9eb;
+    color: var(--heart-highlight);
   }
 }
 @keyframes val-heart-bloom {
@@ -1631,17 +1635,22 @@ h1 {
   --map-status-border: #41585f;
   --loading-track: #3a5055;
   --loading-accent: #99bca2;
-  --heart-outline: #d6a48b;
+  --heart-outline: var(--accent);
   --hint-text: #b8d6c2;
   --hint-hover: #304a40;
   --reveal-hover: #21373d;
-  --dialog-accent: #f1a580;
-  --accent-hover: #ffb391;
-  --accent-disabled: #8f6151;
+  --dialog-accent: var(--accent);
+  --accent-hover: #87f2b1;
+  --accent-disabled: #32694c;
   --primary-ink: #14242a;
   --muted: #afbeb7;
   --line: #30454b;
-  --accent: #f0a17f;
+  --accent: #62e99a;
+  --logo-accent: var(--accent);
+  --brand-ink: var(--primary-ink);
+  --brand-dot: var(--accent);
+  --detail-accent: var(--accent);
+  --heart-highlight: #e8fff0;
 }
 
 .theme-toggle {
