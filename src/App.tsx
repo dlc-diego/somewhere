@@ -1,5 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon } from 'lucide-react'
+import ExperienceSwitcher from './components/ExperienceSwitcher'
+import ExperienceTransition from './components/ExperienceTransition'
+import UnderConstruction from './components/UnderConstruction'
+import { useExperience, type Experience } from './lib/useExperience'
 import ModeSelector from './components/ModeSelector'
 import { JourneyChallenge, JourneyHistory } from './components/BorderJourney'
 import { shortestBorderRoute } from './lib/journey'
@@ -40,6 +44,11 @@ type QueuedCelebration = { sequence: number; effect: Celebration }
 
 export default function App() {
   const { theme, toggleTheme } = useTheme()
+  const { experience, transition, switchExperience } = useExperience()
+  const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
+  useEffect(() => {
+    if (experience === 'somewhere') setHasVisitedSomewhere(true)
+  }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
   const [warning, setWarning] = useState(initial.warning)
@@ -84,7 +93,8 @@ export default function App() {
   }, [round])
 
   useEffect(() => {
-    if (!focus || !window.matchMedia('(max-width: 820px)').matches) return
+    if (experience !== 'somewhere' || !focus || !window.matchMedia('(max-width: 820px)').matches)
+      return
     // Let the mobile keyboard close before centering the globe in the viewport.
     if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur()
     const timer = window.setTimeout(() => {
@@ -94,7 +104,7 @@ export default function App() {
       })
     }, 120)
     return () => window.clearTimeout(timer)
-  }, [focus])
+  }, [focus, experience])
 
   const focusCountry = useCallback((country: Country, location: Location = country) => {
     const sequence = ++focusSequence.current
@@ -107,6 +117,17 @@ export default function App() {
       focusCountry(current, locationFor(current, mode))
     }
   }, [mode, round.start, round.answer, focusCountry])
+
+  function changeExperience(next: Experience) {
+    setDialog(null)
+    switchExperience(next)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    setAnnouncement(
+      next === 'something'
+        ? 'Something. Under construction.'
+        : 'Welcome back to Somewhere. Your journey is saved.',
+    )
+  }
 
   function submit(country: Country) {
     const result = addGuess(round, country.id)
@@ -172,18 +193,18 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      <a href="#country-search" className="skip-link">
-        Skip to guessing
+    <div className="app-shell" data-experience={experience} data-switch-phase={transition?.phase}>
+      <a
+        href={experience === 'somewhere' ? '#country-search' : '#construction-title'}
+        className="skip-link"
+      >
+        {experience === 'somewhere' ? 'Skip to guessing' : 'Skip to content'}
       </a>
       <header className="site-header">
-        <a className="brand" href="./" aria-label="Somewhere home">
-          <span className="brand-icon">
-            <Compass size={23} strokeWidth={1.5} />
-          </span>
-          somewhere<span className="brand-dot">.</span>
-        </a>
-        <span className="brand-tagline">A little world of discovery</span>
+        <ExperienceSwitcher experience={experience} onChange={changeExperience} />
+        <span className="brand-tagline">
+          {experience === 'somewhere' ? 'A little world of discovery' : 'A little more to discover'}
+        </span>
         <nav aria-label="Appearance">
           <button
             className="theme-toggle"
@@ -205,158 +226,178 @@ export default function App() {
             Built for Val <ValHeart />
           </h1>
         </section>
-        {warning && (
-          <div className="storage-warning" role="status">
-            {warning}
-          </div>
-        )}
-        <div className="game-layout">
-          <section
-            className="search-card"
-            id="country-search"
-            aria-label={
-              isJourney
-                ? 'Border Journey search'
-                : mode === 'shapes'
-                  ? 'Shape search'
-                  : mode === 'flags'
-                    ? 'Flag search'
-                    : mode === 'capitals'
-                      ? 'Capital search'
-                      : 'Country search'
-            }
-          >
-            <ModeSelector mode={mode} onChange={changeMode} />
-            {isJourney && <JourneyChallenge round={round} />}
-            {(mode === 'flags' || mode === 'shapes') && (
-              <VisualChallenge
-                mode={mode}
-                key={`clue:${mode}:${round.answer}`}
-                country={answerCountry}
-                hintUsed={Boolean(round.hintUsed)}
-                ended={ended}
-                onHint={showContinentHint}
-              />
-            )}
-            {ended && !isJourney && (
-              <>
-                <h2>
-                  {won ? 'You found your somewhere.' : `The answer was ${answerLocation.name}.`}
-                </h2>
-                <p className="card-description">
-                  {answerLocation.name}
-                  {mode === 'capitals' ? `, ${answerCountry.name},` : ''}{' '}
-                  {mode === 'flags'
-                    ? 'was the country behind the flag.'
-                    : mode === 'shapes'
-                      ? 'was the country behind the shape.'
-                      : `was the mystery ${item}.`}{' '}
-                  {won ? 'Beautifully explored.' : 'A new discovery for your next adventure.'}
-                </p>
-              </>
-            )}
-            {ended ? (
-              <div className="completed-actions">
-                <button className="primary" onClick={restart}>
-                  Explore another round <ArrowRight size={18} />
-                </button>
-                <button className="text-button" onClick={share}>
-                  {copied ? <Check size={15} /> : <Heart size={15} />}
-                  {copied ? 'Result copied' : won ? 'Copy your discovery' : 'Copy your result'}
-                </button>
-              </div>
-            ) : (
-              <GuessSearch
-                mode={mode}
-                key={`${mode}:${round.answer}`}
-                onGuess={submit}
-                guessed={isJourney ? [] : round.guesses}
-                disabled={ended}
-              />
-            )}
-          </section>
-          <section ref={globePanel} className="globe-panel" aria-label="Explore the world">
-            <Suspense
-              fallback={
-                <div className="globe-loading" role="status">
-                  <Globe2 size={35} />
-                  <p>Getting the world ready…</p>
+        <div className="experience-view" hidden={experience !== 'somewhere'}>
+          {(hasVisitedSomewhere || experience === 'somewhere') && (
+            <>
+              {warning && (
+                <div className="storage-warning" role="status">
+                  {warning}
                 </div>
-              }
-            >
-              <Globe
-                guesses={guesses}
-                focus={focus}
-                mode={mode}
-                journey={
-                  isJourney
-                    ? {
-                        start: round.start!,
-                        destination: round.answer,
-                        route: [round.start!, ...round.guesses],
-                        remaining: round.revealed
-                          ? shortestBorderRoute(round.guesses.at(-1) || round.start!, round.answer)!
-                          : [],
+              )}
+              <div className="game-layout">
+                <section
+                  className="search-card"
+                  id="country-search"
+                  aria-label={
+                    isJourney
+                      ? 'Border Journey search'
+                      : mode === 'shapes'
+                        ? 'Shape search'
+                        : mode === 'flags'
+                          ? 'Flag search'
+                          : mode === 'capitals'
+                            ? 'Capital search'
+                            : 'Country search'
+                  }
+                >
+                  <ModeSelector mode={mode} onChange={changeMode} />
+                  {isJourney && <JourneyChallenge round={round} />}
+                  {(mode === 'flags' || mode === 'shapes') && (
+                    <VisualChallenge
+                      mode={mode}
+                      key={`clue:${mode}:${round.answer}`}
+                      country={answerCountry}
+                      hintUsed={Boolean(round.hintUsed)}
+                      ended={ended}
+                      onHint={showContinentHint}
+                    />
+                  )}
+                  {ended && !isJourney && (
+                    <>
+                      <h2>
+                        {won
+                          ? 'You found your somewhere.'
+                          : `The answer was ${answerLocation.name}.`}
+                      </h2>
+                      <p className="card-description">
+                        {answerLocation.name}
+                        {mode === 'capitals' ? `, ${answerCountry.name},` : ''}{' '}
+                        {mode === 'flags'
+                          ? 'was the country behind the flag.'
+                          : mode === 'shapes'
+                            ? 'was the country behind the shape.'
+                            : `was the mystery ${item}.`}{' '}
+                        {won ? 'Beautifully explored.' : 'A new discovery for your next adventure.'}
+                      </p>
+                    </>
+                  )}
+                  {ended ? (
+                    <div className="completed-actions">
+                      <button className="primary" onClick={restart}>
+                        Explore another round <ArrowRight size={18} />
+                      </button>
+                      <button className="text-button" onClick={share}>
+                        {copied ? <Check size={15} /> : <Heart size={15} />}
+                        {copied
+                          ? 'Result copied'
+                          : won
+                            ? 'Copy your discovery'
+                            : 'Copy your result'}
+                      </button>
+                    </div>
+                  ) : (
+                    <GuessSearch
+                      mode={mode}
+                      key={`${mode}:${round.answer}`}
+                      onGuess={submit}
+                      guessed={isJourney ? [] : round.guesses}
+                      disabled={ended}
+                    />
+                  )}
+                </section>
+                <section ref={globePanel} className="globe-panel" aria-label="Explore the world">
+                  <Suspense
+                    fallback={
+                      <div className="globe-loading" role="status">
+                        <Globe2 size={35} />
+                        <p>Getting the world ready…</p>
+                      </div>
+                    }
+                  >
+                    <Globe
+                      guesses={guesses}
+                      focus={focus}
+                      mode={mode}
+                      journey={
+                        isJourney
+                          ? {
+                              start: round.start!,
+                              destination: round.answer,
+                              route: [round.start!, ...round.guesses],
+                              remaining: round.revealed
+                                ? shortestBorderRoute(
+                                    round.guesses.at(-1) || round.start!,
+                                    round.answer,
+                                  )!
+                                : [],
+                            }
+                          : null
                       }
-                    : null
-                }
-                answerReveal={
-                  round.revealed ? { country: answerCountry, location: answerLocation } : null
-                }
-              />
-            </Suspense>
-            {!isJourney && (
-              <div className="temperature-legend" aria-label="Distance color key">
-                <span className="legend-label">Far away</span>
-                <div className="legend-stops">
-                  {(['cold', 'cool', 'warm', 'hot', 'adjacent'] as Temperature[]).map((t) => (
-                    <span key={t}>
-                      <i style={{ backgroundColor: temperatures[t].color }} />
-                      <span>{temperatures[t].label}</span>
-                    </span>
-                  ))}
-                </div>
-                <span className="legend-label">Getting closer</span>
-              </div>
-            )}
-            {isJourney && (
-              <div className="journey-legend" aria-label="Journey color key">
-                <span>
-                  <i className="route-visited" />
-                  Visited
-                </span>
-                <span>
-                  <i className="route-current" />
-                  Current stop
-                </span>
-                <span>
-                  <i className="route-destination" />
-                  Destination
-                </span>
-                <span>
-                  <i className="route-arrived" />
-                  Arrived / revealed
-                </span>
-              </div>
-            )}
-          </section>
+                      answerReveal={
+                        round.revealed ? { country: answerCountry, location: answerLocation } : null
+                      }
+                    />
+                  </Suspense>
+                  {!isJourney && (
+                    <div className="temperature-legend" aria-label="Distance color key">
+                      <span className="legend-label">Far away</span>
+                      <div className="legend-stops">
+                        {(['cold', 'cool', 'warm', 'hot', 'adjacent'] as Temperature[]).map((t) => (
+                          <span key={t}>
+                            <i style={{ backgroundColor: temperatures[t].color }} />
+                            <span>{temperatures[t].label}</span>
+                          </span>
+                        ))}
+                      </div>
+                      <span className="legend-label">Getting closer</span>
+                    </div>
+                  )}
+                  {isJourney && (
+                    <div className="journey-legend" aria-label="Journey color key">
+                      <span>
+                        <i className="route-visited" />
+                        Visited
+                      </span>
+                      <span>
+                        <i className="route-current" />
+                        Current stop
+                      </span>
+                      <span>
+                        <i className="route-destination" />
+                        Destination
+                      </span>
+                      <span>
+                        <i className="route-arrived" />
+                        Arrived / revealed
+                      </span>
+                    </div>
+                  )}
+                </section>
 
-          <div className="history-column">
-            {isJourney ? (
-              <JourneyHistory
-                round={round}
-                onFocus={(country) => focusCountry(country, locationFor(country, mode))}
-              />
-            ) : (
-              <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
-            )}
-          </div>
+                <div className="history-column">
+                  {isJourney ? (
+                    <JourneyHistory
+                      round={round}
+                      onFocus={(country) => focusCountry(country, locationFor(country, mode))}
+                    />
+                  ) : (
+                    <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
+                  )}
+                </div>
+              </div>
+              {!ended && (
+                <div className="give-up-area">
+                  <button className="give-up-button" onClick={giveUp}>
+                    Give up and reveal answer
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        {!ended && (
-          <div className="give-up-area">
-            <button className="give-up-button" onClick={giveUp}>
-              Give up and reveal answer
-            </button>
+        {experience === 'something' && (
+          <div className="experience-view">
+            <UnderConstruction />
           </div>
         )}
       </main>
@@ -364,9 +405,11 @@ export default function App() {
         <span>
           Built for Val <Heart size={12} />
         </span>
-        <button className="text-button" onClick={() => setDialog('help')}>
-          How to play <ArrowRight size={13} />
-        </button>
+        {experience === 'somewhere' && (
+          <button className="text-button" onClick={() => setDialog('help')}>
+            How to play <ArrowRight size={13} />
+          </button>
+        )}
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
@@ -503,6 +546,7 @@ export default function App() {
           </button>
         </Dialog>
       )}
+      {transition && <ExperienceTransition key={transition.sequence} />}
       {celebration && (
         <VictoryCelebration
           key={celebration.sequence}
