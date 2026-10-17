@@ -1,16 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ArrowRight,
-  Check,
-  Compass,
-  Flag,
-  Globe2,
-  Heart,
-  MapPin,
-  Sun,
-  Moon,
-  Shapes,
-} from 'lucide-react'
+import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon } from 'lucide-react'
+import ModeSelector from './components/ModeSelector'
+import { JourneyChallenge, JourneyHistory } from './components/BorderJourney'
+import { shortestBorderRoute } from './lib/journey'
 import GuessSearch from './components/GuessSearch'
 import ValHeart from './components/ValHeart'
 import VisualChallenge from './components/VisualChallenge'
@@ -70,6 +62,7 @@ export default function App() {
   const won = hasWon(round)
   const ended = hasEnded(round)
   const mode = round.mode
+  const isJourney = mode === 'journey'
   const item =
     mode === 'flags'
       ? 'flag'
@@ -108,6 +101,11 @@ export default function App() {
     setFocus({ countryId: country.id, location, sequence })
     return sequence
   }, [])
+  useEffect(() => {
+    if (mode === 'journey' && round.start)
+      focusCountry(countryById.get(round.guesses.at(-1) || round.start)!)
+  }, [mode, round.start, round.answer, focusCountry])
+
   function submit(country: Country) {
     const result = addGuess(round, country.id)
     if (result.error) return result.error
@@ -119,7 +117,9 @@ export default function App() {
       setCelebrations((queue) => [...queue, { sequence, effect }])
     }
     setAnnouncement(
-      `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
+      isJourney
+        ? `${country.name}. Border crossed. ${result.round.guesses.length} crossings.${hasWon(result.round) ? ' Destination reached!' : ''}`
+        : `${latest.location.name}: ${formatDistance(latest.distance)} kilometers. ${temperatures[latest.temperature].label}. ${result.round.guesses.length} guesses.`,
     )
   }
   function restart() {
@@ -127,7 +127,11 @@ export default function App() {
     setFocus(null)
     setDialog(null)
     setCopied(false)
-    setAnnouncement(`A fresh mystery ${item} is ready. Good luck!`)
+    setAnnouncement(
+      isJourney
+        ? 'A fresh border journey is ready. Good luck!'
+        : `A fresh mystery ${item} is ready. Good luck!`,
+    )
   }
   function changeMode(nextMode: GameMode) {
     if (nextMode === mode) return
@@ -154,7 +158,9 @@ export default function App() {
     setAnnouncement(`Continent hint: ${answerCountry.continent}. Keep guessing!`)
   }
   async function share() {
-    const text = `${won ? 'I found' : 'I revealed'} ${answerLocation.name} (${mode}) ${won ? 'in' : 'after'} ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'} on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
+    const text = isJourney
+      ? `I ${won ? 'completed' : 'explored'} a Border Journey from ${countryById.get(round.start!)!.name} to ${answerCountry.name} in ${round.guesses.length} crossings on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
+      : `${won ? 'I found' : 'I revealed'} ${answerLocation.name} (${mode}) ${won ? 'in' : 'after'} ${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'} on Somewhere! 🌍\n${window.location.href.split('#')[0]}`
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -207,29 +213,19 @@ export default function App() {
             className="search-card"
             id="country-search"
             aria-label={
-              mode === 'shapes'
-                ? 'Shape search'
-                : mode === 'flags'
-                  ? 'Flag search'
-                  : mode === 'capitals'
-                    ? 'Capital search'
-                    : 'Country search'
+              isJourney
+                ? 'Border Journey search'
+                : mode === 'shapes'
+                  ? 'Shape search'
+                  : mode === 'flags'
+                    ? 'Flag search'
+                    : mode === 'capitals'
+                      ? 'Capital search'
+                      : 'Country search'
             }
           >
-            <div className="mode-selector" role="group" aria-label="Game mode">
-              <button aria-pressed={mode === 'countries'} onClick={() => changeMode('countries')}>
-                <Globe2 size={15} /> Countries
-              </button>
-              <button aria-pressed={mode === 'capitals'} onClick={() => changeMode('capitals')}>
-                <MapPin size={15} /> Capitals
-              </button>
-              <button aria-pressed={mode === 'flags'} onClick={() => changeMode('flags')}>
-                <Flag size={15} /> Flags
-              </button>
-              <button aria-pressed={mode === 'shapes'} onClick={() => changeMode('shapes')}>
-                <Shapes size={15} /> Shapes
-              </button>
-            </div>
+            <ModeSelector mode={mode} onChange={changeMode} />
+            {isJourney && <JourneyChallenge round={round} />}
             {(mode === 'flags' || mode === 'shapes') && (
               <VisualChallenge
                 mode={mode}
@@ -240,7 +236,7 @@ export default function App() {
                 onHint={showContinentHint}
               />
             )}
-            {ended && (
+            {ended && !isJourney && (
               <>
                 <h2>
                   {won ? 'You found your somewhere.' : `The answer was ${answerLocation.name}.`}
@@ -272,7 +268,7 @@ export default function App() {
                 mode={mode}
                 key={`${mode}:${round.answer}`}
                 onGuess={submit}
-                guessed={round.guesses}
+                guessed={isJourney ? [] : round.guesses}
                 disabled={ended}
               />
             )}
@@ -290,27 +286,65 @@ export default function App() {
                 guesses={guesses}
                 focus={focus}
                 mode={mode}
+                journey={
+                  isJourney
+                    ? {
+                        start: round.start!,
+                        destination: round.answer,
+                        route: [round.start!, ...round.guesses],
+                        remaining: round.revealed
+                          ? shortestBorderRoute(round.guesses.at(-1) || round.start!, round.answer)!
+                          : [],
+                      }
+                    : null
+                }
                 answerReveal={
                   round.revealed ? { country: answerCountry, location: answerLocation } : null
                 }
               />
             </Suspense>
-            <div className="temperature-legend" aria-label="Distance color key">
-              <span className="legend-label">Far away</span>
-              <div className="legend-stops">
-                {(['cold', 'cool', 'warm', 'hot', 'adjacent'] as Temperature[]).map((t) => (
-                  <span key={t}>
-                    <i style={{ backgroundColor: temperatures[t].color }} />
-                    <span>{temperatures[t].label}</span>
-                  </span>
-                ))}
+            {!isJourney && (
+              <div className="temperature-legend" aria-label="Distance color key">
+                <span className="legend-label">Far away</span>
+                <div className="legend-stops">
+                  {(['cold', 'cool', 'warm', 'hot', 'adjacent'] as Temperature[]).map((t) => (
+                    <span key={t}>
+                      <i style={{ backgroundColor: temperatures[t].color }} />
+                      <span>{temperatures[t].label}</span>
+                    </span>
+                  ))}
+                </div>
+                <span className="legend-label">Getting closer</span>
               </div>
-              <span className="legend-label">Getting closer</span>
-            </div>
+            )}
+            {isJourney && (
+              <div className="journey-legend" aria-label="Journey color key">
+                <span>
+                  <i className="route-visited" />
+                  Visited
+                </span>
+                <span>
+                  <i className="route-current" />
+                  Current stop
+                </span>
+                <span>
+                  <i className="route-destination" />
+                  Destination
+                </span>
+                <span>
+                  <i className="route-arrived" />
+                  Arrived / revealed
+                </span>
+              </div>
+            )}
           </section>
 
           <div className="history-column">
-            <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
+            {isJourney ? (
+              <JourneyHistory round={round} onFocus={focusCountry} />
+            ) : (
+              <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
+            )}
           </div>
         </div>
         {!ended && (
@@ -348,15 +382,21 @@ export default function App() {
             <li>
               <span>01</span>
               <div>
-                <strong>Choose countries, capitals, flags or shapes</strong>
+                <strong>Choose your game</strong>
                 <p>
-                  Use the mode buttons to guess a country, a capital city, or the country behind a
+                  Use the game dropdown to guess a country, a capital city, or the country behind a
                   flag or silhouette. In Flags and Shapes, “Hint: reveal continent” gives a clue
                   without ending your round or using a guess. Search a name or alias, select a
-                  suggestion, then make your guess. Each mode keeps its own saved round. The globe
-                  is for exploring; tapping it never selects a guess. Pinch to zoom up to 32×. With
-                  the globe focused, keyboard users can use +/− to zoom and Home to reset the view.
-                  Each guess or reveal automatically zooms to suit the country’s size.
+                  suggestion, then make your guess. Each mode keeps its own saved round. In Border
+                  Journey, travel from the starting country to the displayed destination by choosing
+                  countries that share a land border with your current stop. Invalid crossings do
+                  not count. You can revisit countries to retrace your steps; the route stays in
+                  travel order. Reach the destination to win. Giving up reveals one shortest route
+                  from your last stop. Routes start three to six crossings apart; the destination is
+                  visible from the start. The globe is for exploring; tapping it never selects a
+                  guess. Pinch to zoom up to 32×. With the globe focused, keyboard users can use +/−
+                  to zoom and Home to reset the view. Each guess or reveal automatically zooms to
+                  suit the country’s size.
                 </p>
               </div>
             </li>
@@ -365,9 +405,10 @@ export default function App() {
               <div>
                 <strong>Follow the warmth</strong>
                 <p>
-                  Country, flag and shape rounds measure center-to-center distance; capital rounds
-                  measure city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm is
-                  1,000–3,000; hot is under 1,000. Countries sharing a land border are marked
+                  Border Journey tracks valid crossings rather than heat or distance. In the mystery
+                  modes, country, flag and shape rounds measure center-to-center distance; capital
+                  rounds measure city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm
+                  is 1,000–3,000; hot is under 1,000. Countries sharing a land border are marked
                   “Adjacent” with the hottest color, regardless of distance. In capital mode,
                   “Adjacent” means the capitals' countries share a land border, not that the cities
                   touch. Capital guesses get city markers as well as country colors. Your closest
@@ -392,13 +433,15 @@ export default function App() {
             <strong>A note on the world</strong>
             <p>
               We play with 193 UN member states, Palestine, and Vatican City. Territories and other
-              disputed states are outside this version’s answer list. Borders are simplified; small
-              guessed countries get a marker. Centers and city coordinates are approximate, and
-              distances are not border-to-border. Capitals use one selected city per country: for
-              example Pretoria for South Africa and Sucre for Bolivia. Nauru uses Yaren, its
-              government district; Palestine uses Ramallah as its administrative seat. Other
-              co-capitals are not separate guesses. See the README for the full data choices and
-              limitations.
+              disputed states are outside this version’s answer list. Border Journey uses the
+              country data’s shared land borders, including overseas borders such as France–Brazil
+              and Spain–Morocco. Sea crossings are excluded; island countries without a connected
+              land route are not selected. Borders are simplified; small guessed countries get a
+              marker. Centers and city coordinates are approximate, and distances are not
+              border-to-border. Capitals use one selected city per country: for example Pretoria for
+              South Africa and Sucre for Bolivia. Nauru uses Yaren, its government district;
+              Palestine uses Ramallah as its administrative seat. Other co-capitals are not separate
+              guesses. See the README for the full data choices and limitations.
             </p>
             <p>
               Flags use bundled images so they display consistently across devices. Similar flags
@@ -414,7 +457,8 @@ export default function App() {
               from the globe’s boundaries.
             </p>
             <p>
-              The answer stays unmarked until guessed correctly or revealed by giving up. As a
+              Mystery answers stay unmarked until guessed correctly or revealed by giving up. Border
+              Journey shows its starting country and destination from the beginning. As a
               browser-only game, it can be found by inspecting saved data.
             </p>
             <p>

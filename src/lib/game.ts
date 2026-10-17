@@ -1,3 +1,4 @@
+import { randomBorderJourney, shortestBorderRoute } from './journey'
 import { areAdjacent, countries, countryById, locationFor, type GameMode } from './countries'
 import { distanceKm, temperatureFor } from './geo'
 
@@ -8,6 +9,7 @@ export interface Round {
   answer: string
   guesses: string[]
   hintUsed?: boolean
+  start?: string
 }
 export const STORAGE_KEY = 'somewhere.round.v1'
 export const MODE_KEY = 'somewhere.mode.v1'
@@ -15,6 +17,10 @@ export const storageKeyFor = (mode: GameMode) =>
   mode === 'countries' ? STORAGE_KEY : `somewhere.${mode}.v1`
 
 export function newRound(previousAnswer?: string, mode: GameMode = 'countries'): Round {
+  if (mode === 'journey') {
+    const { start, destination } = randomBorderJourney(previousAnswer)
+    return { version: 2, mode, revealed: false, answer: destination, start, guesses: [] }
+  }
   const pool = countries.filter((c) => c.id !== previousAnswer)
   // Rejection sampling keeps selection uniform without modulo bias.
   const sample = new Uint32Array(1)
@@ -52,6 +58,23 @@ export function addGuess(round: Round, id: string): { round: Round; error?: stri
     return { round, error: 'This round is complete. Start a new round to keep exploring.' }
   const item = round.mode === 'capitals' ? 'capital' : 'country'
   if (!countryById.has(id)) return { round, error: `Choose a ${item} from the suggestions.` }
+  if (round.mode === 'journey') {
+    const current = countryById.get(round.guesses.at(-1) || round.start!)!
+    if (current.id === id)
+      return { round, error: `You are already in ${current.name}. Choose a neighboring country.` }
+    if (!areAdjacent(current, countryById.get(id)!))
+      return {
+        round,
+        error: `${countryById.get(id)!.name} does not share a land border with ${current.name}. Try another crossing.`,
+      }
+    if (round.guesses.length >= 1000)
+      return {
+        round,
+        error:
+          'This journey has reached its crossing limit. Reveal the route to begin a fresh journey.',
+      }
+    return { round: { ...round, guesses: [...round.guesses, id] } }
+  }
   if (round.guesses.includes(id))
     return { round, error: `You have already guessed that ${item}. Try somewhere new.` }
   return { round: { ...round, guesses: [...round.guesses, id] } }
@@ -91,7 +114,11 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
     const revealed = version === 1 ? false : raw.revealed
     if (
       (version !== 1 && version !== 2) ||
-      (mode !== 'countries' && mode !== 'capitals' && mode !== 'flags' && mode !== 'shapes') ||
+      (mode !== 'countries' &&
+        mode !== 'capitals' &&
+        mode !== 'flags' &&
+        mode !== 'shapes' &&
+        mode !== 'journey') ||
       (expectedMode !== undefined && mode !== expectedMode) ||
       typeof revealed !== 'boolean' ||
       typeof answer !== 'string' ||
@@ -101,12 +128,25 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
       return null
     if (raw.hintUsed !== undefined && typeof raw.hintUsed !== 'boolean') return null
     if (
-      guesses.length > countries.length ||
+      guesses.length > (mode === 'journey' ? 1000 : countries.length) ||
       guesses.some((g) => typeof g !== 'string' || !countryById.has(g))
     )
       return null
-    if (new Set(guesses).size !== guesses.length) return null
-    if (guesses.includes(answer) && guesses.at(-1) !== answer) return null
+    if (mode !== 'journey' && new Set(guesses).size !== guesses.length) return null
+    if (mode === 'journey') {
+      if (
+        typeof raw.start !== 'string' ||
+        raw.start === answer ||
+        !shortestBorderRoute(raw.start, answer)
+      )
+        return null
+      let current = raw.start
+      for (const id of guesses as string[]) {
+        if (!areAdjacent(countryById.get(current)!, countryById.get(id)!)) return null
+        current = id
+      }
+    }
+    if (guesses.slice(0, -1).includes(answer)) return null
     if (revealed && guesses.includes(answer)) return null
     return {
       version: 2,
@@ -114,6 +154,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
       revealed,
       answer,
       guesses,
+      ...(mode === 'journey' ? { start: raw.start as string } : {}),
       ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: raw.hintUsed === true } : {}),
     }
   } catch {
@@ -126,7 +167,12 @@ export function loadRound(requestedMode?: GameMode): { round: Round; warning: st
   try {
     if (!requestedMode) {
       const savedMode = localStorage.getItem(MODE_KEY)
-      if (savedMode === 'capitals' || savedMode === 'flags' || savedMode === 'shapes')
+      if (
+        savedMode === 'capitals' ||
+        savedMode === 'flags' ||
+        savedMode === 'shapes' ||
+        savedMode === 'journey'
+      )
         mode = savedMode
     }
     const saved = localStorage.getItem(storageKeyFor(mode))

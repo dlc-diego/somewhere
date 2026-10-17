@@ -195,7 +195,7 @@ export default function GuessSearch({
         </p>
       )}
       <button className="primary guess-button" type="submit" disabled={disabled || !query.trim()}>
-        Make a guess <ArrowRight size={18} />
+        {mode === 'journey' ? 'Cross the border' : 'Make a guess'} <ArrowRight size={18} />
       </button>
     </form>
   )

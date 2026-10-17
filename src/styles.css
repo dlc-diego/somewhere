@@ -1342,37 +1342,173 @@ h1 {
 }
 
 .mode-selector {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  position: relative;
+  display: flex;
+  align-items: center;
   background: var(--surface-muted);
   border: 1px solid var(--border-mode);
   border-radius: 8px;
-  padding: 4px;
-  gap: 4px;
   margin-bottom: 21px;
+  color: var(--text-primary);
 }
-.mode-selector button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  flex: 1;
-  background: none;
-  padding: 10px 4px;
-  min-height: 40px;
-  border-radius: 5px;
-  font-size: 11px;
-  color: var(--text-muted);
+.mode-selector > svg {
+  position: absolute;
+  pointer-events: none;
 }
-.mode-selector button svg {
-  width: 13px;
-  flex-shrink: 0;
+.mode-selector > svg:first-child {
+  left: 14px;
+  color: var(--logo-accent);
 }
-.mode-selector button[aria-pressed='true'] {
+.mode-selector > svg:last-child {
+  right: 14px;
+}
+.mode-selector select {
+  appearance: none;
+  width: 100%;
+  min-height: 49px;
+  padding: 12px 40px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mode-selector option {
   background: var(--surface);
   color: var(--text-primary);
-  font-weight: 650;
-  box-shadow: 0 1px 4px #263c3912;
+}
+.mode-selector:focus-within {
+  outline: 2px solid var(--logo-accent);
+  outline-offset: 3px;
+}
+.journey-challenge {
+  margin-bottom: 20px;
+}
+.journey-endpoints {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.journey-endpoints > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.journey-endpoints > div > svg {
+  flex-shrink: 0;
+  color: var(--logo-accent);
+}
+.journey-endpoints > div > span {
+  flex: 1;
+  min-width: 0;
+}
+.journey-endpoints small,
+.journey-stop small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin: 2px 0;
+}
+.journey-endpoints strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.journey-arrow {
+  margin-left: 25px;
+  color: var(--text-muted);
+}
+.journey-instruction {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.journey-instruction strong {
+  color: var(--text-primary);
+}
+.journey-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 370px;
+  overflow-y: auto;
+}
+.journey-stop {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  text-align: left;
+  color: var(--text-primary);
+  padding: 13px 10px;
+  min-height: 60px;
+  border-bottom: 1px solid var(--border-card);
+}
+.journey-stop.current-stop {
+  background: var(--surface-muted);
+  border-radius: 8px;
+}
+.journey-stop > span:last-child {
+  font-size: 13px;
+}
+.journey-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 18px;
+}
+.journey-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.journey-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.route-visited {
+  background: #6b95bd;
+}
+.route-current {
+  background: var(--logo-accent);
+}
+.route-destination {
+  background: #e2bc67;
+}
+.route-arrived {
+  background: #28755b;
+}
+.revealed-route {
+  border-top: 1px solid var(--border-card);
+  padding-top: 18px;
+  margin-top: 18px;
+}
+.revealed-route h3 {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+.revealed-route p {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.revealed-route ol {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+.revealed-route button {
+  min-height: 44px;
+  text-align: left;
 }
 .give-up-area {
   display: flex;
@@ -1392,9 +1528,8 @@ h1 {
   background: var(--reveal-hover);
 }
 @media (max-width: 480px) {
-  .mode-selector button {
-    font-size: 12px;
-    min-height: 44px;
+  .mode-selector select {
+    font-size: 16px;
   }
   .give-up-button {
     font-size: 12px;

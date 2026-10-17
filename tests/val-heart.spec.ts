@@ -8,7 +8,9 @@ test('searches stay compact and labeled in all modes without globe buttons', asy
     page.getByRole('button', { name: /^(Zoom in|Zoom out|Reset globe view)$/ }),
   ).toHaveCount(0)
   for (const mode of ['Countries', 'Capitals', 'Flags', 'Shapes']) {
-    await page.getByRole('button', { name: mode, exact: true }).click()
+    await page
+      .getByRole('combobox', { name: 'Game mode', exact: true })
+      .selectOption({ label: mode })
     await expect(
       page.getByRole('combobox', {
         name: mode === 'Capitals' ? 'Search for a capital' : 'Search for a country',
@@ -89,8 +91,8 @@ test('a long hold beats, blooms from the heart, and resets without changing the 
     Math.hypot(Math.max(x, sizes.width - x), Math.max(y, sizes.height - y)),
   )
   // The background never captures input, and gameplay remains the same round.
-  await page.getByRole('combobox').fill('Japan')
-  await expect(page.getByRole('option', { name: /Japan/ })).toBeVisible()
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('Japan')
+  await expect(page.getByRole('listbox').getByRole('option', { name: /Japan/ })).toBeVisible()
   await expect(backdrop).toHaveCount(0, { timeout: 5000 })
   await expect(target).not.toHaveClass(/is-beating/)
   expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(saved)

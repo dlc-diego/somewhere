@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { geoDistance, geoInterpolate, geoOrthographic } from 'd3-geo'
+import { geoDistance, geoInterpolate, geoOrthographic, geoPath } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { GeometryCollection, Topology } from 'topojson-specification'
@@ -11,6 +11,7 @@ import {
   type GameMode,
   type Location,
 } from '../lib/countries'
+import { journeyColors } from '../lib/journey'
 import { temperatures } from '../lib/geo'
 import { useGlobeFrame } from '../lib/useGlobeFrame'
 import type { Guess } from '../lib/game'
@@ -29,6 +30,12 @@ import {
 
 const initialRotation: [number, number, number] = [-12, -18, 0]
 type Atlas = Topology<{ countries: GeometryCollection }>
+export type JourneyMap = {
+  start: string
+  destination: string
+  route: string[]
+  remaining: string[]
+}
 type Focus = { countryId: string; location: Location; sequence: number } | null
 type RevealedLocation = { country: Country; location: Location }
 const revealColor = temperatures.found.color
@@ -38,11 +45,13 @@ function Globe({
   focus,
   mode,
   answerReveal,
+  journey = null,
 }: {
   guesses: Guess[]
   focus: Focus
   mode: GameMode
   answerReveal: RevealedLocation | null
+  journey?: JourneyMap | null
 }) {
   const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
   const [error, setError] = useState(false)
@@ -60,6 +69,9 @@ function Globe({
   const blinkableIds = useRef(new Set<string>())
   blinkableIds.current = new Set(guesses.map((g) => g.country.id))
   if (answerReveal) blinkableIds.current.add(answerReveal.country.id)
+  if (journey)
+    for (const id of [...journey.route, journey.destination, ...journey.remaining])
+      blinkableIds.current.add(id)
   const rotationRef = useRef(rotation)
   rotationRef.current = rotation
   const zoomRef = useRef(zoom)
@@ -80,10 +92,22 @@ function Globe({
   const gesture = useRef({ multi: false, distance: 0 })
   const colors = useMemo(() => {
     const result = new Map(guesses.map((g) => [g.country.id, temperatures[g.temperature].color]))
+    if (journey) {
+      result.clear()
+      for (const id of [...journey.route, ...journey.remaining])
+        result.set(id, journeyColors.visited)
+      result.set(journey.route.at(-1)!, journeyColors.current)
+      result.set(
+        journey.destination,
+        journey.route.at(-1) === journey.destination
+          ? journeyColors.arrived
+          : journeyColors.destination,
+      )
+    }
     if (answerReveal) result.set(answerReveal.country.id, revealColor)
     return result
-  }, [guesses, answerReveal])
-  const markers = guesses
+  }, [guesses, answerReveal, journey])
+  let markers = guesses
     .filter((g) => mode === 'capitals' || g.country.small || g.country.id === 'TUV')
     .map((g) => ({
       country: g.country,
@@ -91,7 +115,16 @@ function Globe({
       color: temperatures[g.temperature].color,
       revealed: false,
     }))
-  if (answerReveal) markers.push({ ...answerReveal, color: revealColor, revealed: true })
+  if (journey)
+    markers = [...new Set([...journey.route, journey.destination, ...journey.remaining])].map(
+      (id) => ({
+        country: countryById.get(id)!,
+        location: countryById.get(id)!,
+        color: colors.get(id)!,
+        revealed: Boolean(answerReveal && id === journey.destination),
+      }),
+    )
+  else if (answerReveal) markers.push({ ...answerReveal, color: revealColor, revealed: true })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -261,7 +294,11 @@ function Globe({
             viewBox="0 0 600 600"
             className="globe-svg"
             role="img"
-            aria-label="World globe. Guessed locations are colored. Answers are revealed only after a correct guess or giving up."
+            aria-label={
+              journey
+                ? 'World globe. The starting country, destination and crossed borders are marked.'
+                : 'World globe. Guessed locations are colored. Answers are revealed only after a correct guess or giving up.'
+            }
             onPointerDown={(e) => {
               if (e.pointerType === 'mouse' && e.button !== 0) return
               cancelMotion()
@@ -362,6 +399,32 @@ function Globe({
                 fill="url(#shade)"
                 pointerEvents="none"
               />
+              {journey &&
+                [journey.route, journey.remaining].map(
+                  (route, index) =>
+                    route.length > 1 && (
+                      <path
+                        key={`route:${index}`}
+                        className="journey-map-route"
+                        data-testid={index === 0 ? 'traveled-route' : 'revealed-route'}
+                        d={
+                          geoPath(projection)({
+                            type: 'LineString',
+                            coordinates: route.map((id) => {
+                              const c = countryById.get(id)!
+                              return [c.lng, c.lat]
+                            }),
+                          }) || ''
+                        }
+                        fill="none"
+                        stroke="#fffaf1"
+                        strokeWidth="2"
+                        strokeDasharray={index === 1 ? '3 6' : '6 4'}
+                        strokeLinecap="round"
+                        pointerEvents="none"
+                      />
+                    ),
+                )}
               {markers
                 .filter((g) => geoDistance([g.location.lng, g.location.lat], center) < Math.PI / 2)
                 .map((g) => {

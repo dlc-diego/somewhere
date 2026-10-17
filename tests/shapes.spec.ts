@@ -26,7 +26,7 @@ async function seed(page: Page, answer = 'FRA', guesses: string[] = []) {
   )
 }
 async function guess(page: Page, name: string) {
-  await page.getByRole('combobox').fill(name)
+  await page.getByRole('combobox', { name: /^Search for a / }).fill(name)
   await page
     .getByRole('option', { name: new RegExp(name) })
     .first()
@@ -42,25 +42,20 @@ async function loadedShape(page: Page, name = 'Mystery country shape') {
   return image
 }
 
-test('shape journey: 2x2 modes, neutral clue, hint, duplicates, persistence and a celebrated win', async ({
+test('shape journey: dropdown modes, neutral clue, hint, duplicates, persistence and a celebrated win', async ({
   page,
 }) => {
   await seed(page)
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
-  const modes = page.getByRole('group', { name: 'Game mode' }).getByRole('button')
+  const modes = page.getByRole('combobox', { name: 'Game mode', exact: true }).locator('option')
   expect((await modes.allTextContents()).map((s) => s.trim())).toEqual([
     'Countries',
     'Capitals',
     'Flags',
     'Shapes',
+    'Border Journey',
   ])
-  const boxes = await Promise.all([0, 1, 2, 3].map((i) => modes.nth(i).boundingBox()))
-  expect(boxes[0]!.y).toBeCloseTo(boxes[1]!.y)
-  expect(boxes[2]!.y).toBeCloseTo(boxes[3]!.y)
-  expect(boxes[0]!.x).toBeCloseTo(boxes[2]!.x)
-  expect(boxes[1]!.x).toBeCloseTo(boxes[3]!.x)
-  expect(boxes[2]!.y).toBeGreaterThanOrEqual(boxes[0]!.y + boxes[0]!.height)
   const image = await loadedShape(page)
   await expect(image).toHaveAttribute('src', /\/shapes\/FRA\.svg$/)
   await expect(page.getByRole('img', { name: /France/ })).toHaveCount(0)
@@ -74,16 +69,17 @@ test('shape journey: 2x2 modes, neutral clue, hint, duplicates, persistence and 
   await expect(page.getByRole('alert')).toContainText('Already explored')
   await page.reload()
   await loadedShape(page)
-  await expect(page.getByRole('button', { name: 'Shapes', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(page.getByRole('combobox', { name: 'Game mode', exact: true })).toHaveValue('shapes')
   await expect(page.locator('.continent-hint')).toContainText('Europe')
   for (const mode of ['Countries', 'Capitals', 'Flags']) {
-    await page.getByRole('button', { name: mode, exact: true }).click()
+    await page
+      .getByRole('combobox', { name: 'Game mode', exact: true })
+      .selectOption({ label: mode })
     await expect(page.getByRole('region', { name: 'Your journey' })).toContainText('0 guesses')
   }
-  await page.getByRole('button', { name: 'Shapes', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Shapes' })
   await expect(page.getByRole('region', { name: 'Your journey' })).toContainText('1 guess')
   await page.getByRole('button', { name: 'Switch to dark mode' }).click()
   expect(
@@ -159,7 +155,7 @@ for (const guesses of [[], ['JPN']]) {
     )
     expect(saved).toMatchObject({ mode: 'shapes', guesses, revealed: true, hintUsed: true })
     await page.getByRole('button', { name: 'Explore another round' }).click()
-    await expect(page.getByRole('combobox')).toBeVisible()
+    await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
     await expect(page.locator('.continent-hint')).toHaveCount(0)
   })
 }

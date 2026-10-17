@@ -46,17 +46,22 @@ test('dark gameplay, autocomplete, hints, help and results remain accessible', a
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await expect(page.locator('.search-card')).toHaveCSS('background-color', 'rgb(27, 43, 48)')
-  await page.getByRole('combobox').fill('Germany')
-  await expect(page.getByRole('option', { name: /Germany/ })).toBeVisible()
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('Germany')
+  await expect(page.getByRole('listbox').getByRole('option', { name: /Germany/ })).toBeVisible()
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
       .violations,
   ).toEqual([])
-  await page.getByRole('option', { name: /Germany/ }).click()
+  await page
+    .getByRole('listbox')
+    .getByRole('option', { name: /Germany/ })
+    .click()
   await page.getByRole('button', { name: 'Make a guess' }).click()
   await expect(page.getByRole('list', { name: 'Guesses, closest first' })).toContainText('Adjacent')
   await expect(page.locator('.temperature-adjacent')).toHaveCSS('color', 'rgb(255, 156, 173)')
-  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Flags' })
   await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
@@ -72,7 +77,9 @@ test('dark gameplay, autocomplete, hints, help and results remain accessible', a
       .violations,
   ).toEqual([])
   await page.getByRole('button', { name: 'Let’s explore' }).click()
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
   await expect(page.locator('.search-card')).toContainText('The answer was France.')
   expect(
@@ -80,7 +87,7 @@ test('dark gameplay, autocomplete, hints, help and results remain accessible', a
       .violations,
   ).toEqual([])
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await expect(page.getByRole('combobox')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
@@ -104,7 +111,7 @@ test('theme switching works with blocked storage and keyboard input', async ({ p
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.getByRole('button', { name: 'Switch to dark mode' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await expect(page.getByRole('combobox')).toBeEnabled()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeEnabled()
 })
 
 test('switching themes preserves a running winning celebration', async ({ page }) => {
@@ -118,8 +125,11 @@ test('switching themes preserves a running winning celebration', async ({ page }
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
-  await page.getByRole('combobox').fill('France')
-  await page.getByRole('option', { name: /France/ }).click()
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('France')
+  await page
+    .getByRole('listbox')
+    .getByRole('option', { name: /France/ })
+    .click()
   await page.getByRole('button', { name: 'Make a guess' }).click()
   const canvas = page.locator('.victory-celebration')
   const original = (await canvas.elementHandle())!

@@ -47,7 +47,7 @@ async function seedFlags(page: Page) {
   })
 }
 async function guess(page: Page, query: string, name: string) {
-  await page.getByRole('combobox').fill(query)
+  await page.getByRole('combobox', { name: /^Search for a / }).fill(query)
   await page
     .getByRole('option', { name: new RegExp(name) })
     .first()
@@ -91,7 +91,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#bcc6b6')
   await expect(page.locator('[data-guessed="true"]')).toHaveCount(0)
-  await page.getByRole('combobox').fill('Atlantis')
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('Atlantis')
   await expect(page.getByText('No countries found.')).toBeVisible()
   await page.getByRole('button', { name: 'Make a guess' }).click()
   await expect(page.getByRole('alert')).toContainText('Select a country')
@@ -114,12 +114,12 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
   await expectGreenAnswerBlink(page)
   await expectInlineResult(page, 'France', 2)
   await expect(page.getByRole('heading', { name: 'You found your somewhere.' })).toBeVisible()
-  await expect(page.getByRole('combobox')).toHaveCount(0)
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveCount(0)
   await expect(page.locator('[data-country="250"]').first()).toHaveAttribute('fill', '#28755b')
   await page.reload()
   await expect(page.getByRole('heading', { name: 'You found your somewhere.' })).toBeVisible()
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await expect(page.getByRole('combobox')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.round.v1')!).answer),
   ).not.toBe('FRA')
@@ -130,7 +130,7 @@ test('complete journey: input, distance, duplicates, persistence, win and replay
 test('keyboard autocomplete, aliases, reveal/replay and keyboard globe', async ({ page }) => {
   await seed(page)
   await page.goto('/')
-  const input = page.getByRole('combobox')
+  const input = page.getByRole('combobox', { name: /^Search for a / })
   await input.fill('UK')
   await input.press('Enter')
   await expect(input).toHaveValue('United Kingdom')
@@ -178,7 +178,7 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
   await page.mouse.move(box.x + box.width / 2 + 65, box.y + box.height / 2, { steps: 8 })
   await page.mouse.up()
   await expect.poll(() => france.getAttribute('d')).not.toBe(before)
-  await expect(page.getByRole('combobox')).toHaveValue('')
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveValue('')
   await page.getByRole('group', { name: /Interactive globe/ }).press('Home')
   // D3 projects Egypt's interior to a stable visible point in the initial view.
   const module = await import('d3-geo')
@@ -189,7 +189,7 @@ test('mobile-safe layout, help dialog, drag and map taps never select guesses', 
     box.x + (point[0] / 600) * box.width,
     box.y + (point[1] / 600) * box.height,
   )
-  await expect(page.getByRole('combobox')).toHaveValue('')
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveValue('')
   await expect(page.locator('[data-guessed="true"]')).toHaveCount(0)
 })
 
@@ -214,7 +214,7 @@ test('corrupt saved data recovers without crashing', async ({ page }) => {
   await expect(
     page.getByText('Your saved round could not be read. A fresh round is ready.'),
   ).toBeVisible()
-  await expect(page.getByRole('combobox')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
 })
 
 test('production assets work from a repository subdirectory', async ({ page }) => {
@@ -229,7 +229,9 @@ test('production assets work from a repository subdirectory', async ({ page }) =
   await expect(
     page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
   ).toHaveCount(1)
-  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Flags' })
   const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
   expect(await flag.evaluate((el) => new URL((el as HTMLImageElement).src).pathname)).toMatch(
     /^\/wep-app\/flags\/[A-Z]{3}\.svg$/,
@@ -250,7 +252,7 @@ test('core screens have no automated accessibility violations', async ({ page })
     expect(result.violations).toEqual([])
   }
   await check()
-  await page.getByRole('combobox').fill('United')
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('United')
   await check()
   await guess(page, 'Spain', 'Spain')
   await check()
@@ -280,7 +282,7 @@ test('pinch gestures zoom without recording a guess', async ({ page, context }) 
   await expect
     .poll(async () => Number(await page.locator('circle[fill="url(#ocean)"]').getAttribute('r')))
     .toBeGreaterThan(265 * 2.2)
-  await expect(page.getByRole('combobox')).toHaveValue('')
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveValue('')
   await expect(page.locator('[data-guessed="true"]')).toHaveCount(0)
   await cdp.detach()
 })
@@ -324,8 +326,11 @@ test('compact Val layout, animated guess arrival and mobile globe centering', as
   else expect(map.x + map.width).toBeLessThan(search.x)
 
   const france = page.locator('[data-country="250"]').first()
-  await page.getByRole('combobox').fill('Tuvalu')
-  await page.getByRole('option', { name: /Tuvalu/ }).click()
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('Tuvalu')
+  await page
+    .getByRole('listbox')
+    .getByRole('option', { name: /Tuvalu/ })
+    .click()
   // Record actual projected geometry around the guess: there should be a short
   // pause followed by intermediate frames, rather than an instant camera jump.
   const samples = await page.evaluate(async () => {
@@ -353,9 +358,11 @@ test('compact Val layout, animated guess arrival and mobile globe centering', as
         }),
       )
       .toBeLessThan(5)
-    expect(await page.getByRole('combobox').evaluate((el) => el === document.activeElement)).toBe(
-      false,
-    )
+    expect(
+      await page
+        .getByRole('combobox', { name: /^Search for a / })
+        .evaluate((el) => el === document.activeElement),
+    ).toBe(false)
   }
 })
 
@@ -473,8 +480,13 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await seedCapitals(page)
   await page.goto('/')
   await guess(page, 'Germany', 'Germany')
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
-  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveAttribute(
+    'placeholder',
+    'Search for a capital…',
+  )
   await expect(page.getByRole('list', { name: 'Guesses, closest first' })).toHaveCount(0)
   await expect(page.locator('circle[data-capital="FRA"]')).toHaveCount(0)
   await guess(page, 'London', 'London')
@@ -489,15 +501,21 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await expect
     .poll(async () => Number(await page.locator('circle[data-capital="GBR"]').getAttribute('cx')))
     .toBeCloseTo(300, 3)
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await expect(list.getByRole('button')).toHaveAccessibleName(/1\. Germany.*Adjacent/)
-  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a country…')
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveAttribute(
+    'placeholder',
+    'Search for a country…',
+  )
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
   await expect(list).toContainText('London')
   await page.reload()
-  await expect(page.getByRole('button', { name: 'Capitals', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
+  await expect(page.getByRole('combobox', { name: 'Game mode', exact: true })).toHaveValue(
+    'capitals',
   )
   await expect(list).toContainText('London')
   await guess(page, 'Berlin', 'Berlin')
@@ -510,7 +528,10 @@ test('capital mode uses cities, preserves both rounds, and supports win and repl
   await expectInlineResult(page, 'Paris', 3)
   await expect(page.getByRole('button', { name: 'Give up and reveal answer' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveAttribute(
+    'placeholder',
+    'Search for a capital…',
+  )
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('somewhere.capitals.v1')!),
   )
@@ -557,7 +578,7 @@ for (const mode of ['countries', 'capitals'] as const) {
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze()
     expect(a11y.violations).toEqual([])
-    await expect(page.getByRole('combobox')).toHaveCount(0)
+    await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveCount(0)
     await expect(button).toHaveCount(0)
     await page.reload()
     await expect(page.getByRole('heading', { name: `The answer was ${answer}.` })).toBeVisible()
@@ -565,7 +586,7 @@ for (const mode of ['countries', 'capitals'] as const) {
       page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
     ).toHaveCount(1)
     await page.getByRole('button', { name: 'Explore another round' }).click()
-    await expect(page.getByRole('combobox')).toBeVisible()
+    await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
     await expect(page.locator('[data-revealed="true"]')).toHaveCount(0)
     await expect(button).toBeVisible()
   })
@@ -578,11 +599,18 @@ test('giving up without guesses works and mode switching preserves its inline re
   await seedCapitals(page)
   await page.goto('/')
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
   await page.waitForTimeout(1500)
   await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect(page.getByRole('combobox')).toHaveAttribute('placeholder', 'Search for a capital…')
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveAttribute(
+    'placeholder',
+    'Search for a capital…',
+  )
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await expect(page.getByRole('heading', { name: 'The answer was France.' })).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Every adventure starts somewhere.' }),
@@ -600,8 +628,13 @@ for (const mode of ['countries', 'capitals'] as const) {
     await seedCapitals(page, mode === 'capitals')
     await page.goto('/')
     await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
-    await page.getByRole('combobox').fill(mode === 'capitals' ? 'Tokyo' : 'Japan')
-    await page.getByRole('option', { name: /Tokyo|Japan/ }).click()
+    await page
+      .getByRole('combobox', { name: /^Search for a / })
+      .fill(mode === 'capitals' ? 'Tokyo' : 'Japan')
+    await page
+      .getByRole('listbox')
+      .getByRole('option', { name: /Tokyo|Japan/ })
+      .click()
     const observed = await page.evaluate(async () => {
       const path = document.querySelector<SVGPathElement>('path[data-country="392"]')!
       const before = path.getAttribute('d')
@@ -669,12 +702,13 @@ test('flags: local images, hidden suggestion flags, persistent hint, independent
   await seedFlags(page)
   await page.goto('/')
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
-  const modes = page.getByRole('group', { name: 'Game mode' }).getByRole('button')
+  const modes = page.getByRole('combobox', { name: 'Game mode', exact: true }).locator('option')
   expect((await modes.allTextContents()).map((text) => text.trim())).toEqual([
     'Countries',
     'Capitals',
     'Flags',
     'Shapes',
+    'Border Journey',
   ])
   const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
   await expect(flag).toHaveAttribute('src', /\/flags\/FRA\.svg$/)
@@ -684,31 +718,36 @@ test('flags: local images, hidden suggestion flags, persistent hint, independent
   await expect(page.getByRole('img', { name: /France/ })).toHaveCount(0)
   await expect(page.getByText('Continent:', { exact: false })).toHaveCount(0)
   await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#bcc6b6')
-  await page.getByRole('combobox').fill('France')
-  await expect(page.getByRole('option').locator('.country-flag')).toHaveCount(0)
-  await expect(page.getByRole('option')).not.toContainText('🇫🇷')
+  await page.getByRole('combobox', { name: /^Search for a / }).fill('France')
+  await expect(page.getByRole('listbox').getByRole('option').locator('.country-flag')).toHaveCount(
+    0,
+  )
+  await expect(page.getByRole('listbox').getByRole('option')).not.toContainText('🇫🇷')
   await guess(page, 'Japan', 'Japan')
   await guess(page, 'Japan', 'Japan')
   await expect(page.getByRole('alert')).toContainText('Already explored')
   await page.getByRole('button', { name: 'Hint: reveal continent' }).click()
   await expect(page.locator('.continent-hint')).toHaveText('Continent: Europe')
   await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect(page.getByRole('combobox')).toBeEnabled()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeEnabled()
   await expect(
     page.getByRole('list', { name: 'Guesses, closest first' }).locator('li'),
   ).toHaveCount(1)
   await expect(page.locator('path[data-country="250"]')).toHaveAttribute('fill', '#bcc6b6')
   await page.reload()
-  await expect(page.getByRole('button', { name: 'Flags', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(page.getByRole('combobox', { name: 'Game mode', exact: true })).toHaveValue('flags')
   await expect(page.locator('.continent-hint')).toContainText('Europe')
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await guess(page, 'Spain', 'Spain')
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
   await guess(page, 'Tokyo', 'Tokyo')
-  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Flags' })
   const history = page.getByRole('list', { name: 'Guesses, closest first' })
   await expect(history.locator('li')).toHaveCount(1)
   await expect(history).toContainText('Japan')
@@ -759,7 +798,7 @@ test('a failed flag image can be retried without revealing the country or resett
     .poll(() => flag.evaluate((el) => (el as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0)
   await expect(page.getByRole('alert')).toHaveCount(0)
-  await expect(page.getByRole('combobox')).toBeEnabled()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeEnabled()
   await expect(page.locator('.continent-hint')).toContainText('Europe')
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.flags.v1')!))
   expect(saved).toMatchObject({ answer: 'FRA', guesses: [], hintUsed: true, revealed: false })
@@ -789,10 +828,10 @@ test('flags: hint-free win, hint-only persistence and giving up without a guess'
   expect(saved).toMatchObject({ mode: 'flags', revealed: true, hintUsed: true, guesses: [] })
   await expect(page.locator('[data-revealed="true"]').first()).toHaveAttribute('fill', '#28755b')
   await page.reload()
-  await expect(page.getByRole('combobox')).toHaveCount(0)
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await expect(page.getByRole('combobox')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Hint: reveal continent' })).toBeVisible()
 })
 
@@ -823,7 +862,7 @@ for (const [index, effect] of victoryEffects.entries()) {
       Object.assign(window, { victoryRandom: values })
     }, sequence)
     const answer = index % 3 === 1 ? 'Paris' : 'France'
-    await page.getByRole('combobox').fill(answer)
+    await page.getByRole('combobox', { name: /^Search for a / }).fill(answer)
     await page
       .getByRole('option', { name: new RegExp(answer) })
       .first()
@@ -898,15 +937,12 @@ for (const [index, effect] of victoryEffects.entries()) {
     const originalCanvas = index === 0 ? null : await canvas.elementHandle()
     if (index === 1) {
       await page.getByRole('button', { name: 'Explore another round' }).click()
-      await expect(page.getByRole('combobox')).toBeVisible()
+      await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
     } else {
       // Mode-switch clicks must work while the overlay is still painting.
       await page
-        .getByRole('button', {
-          name: index % 3 === 0 ? 'Capitals' : 'Countries',
-          exact: true,
-        })
-        .click()
+        .getByRole('combobox', { name: 'Game mode', exact: true })
+        .selectOption(index % 3 === 0 ? 'capitals' : 'countries')
     }
     if (index !== 0) {
       await expect(canvas).toHaveAttribute('data-effect', effect)
@@ -929,10 +965,14 @@ test('reduced-motion wins stay static; later wins survive mode changes during ar
   await expectInlineResult(page, 'France', 1)
   await expect(page.locator('.victory-celebration')).toHaveCount(0)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
   await page.clock.install()
   await guess(page, 'Paris', 'Paris')
-  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Flags' })
   await page.clock.runFor(1400)
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.locator('.victory-celebration')).toHaveCount(1)
@@ -947,24 +987,32 @@ test('wins queue in order and each finishes across immediate restarts, new round
   await seedCapitals(page)
   await seedFlags(page)
   await page.goto('/')
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
   await guess(page, 'France', 'France')
   // Restart before the camera has arrived; the effect already playing must survive.
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await page.getByRole('button', { name: 'Capitals', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Capitals' })
   await guess(page, 'Paris', 'Paris')
   await page.clock.runFor(100)
   const canvas = page.locator('.victory-celebration')
   await expect(canvas).toHaveCount(1)
   const first = (await canvas.elementHandle())!
   const firstEffect = await canvas.getAttribute('data-effect')
-  await page.getByRole('button', { name: 'Countries', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Countries' })
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
   await page.getByRole('button', { name: 'Explore another round' }).click()
-  await page.getByRole('button', { name: 'Flags', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Game mode', exact: true })
+    .selectOption({ label: 'Flags' })
   await guess(page, 'France', 'France')
   await page.clock.fastForward(4300)
   expect(await first.evaluate((node) => node.isConnected)).toBe(true)
