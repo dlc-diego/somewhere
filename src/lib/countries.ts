@@ -32,6 +32,9 @@ export function areAdjacent(a: Country, b: Country): boolean {
 }
 
 export function locationFor(country: Country, mode: GameMode): Location {
+  // The normal country center is in Borneo. Journey mode follows peninsular Malaysia.
+  if (mode === 'journey' && country.id === 'MYS')
+    return { name: country.name, lat: 4.2, lng: 102.1 }
   return mode === 'capitals' ? country.capital : country
 }
 

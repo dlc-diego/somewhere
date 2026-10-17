@@ -1,7 +1,7 @@
 import { ArrowDown, Flag, MapPin } from 'lucide-react'
 import { countryById, type Country } from '../lib/countries'
 import { hasEnded, hasWon, type Round } from '../lib/game'
-import { shortestBorderRoute } from '../lib/journey'
+import { landConnectionFor, shortestBorderRoute } from '../lib/journey'
 import FlagImage from './FlagImage'
 
 export function JourneyChallenge({ round }: { round: Round }) {
@@ -12,6 +12,7 @@ export function JourneyChallenge({ round }: { round: Round }) {
   return (
     <div className="journey-challenge">
       <p className="eyebrow">One border at a time</p>
+      <p className="journey-land-connection">Connected land: {landConnectionFor(start.id)}</p>
       <div className="journey-endpoints">
         <div>
           <MapPin size={16} />
@@ -33,8 +34,8 @@ export function JourneyChallenge({ round }: { round: Round }) {
       </div>
       {!ended && (
         <p className="journey-instruction">
-          You’re in <strong>{current.name}</strong>. Choose a country that shares a land border to
-          take your next step. You can retrace your steps.
+          You’re in <strong>{current.name}</strong>. Choose a country that shares a continuous
+          mainland border to take your next step. You can retrace your steps.
         </p>
       )}
       {ended && (
@@ -58,6 +59,7 @@ export function JourneyHistory({
   onFocus: (country: Country) => void
 }) {
   const route = [round.start!, ...round.guesses]
+  const destination = countryById.get(round.answer)!
   const current = route.at(-1)!
   const remaining = round.revealed ? shortestBorderRoute(current, round.answer)! : null
   return (
@@ -68,6 +70,19 @@ export function JourneyHistory({
           {round.guesses.length} {round.guesses.length === 1 ? 'crossing' : 'crossings'}
         </span>
       </div>
+      <button
+        className="journey-destination"
+        onClick={() => onFocus(destination)}
+        aria-label={`Destination: ${destination.name}. Show on globe.`}
+      >
+        <Flag size={16} aria-hidden="true" />
+        <span>
+          <small>Destination</small>
+          <strong>{destination.name}</strong>
+        </span>
+        <FlagImage country={destination} />
+        <MapPin size={15} aria-hidden="true" />
+      </button>
       <ol className="journey-list" aria-label="Route, in travel order">
         {route.map((id, index) => {
           const country = countryById.get(id)!

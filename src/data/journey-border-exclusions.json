@@ -1,0 +1,18 @@
+[
+  { "countries": ["CAN", "DNK"], "reason": "Hans Island does not connect mainland Canada to mainland Denmark." },
+  { "countries": ["BRA", "FRA"], "reason": "The border is in French Guiana, disconnected from European France." },
+  { "countries": ["FRA", "SUR"], "reason": "The border is in French Guiana, disconnected from European France." },
+  { "countries": ["FRA", "NLD"], "reason": "Saint Martin and Sint Maarten do not connect the countries' European mainlands." },
+  { "countries": ["ESP", "MAR"], "reason": "Ceuta and Melilla do not connect mainland Spain to mainland Morocco." },
+  { "countries": ["ESP", "GBR"], "reason": "Gibraltar does not connect Spain to Great Britain." },
+  { "countries": ["GBR", "IRL"], "reason": "Northern Ireland is disconnected from Great Britain; this mode uses one mainland per country." },
+  { "countries": ["LTU", "RUS"], "reason": "The border is with Kaliningrad, disconnected from Russia's main land area." },
+  { "countries": ["POL", "RUS"], "reason": "The border is with Kaliningrad, disconnected from Russia's main land area." },
+  { "countries": ["AZE", "TUR"], "reason": "The border is with Nakhchivan, disconnected from Azerbaijan's main land area." },
+  { "countries": ["AGO", "COG"], "reason": "The border is with Cabinda, disconnected from Angola's main land area." },
+  { "countries": ["HRV", "MNE"], "reason": "The Dubrovnik coastal area is separated from Croatia's main land area by Bosnia and Herzegovina; the sea bridge does not create a mainland route." },
+  { "countries": ["BRN", "MYS"], "reason": "Borneo is disconnected from peninsular Malaysia." },
+  { "countries": ["IDN", "MYS"], "reason": "Borneo is disconnected from both Java and peninsular Malaysia." },
+  { "countries": ["IDN", "PNG"], "reason": "The New Guinea border is disconnected from Indonesia's primary island, Java." },
+  { "countries": ["IDN", "TLS"], "reason": "The Timor border is disconnected from Indonesia's primary island, Java." }
+]

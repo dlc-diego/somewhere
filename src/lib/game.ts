@@ -1,4 +1,4 @@
-import { randomBorderJourney, shortestBorderRoute } from './journey'
+import { canCrossBorder, randomBorderJourney, shortestBorderRoute } from './journey'
 import { areAdjacent, countries, countryById, locationFor, type GameMode } from './countries'
 import { distanceKm, temperatureFor } from './geo'
 
@@ -62,10 +62,10 @@ export function addGuess(round: Round, id: string): { round: Round; error?: stri
     const current = countryById.get(round.guesses.at(-1) || round.start!)!
     if (current.id === id)
       return { round, error: `You are already in ${current.name}. Choose a neighboring country.` }
-    if (!areAdjacent(current, countryById.get(id)!))
+    if (!canCrossBorder(current.id, id))
       return {
         round,
-        error: `${countryById.get(id)!.name} does not share a land border with ${current.name}. Try another crossing.`,
+        error: `${countryById.get(id)!.name} does not share a continuous mainland border with ${current.name}. Try another crossing.`,
       }
     if (round.guesses.length >= 1000)
       return {
@@ -142,7 +142,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
         return null
       let current = raw.start
       for (const id of guesses as string[]) {
-        if (!areAdjacent(countryById.get(current)!, countryById.get(id)!)) return null
+        if (!canCrossBorder(current, id)) return null
         current = id
       }
     }

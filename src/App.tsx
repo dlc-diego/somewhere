@@ -102,8 +102,10 @@ export default function App() {
     return sequence
   }, [])
   useEffect(() => {
-    if (mode === 'journey' && round.start)
-      focusCountry(countryById.get(round.guesses.at(-1) || round.start)!)
+    if (mode === 'journey' && round.start) {
+      const current = countryById.get(round.guesses.at(-1) || round.start)!
+      focusCountry(current, locationFor(current, mode))
+    }
   }, [mode, round.start, round.answer, focusCountry])
 
   function submit(country: Country) {
@@ -341,7 +343,10 @@ export default function App() {
 
           <div className="history-column">
             {isJourney ? (
-              <JourneyHistory round={round} onFocus={focusCountry} />
+              <JourneyHistory
+                round={round}
+                onFocus={(country) => focusCountry(country, locationFor(country, mode))}
+              />
             ) : (
               <GuessHistory guesses={guesses} mode={mode} onFocus={focusCountry} />
             )}
@@ -389,10 +394,13 @@ export default function App() {
                   without ending your round or using a guess. Search a name or alias, select a
                   suggestion, then make your guess. Each mode keeps its own saved round. In Border
                   Journey, travel from the starting country to the displayed destination by choosing
-                  countries that share a land border with your current stop. Invalid crossings do
-                  not count. You can revisit countries to retrace your steps; the route stays in
-                  travel order. Reach the destination to win. Giving up reveals one shortest route
-                  from your last stop. Routes start three to six crossings apart; the destination is
+                  countries that share a continuous mainland border with your current stop. Routes
+                  stay within the connected Americas or Africa–Eurasia; overseas territories and
+                  disconnected parts cannot link routes. Click the destination above your journey
+                  list to find it on the globe without making a crossing. Invalid crossings do not
+                  count. You can revisit countries to retrace your steps; the route stays in travel
+                  order. Reach the destination to win. Giving up reveals one shortest route from
+                  your last stop. Routes start three to six crossings apart; the destination is
                   visible from the start. The globe is for exploring; tapping it never selects a
                   guess. Pinch to zoom up to 32×. With the globe focused, keyboard users can use +/−
                   to zoom and Home to reset the view. Each guess or reveal automatically zooms to
@@ -434,14 +442,16 @@ export default function App() {
             <p>
               We play with 193 UN member states, Palestine, and Vatican City. Territories and other
               disputed states are outside this version’s answer list. Border Journey uses the
-              country data’s shared land borders, including overseas borders such as France–Brazil
-              and Spain–Morocco. Sea crossings are excluded; island countries without a connected
-              land route are not selected. Borders are simplified; small guessed countries get a
-              marker. Centers and city coordinates are approximate, and distances are not
-              border-to-border. Capitals use one selected city per country: for example Pretoria for
-              South Africa and Sucre for Bolivia. Nauru uses Yaren, its government district;
-              Palestine uses Ramallah as its administrative seat. Other co-capitals are not separate
-              guesses. See the README for the full data choices and limitations.
+              country data’s land borders with a reviewed mainland-only filter. Overseas links
+              (including Canada–Denmark, France–Brazil and Spain–Morocco), detached exclaves and
+              island-hopping are excluded. Each country represents one main connected land area;
+              islands without a playable mainland route are not selected. Borders are simplified;
+              small guessed countries get a marker. Centers and city coordinates are approximate,
+              and distances are not border-to-border. Capitals use one selected city per country:
+              for example Pretoria for South Africa and Sucre for Bolivia. Nauru uses Yaren, its
+              government district; Palestine uses Ramallah as its administrative seat. Other
+              co-capitals are not separate guesses. See the README for the full data choices and
+              limitations.
             </p>
             <p>
               Flags use bundled images so they display consistently across devices. Similar flags

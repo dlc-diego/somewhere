@@ -1893,3 +1893,45 @@ h1 {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+.journey-land-connection {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 6px 0 14px;
+}
+.journey-destination {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  min-height: 54px;
+  margin-bottom: 12px;
+  text-align: left;
+  border: 1px solid var(--border-mode);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+.journey-destination > svg {
+  flex-shrink: 0;
+  color: var(--logo-accent);
+}
+.journey-destination > span {
+  flex: 1;
+  min-width: 0;
+}
+.journey-destination small {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.journey-destination strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.journey-destination:hover {
+  background: var(--reveal-hover);
+}

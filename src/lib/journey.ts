@@ -1,3 +1,4 @@
+import exclusions from '../data/journey-border-exclusions.json'
 import { areAdjacent, countries, countryById } from './countries'
 
 export const journeyColors = {
@@ -7,13 +8,33 @@ export const journeyColors = {
   arrived: '#28755b',
 }
 
-// Treat the source's borders as undirected, just like adjacency in the other modes.
+// One primary, connected land area per country. Political borders on overseas
+// territories, detached exclaves and other islands cannot teleport the traveler.
+const edgeKey = (a: string, b: string) => [a, b].sort().join(':')
+const excludedEdges = new Set(exclusions.map(({ countries: [a, b] }) => edgeKey(a, b)))
+
+export function canCrossBorder(a: string, b: string): boolean {
+  const from = countryById.get(a)
+  const to = countryById.get(b)
+  return Boolean(from && to && areAdjacent(from, to) && !excludedEdges.has(edgeKey(a, b)))
+}
+
 const neighbors = new Map(
   countries.map((country) => [
     country.id,
-    countries.filter((other) => areAdjacent(country, other)).map((other) => other.id),
+    countries.filter((other) => canCrossBorder(country.id, other.id)).map((other) => other.id),
   ]),
 )
+
+export function landConnectionFor(id: string): string {
+  const country = countryById.get(id)
+  if (!country) return ''
+  if (!neighbors.get(id)?.length) return country.name
+  if (id === 'DOM' || id === 'HTI') return 'Hispaniola'
+  return country.continent === 'North America' || country.continent === 'South America'
+    ? 'Americas'
+    : 'Africa–Eurasia'
+}
 
 export function shortestBorderRoute(start: string, destination: string): string[] | null {
   if (!countryById.has(start) || !countryById.has(destination)) return null

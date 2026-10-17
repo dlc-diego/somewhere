@@ -7,6 +7,7 @@ import { LocateFixed, Move, RefreshCw } from 'lucide-react'
 import {
   countryById,
   countryByNumeric,
+  locationFor,
   type Country,
   type GameMode,
   type Location,
@@ -119,7 +120,7 @@ function Globe({
     markers = [...new Set([...journey.route, journey.destination, ...journey.remaining])].map(
       (id) => ({
         country: countryById.get(id)!,
-        location: countryById.get(id)!,
+        location: locationFor(countryById.get(id)!, 'journey'),
         color: colors.get(id)!,
         revealed: Boolean(answerReveal && id === journey.destination),
       }),
@@ -411,8 +412,8 @@ function Globe({
                           geoPath(projection)({
                             type: 'LineString',
                             coordinates: route.map((id) => {
-                              const c = countryById.get(id)!
-                              return [c.lng, c.lat]
+                              const point = locationFor(countryById.get(id)!, 'journey')
+                              return [point.lng, point.lat]
                             }),
                           }) || ''
                         }

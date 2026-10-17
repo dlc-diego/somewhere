@@ -47,8 +47,22 @@ test('border journey validates crossings, backtracks, saves, switches modes and 
   await expect(page.locator('.journey-challenge')).toContainText('Italy')
   await expect(history(page).locator('li')).toHaveCount(1)
   await expect(page.locator('path[data-country="380"]')).toHaveAttribute('fill', '#e2bc67')
+  await expect(page.locator('.journey-land-connection')).toHaveText(
+    'Connected land: Africa–Eurasia',
+  )
+  const destination = page.getByRole('button', {
+    name: 'Destination: Italy. Show on globe.',
+    exact: true,
+  })
+  await destination.click()
+  await expect(page.locator('path[data-country="380"]')).toHaveClass(/guess-country-blink/)
+  await expect(history(page).locator('li')).toHaveCount(1)
+  await expect(search(page)).toBeEnabled()
+  await expect(page.locator('.victory-celebration')).toHaveCount(0)
   await cross(page, 'Italy')
-  await expect(page.getByRole('alert')).toContainText('does not share a land border with Portugal')
+  await expect(page.getByRole('alert')).toContainText(
+    'does not share a continuous mainland border with Portugal',
+  )
   await expect(history(page).locator('li')).toHaveCount(1)
   await cross(page, 'Portugal')
   await expect(page.getByRole('alert')).toContainText('already in Portugal')
@@ -143,4 +157,102 @@ test('corrupt island route recovers and journey works from a repository subpath'
     await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.journey.v1')!)),
   ).toEqual(before)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+for (const fixture of [
+  { start: 'CAN', answer: 'DNK', name: 'Denmark', mainland: 'United States', mainlandId: 'USA' },
+  { start: 'FRA', answer: 'ITA', name: 'Brazil', mainland: 'Spain', mainlandId: 'ESP' },
+  { start: 'ESP', answer: 'ITA', name: 'Morocco', mainland: 'France', mainlandId: 'FRA' },
+]) {
+  test(`mainland-only crossings reject ${fixture.start} to ${fixture.name}`, async ({ page }) => {
+    await page.addInitScript(({ start, answer }) => {
+      // CAN→DNK would now be an invalid saved round. Use a reachable destination
+      // so this checks a rejected crossing during play instead of save recovery.
+      localStorage.setItem('somewhere.mode.v1', 'journey')
+      localStorage.setItem(
+        'somewhere.journey.v1',
+        JSON.stringify({
+          version: 2,
+          mode: 'journey',
+          start,
+          answer: start === 'CAN' ? 'BRA' : answer,
+          guesses: [],
+          revealed: false,
+        }),
+      )
+    }, fixture)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await cross(page, fixture.name)
+    await expect(page.getByRole('alert')).toContainText(
+      'does not share a continuous mainland border',
+    )
+    await expect(history(page).locator('li')).toHaveCount(1)
+    await cross(page, fixture.mainland)
+    await expect(history(page).locator('li')).toHaveCount(2)
+    expect(
+      await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.journey.v1')!).guesses),
+    ).toEqual([fixture.mainlandId])
+  })
+}
+
+test('legacy transatlantic routes recover instead of preserving an ocean jump', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('somewhere.mode.v1', 'journey')
+    localStorage.setItem(
+      'somewhere.journey.v1',
+      JSON.stringify({
+        version: 2,
+        mode: 'journey',
+        start: 'CAN',
+        answer: 'FRA',
+        guesses: ['DNK', 'DEU'],
+        revealed: false,
+      }),
+    )
+  })
+  await page.goto('/')
+  await expect(
+    page.getByText('Your saved round could not be read. A fresh round is ready.'),
+  ).toBeVisible()
+  await expect(history(page).locator('li')).toHaveCount(1)
+  const round = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.journey.v1')!))
+  expect(round.guesses).toEqual([])
+  expect(round.start === 'CAN' && round.answer === 'FRA').toBe(false)
+})
+
+test('Malaysia destination focus and arrival stay on the peninsula', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('somewhere.mode.v1', 'journey')
+    localStorage.setItem(
+      'somewhere.journey.v1',
+      JSON.stringify({
+        version: 2,
+        mode: 'journey',
+        start: 'THA',
+        answer: 'MYS',
+        guesses: [],
+        revealed: false,
+      }),
+    )
+  })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  await page
+    .getByRole('button', { name: 'Destination: Malaysia. Show on globe.', exact: true })
+    .click()
+  const marker = page.locator('circle[data-country="458"]')
+  await expect.poll(async () => Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
+  await expect.poll(async () => Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
+  await expect(history(page).locator('li')).toHaveCount(1)
+  await cross(page, 'Malaysia')
+  await expect(page.locator('.journey-instruction')).toContainText(
+    'Destination reached in 1 crossing!',
+  )
+  await expect(marker).toHaveAttribute('fill', '#28755b')
+  await expect.poll(async () => Number(await marker.getAttribute('cx'))).toBeCloseTo(300, 3)
+  await expect.poll(async () => Number(await marker.getAttribute('cy'))).toBeCloseTo(300, 3)
 })
