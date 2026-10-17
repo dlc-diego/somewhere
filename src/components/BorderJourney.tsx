@@ -7,7 +7,6 @@ import FlagImage from './FlagImage'
 export function JourneyChallenge({ round }: { round: Round }) {
   const start = countryById.get(round.start!)!
   const destination = countryById.get(round.answer)!
-  const current = countryById.get(round.guesses.at(-1) || round.start!)!
   const ended = hasEnded(round)
   return (
     <div className="journey-challenge">
@@ -30,12 +29,6 @@ export function JourneyChallenge({ round }: { round: Round }) {
           <FlagImage country={destination} />
         </div>
       </div>
-      {!ended && (
-        <p className="journey-instruction">
-          You’re in <strong>{current.name}</strong>. Choose a country that shares a continuous
-          mainland border to take your next step. You can retrace your steps.
-        </p>
-      )}
       {ended && (
         <p className="journey-instruction">
           {hasWon(round)

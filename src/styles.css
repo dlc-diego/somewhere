@@ -1425,9 +1425,6 @@ h1 {
   line-height: 1.7;
   color: var(--text-muted);
 }
-.journey-instruction strong {
-  color: var(--text-primary);
-}
 .journey-list {
   list-style: none;
   margin: 0;

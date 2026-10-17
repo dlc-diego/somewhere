@@ -253,5 +253,5 @@ test('opening Somewhere from a saved Something journey stays at the header', asy
   await switchTo(page, 'somewhere')
   expect(await page.evaluate(() => window.scrollY)).toBe(0)
   await expect(selector(page)).toBeInViewport()
-  await expect(page.locator('.journey-instruction')).toContainText('You’re in Spain')
+  await expect(page.locator('.journey-list .current-stop')).toContainText('Spain')
 })
