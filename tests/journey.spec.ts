@@ -47,9 +47,6 @@ test('border journey validates crossings, backtracks, saves, switches modes and 
   await expect(page.locator('.journey-challenge')).toContainText('Italy')
   await expect(history(page).locator('li')).toHaveCount(1)
   await expect(page.locator('path[data-country="380"]')).toHaveAttribute('fill', '#e2bc67')
-  await expect(page.locator('.journey-land-connection')).toHaveText(
-    'Connected land: Africa–Eurasia',
-  )
   const destination = page.getByRole('button', {
     name: 'Destination: Italy. Show on globe.',
     exact: true,

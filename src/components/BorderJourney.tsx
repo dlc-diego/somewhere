@@ -1,7 +1,7 @@
 import { ArrowDown, Flag, MapPin } from 'lucide-react'
 import { countryById, type Country } from '../lib/countries'
 import { hasEnded, hasWon, type Round } from '../lib/game'
-import { landConnectionFor, shortestBorderRoute } from '../lib/journey'
+import { shortestBorderRoute } from '../lib/journey'
 import FlagImage from './FlagImage'
 
 export function JourneyChallenge({ round }: { round: Round }) {
@@ -11,8 +11,6 @@ export function JourneyChallenge({ round }: { round: Round }) {
   const ended = hasEnded(round)
   return (
     <div className="journey-challenge">
-      <p className="eyebrow">One border at a time</p>
-      <p className="journey-land-connection">Connected land: {landConnectionFor(start.id)}</p>
       <div className="journey-endpoints">
         <div>
           <MapPin size={16} />

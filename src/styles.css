@@ -1894,12 +1894,6 @@ h1 {
   color: var(--text-muted);
 }
 
-.journey-land-connection {
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--text-muted);
-  margin: 6px 0 14px;
-}
 .journey-destination {
   display: flex;
   width: 100%;
