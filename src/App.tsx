@@ -65,6 +65,7 @@ export default function App() {
   const celebration = celebrations[0]
   const finishCelebration = useCallback(() => setCelebrations((queue) => queue.slice(1)), [])
   const focusSequence = useRef(0)
+  const lastScrollFocus = useRef(0)
   const globePanel = useRef<HTMLElement>(null)
   const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
   const guesses = guessDetails(round)
@@ -93,8 +94,10 @@ export default function App() {
   }, [round])
 
   useEffect(() => {
-    if (experience !== 'somewhere' || !focus || !window.matchMedia('(max-width: 820px)').matches)
-      return
+    // Scroll once per new focus request. Returning to this view must not replay it.
+    if (!focus || lastScrollFocus.current === focus.sequence) return
+    lastScrollFocus.current = focus.sequence
+    if (experience !== 'somewhere' || !window.matchMedia('(max-width: 820px)').matches) return
     // Let the mobile keyboard close before centering the globe in the viewport.
     if (document.activeElement instanceof HTMLInputElement) document.activeElement.blur()
     const timer = window.setTimeout(() => {

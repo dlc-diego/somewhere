@@ -196,3 +196,62 @@ test('a winning celebration plays fully across Something and Somewhere', async (
   await expect(canvas).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Explore another round' })).toBeVisible()
 })
+
+test('returning to Somewhere stays at the header after focusing a country', async ({
+  page,
+  isMobile,
+}) => {
+  await seed(page)
+  await page.goto('/')
+  await expect(page.getByTestId('globe')).toHaveAttribute('data-ready', 'true')
+  await page
+    .getByRole('list', { name: 'Guesses, closest first' })
+    .getByRole('button', { name: /Germany/ })
+    .click()
+  const expectCentered = async () => {
+    if (!isMobile) return
+    await expect
+      .poll(() =>
+        page.getByTestId('globe').evaluate((el) => {
+          const box = el.getBoundingClientRect()
+          return Math.abs(box.top + box.height / 2 - innerHeight / 2)
+        }),
+      )
+      .toBeLessThan(5)
+  }
+  await expectCentered()
+  await switchTo(page, 'something')
+  await switchTo(page, 'somewhere')
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  await expect(selector(page)).toBeInViewport()
+  // New guesses and reveals must still center the globe normally.
+  await page.getByRole('combobox', { name: 'Search for a country', exact: true }).fill('Italy')
+  await page.getByRole('listbox').getByRole('option', { name: /Italy/ }).click()
+  await page.getByRole('button', { name: 'Make a guess' }).click()
+  await expectCentered()
+  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await expectCentered()
+})
+
+test('opening Somewhere from a saved Something journey stays at the header', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('somewhere.experience.v1', 'something')
+    localStorage.setItem('somewhere.mode.v1', 'journey')
+    localStorage.setItem(
+      'somewhere.journey.v1',
+      JSON.stringify({
+        version: 2,
+        mode: 'journey',
+        start: 'PRT',
+        answer: 'ITA',
+        guesses: ['ESP'],
+        revealed: false,
+      }),
+    )
+  })
+  await page.goto('/')
+  await switchTo(page, 'somewhere')
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  await expect(selector(page)).toBeInViewport()
+  await expect(page.locator('.journey-instruction')).toContainText('You’re in Spain')
+})
