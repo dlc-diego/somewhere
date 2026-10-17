@@ -28,7 +28,7 @@ export function newRound(previousAnswer?: string, mode: GameMode = 'countries'):
     revealed: false,
     answer: pool[sample[0] % pool.length].id,
     guesses: [],
-    ...(mode === 'flags' ? { hintUsed: false } : {}),
+    ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: false } : {}),
   }
 }
 
@@ -42,7 +42,7 @@ export function revealAnswer(round: Round): Round {
 }
 
 export function revealContinentHint(round: Round): Round {
-  return round.mode !== 'flags' || hasEnded(round) || round.hintUsed
+  return (round.mode !== 'flags' && round.mode !== 'shapes') || hasEnded(round) || round.hintUsed
     ? round
     : { ...round, hintUsed: true }
 }
@@ -91,7 +91,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
     const revealed = version === 1 ? false : raw.revealed
     if (
       (version !== 1 && version !== 2) ||
-      (mode !== 'countries' && mode !== 'capitals' && mode !== 'flags') ||
+      (mode !== 'countries' && mode !== 'capitals' && mode !== 'flags' && mode !== 'shapes') ||
       (expectedMode !== undefined && mode !== expectedMode) ||
       typeof revealed !== 'boolean' ||
       typeof answer !== 'string' ||
@@ -114,7 +114,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
       revealed,
       answer,
       guesses,
-      ...(mode === 'flags' ? { hintUsed: raw.hintUsed === true } : {}),
+      ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: raw.hintUsed === true } : {}),
     }
   } catch {
     return null
@@ -126,7 +126,8 @@ export function loadRound(requestedMode?: GameMode): { round: Round; warning: st
   try {
     if (!requestedMode) {
       const savedMode = localStorage.getItem(MODE_KEY)
-      if (savedMode === 'capitals' || savedMode === 'flags') mode = savedMode
+      if (savedMode === 'capitals' || savedMode === 'flags' || savedMode === 'shapes')
+        mode = savedMode
     }
     const saved = localStorage.getItem(storageKeyFor(mode))
     const restored = parseRound(saved, mode)

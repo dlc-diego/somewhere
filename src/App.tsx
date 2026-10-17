@@ -1,8 +1,19 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Compass, Flag, Globe2, Heart, MapPin, Sun, Moon } from 'lucide-react'
+import {
+  ArrowRight,
+  Check,
+  Compass,
+  Flag,
+  Globe2,
+  Heart,
+  MapPin,
+  Sun,
+  Moon,
+  Shapes,
+} from 'lucide-react'
 import GuessSearch from './components/GuessSearch'
 import ValHeart from './components/ValHeart'
-import FlagChallenge from './components/FlagChallenge'
+import VisualChallenge from './components/VisualChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
 import VictoryCelebration from './components/VictoryCelebration'
@@ -59,7 +70,14 @@ export default function App() {
   const won = hasWon(round)
   const ended = hasEnded(round)
   const mode = round.mode
-  const item = mode === 'flags' ? 'flag' : mode === 'capitals' ? 'capital' : 'country'
+  const item =
+    mode === 'flags'
+      ? 'flag'
+      : mode === 'shapes'
+        ? 'shape'
+        : mode === 'capitals'
+          ? 'capital'
+          : 'country'
   const answerCountry = countryById.get(round.answer)!
   const answerLocation = locationFor(answerCountry, mode)
 
@@ -189,11 +207,13 @@ export default function App() {
             className="search-card"
             id="country-search"
             aria-label={
-              mode === 'flags'
-                ? 'Flag search'
-                : mode === 'capitals'
-                  ? 'Capital search'
-                  : 'Country search'
+              mode === 'shapes'
+                ? 'Shape search'
+                : mode === 'flags'
+                  ? 'Flag search'
+                  : mode === 'capitals'
+                    ? 'Capital search'
+                    : 'Country search'
             }
           >
             <div className="mode-selector" role="group" aria-label="Game mode">
@@ -206,10 +226,14 @@ export default function App() {
               <button aria-pressed={mode === 'flags'} onClick={() => changeMode('flags')}>
                 <Flag size={15} /> Flags
               </button>
+              <button aria-pressed={mode === 'shapes'} onClick={() => changeMode('shapes')}>
+                <Shapes size={15} /> Shapes
+              </button>
             </div>
-            {mode === 'flags' && (
-              <FlagChallenge
-                key={round.answer}
+            {(mode === 'flags' || mode === 'shapes') && (
+              <VisualChallenge
+                mode={mode}
+                key={`clue:${mode}:${round.answer}`}
                 country={answerCountry}
                 hintUsed={Boolean(round.hintUsed)}
                 ended={ended}
@@ -226,7 +250,9 @@ export default function App() {
                   {mode === 'capitals' ? `, ${answerCountry.name},` : ''}{' '}
                   {mode === 'flags'
                     ? 'was the country behind the flag.'
-                    : `was the mystery ${item}.`}{' '}
+                    : mode === 'shapes'
+                      ? 'was the country behind the shape.'
+                      : `was the mystery ${item}.`}{' '}
                   {won ? 'Beautifully explored.' : 'A new discovery for your next adventure.'}
                 </p>
               </>
@@ -322,15 +348,15 @@ export default function App() {
             <li>
               <span>01</span>
               <div>
-                <strong>Choose countries, capitals or flags</strong>
+                <strong>Choose countries, capitals, flags or shapes</strong>
                 <p>
                   Use the mode buttons to guess a country, a capital city, or the country behind a
-                  flag image. In Flags, “Hint: reveal continent” gives a clue without ending your
-                  round or using a guess. Search a name or alias, select a suggestion, then make
-                  your guess. Each mode keeps its own saved round. The globe is for exploring;
-                  tapping it never selects a guess. Pinch to zoom up to 32×. With the globe focused,
-                  keyboard users can use +/− to zoom and Home to reset the view. Each guess or
-                  reveal automatically zooms to suit the country’s size.
+                  flag or silhouette. In Flags and Shapes, “Hint: reveal continent” gives a clue
+                  without ending your round or using a guess. Search a name or alias, select a
+                  suggestion, then make your guess. Each mode keeps its own saved round. The globe
+                  is for exploring; tapping it never selects a guess. Pinch to zoom up to 32×. With
+                  the globe focused, keyboard users can use +/− to zoom and Home to reset the view.
+                  Each guess or reveal automatically zooms to suit the country’s size.
                 </p>
               </div>
             </li>
@@ -339,8 +365,8 @@ export default function App() {
               <div>
                 <strong>Follow the warmth</strong>
                 <p>
-                  Country and flag rounds measure center-to-center distance; capital rounds measure
-                  city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm is
+                  Country, flag and shape rounds measure center-to-center distance; capital rounds
+                  measure city-to-city distance. Cold is 7,000+ km; cool is 3,000–7,000; warm is
                   1,000–3,000; hot is under 1,000. Countries sharing a land border are marked
                   “Adjacent” with the hottest color, regardless of distance. In capital mode,
                   “Adjacent” means the capitals' countries share a land border, not that the cities
@@ -355,9 +381,9 @@ export default function App() {
                 <strong>Find your somewhere</strong>
                 <p>
                   There’s no guess limit. Find the exact country or capital to win, then start a
-                  fresh adventure. In Flags, name the country whose flag you see. Or use “Give up
-                  and reveal answer” below the guesses to end a round and see its answer. Giving up
-                  keeps your guesses and is not a win. Your rounds save in this browser.
+                  fresh adventure. In Flags or Shapes, name the country behind the clue. Or use
+                  “Give up and reveal answer” below the guesses to end a round and see its answer.
+                  Giving up keeps your guesses and is not a win. Your rounds save in this browser.
                 </p>
               </div>
             </li>
@@ -383,6 +409,11 @@ export default function App() {
               Türkiye.
             </p>
             <p>
+              Shape clues show a north-up outline, scaled to fit. Islands and disconnected regions
+              stay together; tiny islands can be hard to recognize. Generalized outlines may differ
+              from the globe’s boundaries.
+            </p>
+            <p>
               The answer stays unmarked until guessed correctly or revealed by giving up. As a
               browser-only game, it can be found by inspecting saved data.
             </p>
@@ -401,7 +432,12 @@ export default function App() {
               </a>{' '}
               (<a href={`${import.meta.env.BASE_URL}data/ODbL.txt`}>ODbL</a>);{' '}
               <a href={`${import.meta.env.BASE_URL}data/countries.json`}>download adapted data</a>.{' '}
-              Flags:{' '}
+              Shapes: <a href={`${import.meta.env.BASE_URL}shapes/README.txt`}>outline sources</a> (
+              <a href={`${import.meta.env.BASE_URL}shapes/ODbL.txt`}>ODbL</a>);{' '}
+              <a href={`${import.meta.env.BASE_URL}shapes/outlines.json`}>
+                download adapted outlines
+              </a>
+              . Flags:{' '}
               <a href="https://flagicons.lipis.dev/" target="_blank" rel="noreferrer">
                 flag-icons
               </a>{' '}

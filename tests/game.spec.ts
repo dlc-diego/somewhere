@@ -674,6 +674,7 @@ test('flags: local images, hidden suggestion flags, persistent hint, independent
     'Countries',
     'Capitals',
     'Flags',
+    'Shapes',
   ])
   const flag = page.getByRole('img', { name: 'Mystery flag', exact: true })
   await expect(flag).toHaveAttribute('src', /\/flags\/FRA\.svg$/)

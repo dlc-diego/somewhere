@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "data:generate": "node scripts/generate-data.mjs"
+    "data:generate": "node scripts/generate-data.mjs && node scripts/generate-shapes.mjs",
+    "data:shapes": "node scripts/generate-shapes.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

@@ -4,6 +4,7 @@ package-lock.json
 src/data
 public/data
 public/flags
+public/shapes
 test-results
 playwright-report
 *.tsbuildinfo

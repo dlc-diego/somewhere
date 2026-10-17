@@ -7,7 +7,7 @@ test('searches stay compact and labeled in all modes without globe buttons', asy
   await expect(
     page.getByRole('button', { name: /^(Zoom in|Zoom out|Reset globe view)$/ }),
   ).toHaveCount(0)
-  for (const mode of ['Countries', 'Capitals', 'Flags']) {
+  for (const mode of ['Countries', 'Capitals', 'Flags', 'Shapes']) {
     await page.getByRole('button', { name: mode, exact: true }).click()
     await expect(
       page.getByRole('combobox', {
