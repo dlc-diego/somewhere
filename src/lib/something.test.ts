@@ -49,13 +49,13 @@ const knownMystery = (): MysteryRound => ({
 const session = <R>(round: R) => ({ version: 1 as const, round, seen: [] })
 
 describe('Something content', () => {
-  it('has 200 distinct, complete questions with four unique choices and one answer', () => {
-    expect(triviaQuestions).toHaveLength(200)
-    expect(new Set(triviaQuestions.map((q) => q.id)).size).toBe(200)
-    expect(new Set(triviaQuestions.map((q) => normalizeAnswer(q.question))).size).toBe(200)
+  it('has 400 distinct, complete questions with four unique choices and one answer', () => {
+    expect(triviaQuestions).toHaveLength(400)
+    expect(new Set(triviaQuestions.map((q) => q.id)).size).toBe(400)
+    expect(new Set(triviaQuestions.map((q) => normalizeAnswer(q.question))).size).toBe(400)
     expect(new Set(triviaQuestions.map((q) => q.category)).size).toBe(10)
     for (const category of new Set(triviaQuestions.map((q) => q.category)))
-      expect(triviaQuestions.filter((q) => q.category === category)).toHaveLength(20)
+      expect(triviaQuestions.filter((q) => q.category === category)).toHaveLength(40)
     for (const q of triviaQuestions) {
       expect(q.question.length).toBeGreaterThan(15)
       expect(q.choices).toHaveLength(4)
