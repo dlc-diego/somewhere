@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { CELEBRATION_DURATION_MS, type Celebration } from '../lib/celebrations'
+import { CELEBRATION_DURATION_MS, fireSettings, type CelebrationEffect } from '../lib/celebrations'
 
 const colors = ['#f47759', '#f1b63d', '#52ad8a', '#709de0', '#d480b7', '#9c8cdb']
 const emojis = ['🎉', '🥳', '💖', '🌍', '✨', '🎈']
@@ -25,9 +25,19 @@ function star(ctx: CanvasRenderingContext2D, size: number) {
   ctx.fill()
 }
 
-function createScene(effect: Celebration, mobile: boolean) {
+function createScene(effect: CelebrationEffect, mobile: boolean, intensity: number) {
   // All particles are allocated once. Frames only update drawing, never React state.
-  const count = effect === 'emoji-parade' ? (mobile ? 28 : 42) : mobile ? 100 : 160
+  const fire = fireSettings(intensity, mobile)
+  const count =
+    effect === 'fire-streak'
+      ? fire.count
+      : effect === 'emoji-parade'
+        ? mobile
+          ? 28
+          : 42
+        : mobile
+          ? 100
+          : 160
   const particles = Array.from({ length: count }, (_, i) => ({
     x: Math.random(),
     y: Math.random(),
@@ -94,15 +104,30 @@ function createScene(effect: Celebration, mobile: boolean) {
           ctx.arc(x, y, p.size * 0.3, 0, tau)
           ctx.fill()
         }
-      } else if (effect === 'emoji-parade') {
+      } else if (effect === 'emoji-parade' || effect === 'fire-streak') {
         const x = p.x * width + Math.sin(age * 2 + p.phase) * 28
-        const y = height + 50 - age * (height + 180) * 0.35 * p.speed
+        const y =
+          height +
+          50 -
+          age * (height + 180) * 0.35 * p.speed * (effect === 'fire-streak' ? fire.speed : 1)
         ctx.translate(x, y)
         ctx.rotate(Math.sin(age * 2 + p.phase) * 0.3)
-        ctx.font = `${p.size * 3 + 12}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+        ctx.font = `${(p.size * 3 + 12) * (effect === 'fire-streak' ? fire.scale : 1)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(emojis[i % emojis.length], 0, 0)
+        ctx.fillText(effect === 'fire-streak' ? '🔥' : emojis[i % emojis.length], 0, 0)
+      } else if (effect === 'perfect-round') {
+        const life = Math.max(0, age)
+        const angle = p.phase + life * (i % 2 ? 0.35 : -0.35)
+        const radius = (0.12 + p.x * 0.58) * spread * Math.min(1, life * 1.4)
+        ctx.translate(
+          width / 2 + Math.cos(angle) * radius,
+          height * 0.43 + Math.sin(angle) * radius + life * life * 14,
+        )
+        ctx.rotate(p.phase + life * 0.7)
+        ctx.globalAlpha *= Math.min(1, life * 2)
+        ctx.fillStyle = ['#f9d976', '#fff2bc', '#eab54c', '#dca95b'][i % 4]
+        star(ctx, p.size * (i % 7 === 0 ? 1.8 : 0.9))
       } else if (effect === 'heart-fountains') {
         const direction = i % 2 ? -1 : 1
         const x =
@@ -167,14 +192,36 @@ function createScene(effect: Celebration, mobile: boolean) {
       }
       ctx.restore()
     })
+    if (effect === 'perfect-round') {
+      ctx.save()
+      ctx.globalAlpha = fade * Math.min(1, seconds * 3)
+      ctx.translate(width / 2, height * 0.43 + Math.sin(seconds * 2) * 7)
+      for (let ring = 0; ring < 3; ring++) {
+        const progress = Math.max(0, Math.min(1, (seconds - ring * 0.22) / 2.4))
+        ctx.strokeStyle = '#f9d976'
+        ctx.globalAlpha = fade * (1 - progress) * 0.65
+        ctx.lineWidth = 1.5
+        ctx.beginPath()
+        ctx.arc(0, 0, 45 + progress * spread * 0.48, 0, tau)
+        ctx.stroke()
+      }
+      ctx.globalAlpha = fade * Math.min(1, seconds * 3)
+      ctx.font = `${mobile ? 76 : 110}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('🏆', 0, 0)
+      ctx.restore()
+    }
   }
 }
 
 export default function VictoryCelebration({
   effect,
+  intensity = 3,
   onComplete,
 }: {
-  effect: Celebration
+  effect: CelebrationEffect
+  intensity?: number
   onComplete: () => void
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -186,7 +233,7 @@ export default function VictoryCelebration({
       onComplete()
       return
     }
-    const draw = createScene(effect, window.innerWidth < 821)
+    const draw = createScene(effect, window.innerWidth < 821, intensity)
     let width = 0
     let height = 0
     let frame = 0
@@ -239,9 +286,15 @@ export default function VictoryCelebration({
       motion.removeEventListener('change', updatePlayback)
       document.removeEventListener('visibilitychange', updatePlayback)
     }
-  }, [effect, onComplete])
+  }, [effect, intensity, onComplete])
 
   return (
-    <canvas ref={canvas} className="victory-celebration" data-effect={effect} aria-hidden="true" />
+    <canvas
+      ref={canvas}
+      className="victory-celebration"
+      data-effect={effect}
+      data-intensity={effect === 'fire-streak' ? fireSettings(intensity, false).level : undefined}
+      aria-hidden="true"
+    />
   )
 }

@@ -70,7 +70,7 @@ export function useExperience() {
     }
     document.title =
       experience === 'something'
-        ? 'Something — under construction'
+        ? 'Something — a little more to discover'
         : 'Somewhere — a little world of discovery'
   }, [experience])
 

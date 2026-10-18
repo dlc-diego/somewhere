@@ -1,8 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon } from 'lucide-react'
+import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon, Sparkles } from 'lucide-react'
 import ExperienceSwitcher from './components/ExperienceSwitcher'
 import ExperienceTransition from './components/ExperienceTransition'
-import UnderConstruction from './components/UnderConstruction'
 import { useExperience, type Experience } from './lib/useExperience'
 import ModeSelector from './components/ModeSelector'
 import { JourneyChallenge, JourneyHistory } from './components/BorderJourney'
@@ -13,7 +12,11 @@ import VisualChallenge from './components/VisualChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
 import VictoryCelebration from './components/VictoryCelebration'
-import { createCelebrationPicker, type Celebration } from './lib/celebrations'
+import {
+  createCelebrationPicker,
+  type CelebrationEffect,
+  type CelebrationRequest,
+} from './lib/celebrations'
 import {
   addGuess,
   guessDetails,
@@ -39,15 +42,18 @@ import { prefersReducedMotion } from './lib/motion'
 import { useTheme } from './lib/useTheme'
 
 const Globe = lazy(() => import('./components/Globe'))
+const Something = lazy(() => import('./components/Something'))
 type DialogType = 'help' | null
-type QueuedCelebration = { sequence: number; effect: Celebration }
+type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensity?: number }
 
 export default function App() {
   const { theme, toggleTheme } = useTheme()
   const { experience, transition, switchExperience } = useExperience()
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
+  const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
+    else setHasVisitedSomething(true)
   }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
@@ -65,6 +71,7 @@ export default function App() {
   const celebration = celebrations[0]
   const finishCelebration = useCallback(() => setCelebrations((queue) => queue.slice(1)), [])
   const focusSequence = useRef(0)
+  const celebrationSequence = useRef(0)
   const lastScrollFocus = useRef(0)
   const globePanel = useRef<HTMLElement>(null)
   const roundsCache = useRef(new Map<GameMode, Round>([[initial.round.mode, initial.round]]))
@@ -83,6 +90,19 @@ export default function App() {
           : 'country'
   const answerCountry = countryById.get(round.answer)!
   const answerLocation = locationFor(answerCountry, mode)
+
+  const celebrate = useCallback(
+    (requests: CelebrationRequest[]) => {
+      if (!requests.length || prefersReducedMotion()) return
+      const additions = requests.map((request) => ({
+        sequence: ++celebrationSequence.current,
+        effect: request.effect === 'normal' ? pickCelebration() : request.effect,
+        intensity: request.intensity,
+      }))
+      setCelebrations((queue) => [...queue, ...additions])
+    },
+    [pickCelebration],
+  )
 
   useEffect(() => {
     try {
@@ -127,7 +147,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'instant' })
     setAnnouncement(
       next === 'something'
-        ? 'Something. Under construction.'
+        ? 'Something. General Trivia and What am I.'
         : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
@@ -137,11 +157,8 @@ export default function App() {
     if (result.error) return result.error
     setRound(result.round)
     const latest = guessDetails(result.round).at(-1)!
-    const sequence = focusCountry(country, latest.location)
-    if (hasWon(result.round) && !prefersReducedMotion()) {
-      const effect = pickCelebration()
-      setCelebrations((queue) => [...queue, { sequence, effect }])
-    }
+    focusCountry(country, latest.location)
+    if (hasWon(result.round)) celebrate([{ effect: 'normal' }])
     setAnnouncement(
       isJourney
         ? `${country.name}. Border crossed. ${result.round.guesses.length} crossings.${hasWon(result.round) ? ' Destination reached!' : ''}`
@@ -198,7 +215,7 @@ export default function App() {
   return (
     <div className="app-shell" data-experience={experience} data-switch-phase={transition?.phase}>
       <a
-        href={experience === 'somewhere' ? '#country-search' : '#construction-title'}
+        href={experience === 'somewhere' ? '#country-search' : '#something-games'}
         className="skip-link"
       >
         {experience === 'somewhere' ? 'Skip to guessing' : 'Skip to content'}
@@ -398,27 +415,33 @@ export default function App() {
             </>
           )}
         </div>
-        {experience === 'something' && (
-          <div className="experience-view">
-            <UnderConstruction />
-          </div>
-        )}
+        <div className="experience-view" hidden={experience !== 'something'}>
+          {(hasVisitedSomething || experience === 'something') && (
+            <Suspense
+              fallback={
+                <div className="something-loading" role="status">
+                  Getting your questions ready…
+                </div>
+              }
+            >
+              <Something onCelebrate={celebrate} />
+            </Suspense>
+          )}
+        </div>
       </main>
       <footer className="site-footer">
         <span>
           Built for Val <Heart size={12} />
         </span>
-        {experience === 'somewhere' && (
-          <button className="text-button" onClick={() => setDialog('help')}>
-            How to play <ArrowRight size={13} />
-          </button>
-        )}
+        <button className="text-button" onClick={() => setDialog('help')}>
+          How to play <ArrowRight size={13} />
+        </button>
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
 
-      {dialog === 'help' && (
+      {dialog === 'help' && experience === 'somewhere' && (
         <Dialog title="How to play Somewhere" onClose={() => setDialog(null)}>
           <span className="dialog-emblem">
             <Compass size={30} />
@@ -549,11 +572,71 @@ export default function App() {
           </button>
         </Dialog>
       )}
+      {dialog === 'help' && experience === 'something' && (
+        <Dialog title="How to play Something" onClose={() => setDialog(null)}>
+          <span className="dialog-emblem">
+            <Sparkles size={30} />
+          </span>
+          <p className="eyebrow">A little guide</p>
+          <h2>A little of everything.</h2>
+          <ol className="help-steps">
+            <li>
+              <span>01</span>
+              <div>
+                <strong>General Trivia</strong>
+                <p>
+                  Play ten mixed-topic questions with four choices each, no timer. Choose once, read
+                  the explanation, then continue. Review any answer in Your round. Your score,
+                  question order and progress save in this browser.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>02</span>
+              <div>
+                <strong>Get On Fire</strong>
+                <p>
+                  Every correct answer gets one of our familiar celebrations. Three consecutive
+                  correct answers turn your streak On Fire: each continued correct answer gets more,
+                  larger, faster fire emojis, up to a mobile-friendly limit. A wrong answer resets
+                  the count to zero and the next correct answer uses the normal celebrations. New
+                  rounds start a fresh streak. Ten correct answers also queue a special golden
+                  trophy and starburst celebration. Effects finish in order, even if you switch
+                  games, switch experiences or start another round. Reduced-motion preferences keep
+                  the result still.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>03</span>
+              <div>
+                <strong>What am I</strong>
+                <p>
+                  Identify an animal, object, structure or natural phenomenon from up to five clues.
+                  Reveal another clue whenever you like without using a guess. Type your answer;
+                  common aliases, capitalization and punctuation are accepted. Wrong answers and
+                  repeated guesses never end a mystery. Give up and reveal answer shows the solution
+                  and all clues without counting as a win. After solving or revealing, try another
+                  mystery. Each game keeps its own saved round.
+                </p>
+              </div>
+            </li>
+          </ol>
+          <p className="help-note">
+            Your progress is saved in this browser. New rounds prioritize questions and mysteries
+            you haven’t played yet.
+          </p>
+          <button className="primary" onClick={() => setDialog(null)}>
+            Let’s play <ArrowRight size={17} />
+          </button>
+        </Dialog>
+      )}
       {transition && <ExperienceTransition key={transition.sequence} />}
       {celebration && (
         <VictoryCelebration
           key={celebration.sequence}
           effect={celebration.effect}
+          intensity={celebration.intensity}
           onComplete={finishCelebration}
         />
       )}

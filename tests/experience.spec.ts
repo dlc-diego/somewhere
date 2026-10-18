@@ -39,12 +39,12 @@ test('header switches experiences with a screen-wide sweep and preserves the geo
   expect(box.y).toBe(0)
   expect(box.width).toBe(page.viewportSize()!.width)
   expect(box.height).toBe(page.viewportSize()!.height)
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
   await expect(page.getByTestId('globe')).not.toBeVisible()
   await expect(page.getByRole('combobox', { name: 'Game mode', exact: true })).toHaveCount(0)
   await expect(page.locator('.brand-word')).toHaveText('something.')
   await expect(page.locator('.brand-ending')).toHaveText('thing.')
-  await expect(page).toHaveTitle('Something — under construction')
+  await expect(page).toHaveTitle('Something — a little more to discover')
   await expect(transition).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(before)
   await switchTo(page, 'somewhere')
@@ -69,7 +69,7 @@ test('saved Something opens under a repository subpath without loading the globe
     if (request.url().endsWith('/data/world.json')) worlds++
   })
   await page.goto('http://127.0.0.1:4174/wep-app/')
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
   await expect(selector(page)).toHaveValue('something')
   await expect(page.getByTestId('globe')).toHaveCount(0)
   expect(worlds).toBe(0)
@@ -83,7 +83,7 @@ test('saved Something opens under a repository subpath without loading the globe
   expect(worlds).toBe(1)
 })
 
-test('construction and two-tone branding remain accessible in both themes at 320px', async ({
+test('Something games and two-tone branding remain accessible in both themes at 320px', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
@@ -129,7 +129,7 @@ test('keyboard and blocked storage still allow motion-free experience switching'
   await selector(page).focus()
   await page.keyboard.press('ArrowDown')
   await expect(selector(page)).toHaveValue('something')
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
   await expect(page.locator('.experience-transition')).toHaveCount(0)
   await page.keyboard.press('ArrowUp')
   await expect(selector(page)).toHaveValue('somewhere')
@@ -165,7 +165,7 @@ test('enabling reduced motion during a switch finishes immediately and removes t
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expect(selector(page)).toHaveValue('something')
   await expect(page.locator('.experience-transition')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
 })
 
 test('a winning celebration plays fully across Something and Somewhere', async ({ page }) => {
