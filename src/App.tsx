@@ -55,7 +55,7 @@ import { useTheme } from './lib/useTheme'
 const Globe = lazy(() => import('./components/Globe'))
 const Something = lazy(() => import('./components/Something'))
 const Someone = lazy(() => import('./components/Someone'))
-const Somex = lazy(() => import('./components/Somex'))
+const Somehow = lazy(() => import('./components/Somehow'))
 type DialogType = 'help' | null
 type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensity?: number }
 
@@ -65,12 +65,12 @@ export default function App() {
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
   const [hasVisitedSomeone, setHasVisitedSomeone] = useState(experience === 'someone')
-  const [hasVisitedSomex, setHasVisitedSomex] = useState(experience === 'somex')
+  const [hasVisitedSomehow, setHasVisitedSomehow] = useState(experience === 'somehow')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
     else if (experience === 'something') setHasVisitedSomething(true)
     else if (experience === 'someone') setHasVisitedSomeone(true)
-    else if (experience === 'somex') setHasVisitedSomex(true)
+    else if (experience === 'somehow') setHasVisitedSomehow(true)
   }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
@@ -167,8 +167,8 @@ export default function App() {
         ? 'Something. General Trivia and What am I.'
         : next === 'someone'
           ? 'Someone. Who am I.'
-          : next === 'somex'
-            ? 'Somex. A little adventure awaits.'
+          : next === 'somehow'
+            ? 'Somehow. A little adventure awaits.'
             : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
@@ -243,7 +243,7 @@ export default function App() {
               ? '#something-games'
               : experience === 'someone'
                 ? '#someone-content'
-                : '#somex-content'
+                : '#somehow-content'
         }
         className="skip-link"
       >
@@ -479,16 +479,16 @@ export default function App() {
             </Suspense>
           )}
         </div>
-        <div className="experience-view" hidden={experience !== 'somex'}>
-          {(hasVisitedSomex || experience === 'somex') && (
+        <div className="experience-view" hidden={experience !== 'somehow'}>
+          {(hasVisitedSomehow || experience === 'somehow') && (
             <Suspense
               fallback={
                 <p className="something-loading" role="status">
-                  Preparing Somex…
+                  Preparing Somehow…
                 </p>
               }
             >
-              <Somex onCelebrate={celebrate} />
+              <Somehow onCelebrate={celebrate} />
             </Suspense>
           )}
         </div>
@@ -746,8 +746,8 @@ export default function App() {
           </button>
         </Dialog>
       )}
-      {dialog === 'help' && experience === 'somex' && (
-        <Dialog title="How to play Somex" onClose={() => setDialog(null)}>
+      {dialog === 'help' && experience === 'somehow' && (
+        <Dialog title="How to play Somehow" onClose={() => setDialog(null)}>
           <span className="dialog-emblem">
             <Compass size={30} />
           </span>

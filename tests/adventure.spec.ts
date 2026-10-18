@@ -6,14 +6,14 @@ import { countryById, locationFor } from '../src/lib/countries'
 import { shortestBorderRoute } from '../src/lib/journey'
 
 import { at, closeStop, previewSave, previousSave } from './helpers/adventure'
-async function seed(page: Page, run?: unknown) {
+async function seed(page: Page, run?: unknown, experience = 'somehow') {
   await page.addInitScript(
-    ({ run, key }) => {
+    ({ run, key, experience }) => {
       if (!localStorage.getItem('somewhere.experience.v1'))
-        localStorage.setItem('somewhere.experience.v1', 'somex')
+        localStorage.setItem('somewhere.experience.v1', experience)
       if (run && !localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(run))
     },
-    { run, key: ADVENTURE_KEY },
+    { run, key: ADVENTURE_KEY, experience },
   )
 }
 const stored = (page: Page): Promise<AdventureRun> =>
@@ -41,10 +41,10 @@ async function guess(page: Page, name: string) {
   await page.getByRole('button', { name: /^(Make a guess|Cross the border)$/ }).click()
 }
 
-test('Somex opens publicly with normal supplies, no developer controls, and persistent progress', async ({
+test('Somehow opens publicly with normal supplies, no developer controls, and persistent progress', async ({
   page,
 }) => {
-  await seed(page)
+  await seed(page, undefined, 'somex')
   const worlds: string[] = []
   page.on('request', (req) => {
     if (/\/data\/world.json/.test(req.url())) worlds.push(req.url())
@@ -53,7 +53,11 @@ test('Somex opens publicly with normal supplies, no developer controls, and pers
   await expect(
     page.getByRole('heading', { name: 'A little adventure.', exact: true }),
   ).toBeVisible()
-  await expect(page.locator('.brand-word')).toHaveText('somex.')
+  await expect(page.locator('.brand-word')).toHaveText('somehow.')
+  await expect(page).toHaveTitle('Somehow — a little adventure')
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('somewhere.experience.v1')))
+    .toBe('somehow')
   await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toHaveCount(
     0,
   )
@@ -88,7 +92,7 @@ test('Somex opens publicly with normal supplies, no developer controls, and pers
   ).toBeVisible()
   expect((await stored(page)).id).toBe(original.id)
   await page.getByRole('button', { name: 'How to play', exact: true }).click()
-  await expect(page.getByRole('dialog', { name: 'How to play Somex' })).toContainText(
+  await expect(page.getByRole('dialog', { name: 'How to play Somehow' })).toContainText(
     'thirteen stops',
   )
   await expect(page.getByRole('dialog')).not.toContainText(/developer|password|Under construction/i)
@@ -405,7 +409,7 @@ test('boss victory queues fire and trophy effects and they survive immediate res
   expect(await original!.evaluate((el) => el.isConnected)).toBe(true)
   await page.getByRole('combobox', { name: 'Choose experience' }).selectOption('someone')
   await page.clock.runFor(900)
-  await page.getByRole('combobox', { name: 'Choose experience' }).selectOption('somex')
+  await page.getByRole('combobox', { name: 'Choose experience' }).selectOption('somehow')
   await page.clock.runFor(900)
   await page.clock.runFor(3100)
   await expect(canvas).toHaveAttribute('data-effect', 'perfect-round')
@@ -452,7 +456,9 @@ test('blocked browser storage still allows public entry and playing with a clear
   })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  await page.getByRole('combobox', { name: 'Choose experience', exact: true }).selectOption('somex')
+  await page
+    .getByRole('combobox', { name: 'Choose experience', exact: true })
+    .selectOption('somehow')
   await expect(page.locator('.somex-adventure .storage-warning')).toContainText('unavailable')
   await page.getByRole('button', { name: 'General Trivia, stop 1, available', exact: true }).click()
   await expect(page.locator('.somex-stop .trivia-choice')).toHaveCount(4)

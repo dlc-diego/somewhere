@@ -39,7 +39,7 @@ export default function ExperienceSwitcher({
         <option value="somewhere">somewhere.</option>
         <option value="something">something.</option>
         <option value="someone">someone.</option>
-        <option value="somex">somex.</option>
+        <option value="somehow">somehow.</option>
       </select>
     </div>
   )
