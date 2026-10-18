@@ -1,8 +1,17 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  Check,
+  Compass,
+  Globe2,
+  Heart,
+  Sun,
+  Moon,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 import ExperienceSwitcher from './components/ExperienceSwitcher'
 import ExperienceTransition from './components/ExperienceTransition'
-import Someone from './components/Someone'
 import { useExperience, type Experience } from './lib/useExperience'
 import ModeSelector from './components/ModeSelector'
 import { JourneyChallenge, JourneyHistory } from './components/BorderJourney'
@@ -45,6 +54,7 @@ import { useTheme } from './lib/useTheme'
 
 const Globe = lazy(() => import('./components/Globe'))
 const Something = lazy(() => import('./components/Something'))
+const Someone = lazy(() => import('./components/Someone'))
 const Somex = lazy(() => import('./components/Somex'))
 type DialogType = 'help' | null
 type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensity?: number }
@@ -54,10 +64,12 @@ export default function App() {
   const { experience, transition, switchExperience } = useExperience()
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
+  const [hasVisitedSomeone, setHasVisitedSomeone] = useState(experience === 'someone')
   const [hasVisitedSomex, setHasVisitedSomex] = useState(experience === 'somex')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
     else if (experience === 'something') setHasVisitedSomething(true)
+    else if (experience === 'someone') setHasVisitedSomeone(true)
     else if (experience === 'somex') setHasVisitedSomex(true)
   }, [experience])
   const [initial] = useState(loadRound)
@@ -154,7 +166,7 @@ export default function App() {
       next === 'something'
         ? 'Something. General Trivia and What am I.'
         : next === 'someone'
-          ? 'Someone. Under construction.'
+          ? 'Someone. Who am I.'
           : next === 'somex'
             ? 'Somex. A little adventure awaits.'
             : 'Welcome back to Somewhere. Your journey is saved.',
@@ -245,7 +257,7 @@ export default function App() {
             : experience === 'something'
               ? 'A little more to discover'
               : experience === 'someone'
-                ? 'A little space for someone new'
+                ? 'Every person has a story'
                 : 'A little adventure awaits'}
         </span>
         <nav aria-label="App controls">
@@ -455,7 +467,17 @@ export default function App() {
           )}
         </div>
         <div className="experience-view" hidden={experience !== 'someone'}>
-          {experience === 'someone' && <Someone />}
+          {(hasVisitedSomeone || experience === 'someone') && (
+            <Suspense
+              fallback={
+                <p className="something-loading" role="status">
+                  Getting your clues ready…
+                </p>
+              }
+            >
+              <Someone onCelebrate={celebrate} />
+            </Suspense>
+          )}
         </div>
         <div className="experience-view" hidden={experience !== 'somex'}>
           {(hasVisitedSomex || experience === 'somex') && (
@@ -475,11 +497,9 @@ export default function App() {
         <span>
           Built for Val <Heart size={12} />
         </span>
-        {experience !== 'someone' && (
-          <button className="text-button" onClick={() => setDialog('help')}>
-            How to play <ArrowRight size={13} />
-          </button>
-        )}
+        <button className="text-button" onClick={() => setDialog('help')}>
+          How to play <ArrowRight size={13} />
+        </button>
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
@@ -669,6 +689,57 @@ export default function App() {
           <p className="help-note">
             Your progress is saved in this browser. New rounds prioritize questions and mysteries
             you haven’t played yet.
+          </p>
+          <button className="primary" onClick={() => setDialog(null)}>
+            Let’s play <ArrowRight size={17} />
+          </button>
+        </Dialog>
+      )}
+      {dialog === 'help' && experience === 'someone' && (
+        <Dialog title="How to play Someone" onClose={() => setDialog(null)}>
+          <span className="dialog-emblem">
+            <UserRound size={30} />
+          </span>
+          <p className="eyebrow">A familiar face</p>
+          <h2>Who is behind the clues?</h2>
+          <ol className="help-steps">
+            <li>
+              <span>01</span>
+              <div>
+                <strong>Who am I</strong>
+                <p>
+                  Guess a well-known person from up to five clues. The first clue is broad; later
+                  clues reveal more. Reveal another clue whenever you like without using a guess.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>02</span>
+              <div>
+                <strong>Follow your hunch</strong>
+                <p>
+                  Type a name and make a guess. Common names, listed nicknames, accents and
+                  punctuation are accepted. Wrong guesses do not end the round; repeated answers do
+                  not count twice. Correct guesses use the familiar winning animations.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>03</span>
+              <div>
+                <strong>Meet someone new</strong>
+                <p>
+                  Give up and reveal answer shows the person and all five clues without counting as
+                  a win. After solving or revealing, choose Try another person. The 80-person
+                  collection spans science, music, screen, sport, art, history, exploration and
+                  changemakers.
+                </p>
+              </div>
+            </li>
+          </ol>
+          <p className="help-note">
+            Progress saves in this browser independently of the other games. New rounds prioritize
+            people you have not met yet.
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s play <ArrowRight size={17} />

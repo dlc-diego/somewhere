@@ -48,11 +48,11 @@ test('header switches experiences with a screen-wide sweep and preserves the geo
   await expect(transition).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(before)
   await switchTo(page, 'someone')
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Who am I', exact: true })).toBeVisible()
   await expect(page.locator('.brand-word')).toHaveText('someone.')
   await expect(page.locator('.brand-ending')).toHaveText('one.')
-  await expect(page).toHaveTitle('Someone — under construction')
-  await expect(page.getByRole('button', { name: /How to play/ })).toHaveCount(0)
+  await expect(page).toHaveTitle('Someone — a familiar face')
+  await expect(page.getByRole('button', { name: /How to play/ })).toBeVisible()
   expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(before)
   await switchTo(page, 'something')
   await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
@@ -66,7 +66,7 @@ test('header switches experiences with a screen-wide sweep and preserves the geo
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
-test('saved Someone opens without game modules and stays accessible at 320px in both themes', async ({
+test('saved Someone opens without geography or trivia modules and stays accessible at 320px in both themes', async ({
   page,
 }) => {
   await page.addInitScript(() => localStorage.setItem('somewhere.experience.v1', 'someone'))
@@ -79,7 +79,7 @@ test('saved Someone opens without game modules and stays accessible at 320px in 
   })
   await page.goto('http://127.0.0.1:4174/wep-app/')
   await expect(selector(page)).toHaveValue('someone')
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Who am I', exact: true })).toBeVisible()
   await expect(page.locator('.skip-link')).toHaveAttribute('href', '#someone-content')
   expect(gameRequests).toEqual([])
   for (const theme of ['light', 'dark']) {
@@ -91,7 +91,7 @@ test('saved Someone opens without game modules and stays accessible at 320px in 
     ).toEqual([])
   }
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Who am I', exact: true })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   expect(gameRequests).toEqual([])
 })

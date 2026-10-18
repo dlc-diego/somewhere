@@ -75,7 +75,7 @@ export function useExperience() {
         : experience === 'something'
           ? 'Something — a little more to discover'
           : experience === 'someone'
-            ? 'Someone — under construction'
+            ? 'Someone — a familiar face'
             : 'Somex — a little adventure'
   }, [experience])
 
