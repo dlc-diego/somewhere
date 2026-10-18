@@ -80,27 +80,51 @@ export function at(kind: NodeKind): AdventureRun {
   return chooseNode(run, target.id).run
 }
 
+export function previousSave(run: AdventureRun): string {
+  const keep = (id: string) => {
+    const row = Number(id.split('-')[0])
+    return row < 8 || row === 12
+  }
+  const oldId = (id: string) => (id === '12-1' ? '8-1' : id)
+  return JSON.stringify({
+    ...run,
+    version: 2,
+    map: run.map
+      .filter((node) => keep(node.id))
+      .map((node) => ({ ...node, id: oldId(node.id), row: node.row === 12 ? 8 : node.row })),
+    path: run.path.filter(keep).map(oldId),
+    outcomes: Object.fromEntries(
+      Object.entries(run.outcomes)
+        .filter(([id]) => keep(id))
+        .map(([id, result]) => [oldId(id), result]),
+    ),
+    encounter: run.encounter ? { ...run.encounter, nodeId: oldId(run.encounter.nodeId) } : null,
+  })
+}
 export function previewSave(run: AdventureRun): string {
   const oldId = (id: string) => {
     const [row, lane] = id.split('-').map(Number)
     return `${row > 6 ? row - 1 : row}-${lane}`
   }
+  const previous = JSON.parse(previousSave(run)) as AdventureRun
   return JSON.stringify({
-    ...run,
+    ...previous,
     version: 1,
-    map: run.map
+    map: previous.map
       .filter((node) => node.row !== 6)
       .map((node) => ({
         ...node,
         id: oldId(node.id),
         row: node.row > 6 ? node.row - 1 : node.row,
       })),
-    path: run.path.filter((id) => !id.startsWith('6-')).map(oldId),
+    path: previous.path.filter((id) => !id.startsWith('6-')).map(oldId),
     outcomes: Object.fromEntries(
-      Object.entries(run.outcomes)
+      Object.entries(previous.outcomes)
         .filter(([id]) => !id.startsWith('6-'))
         .map(([id, result]) => [oldId(id), result]),
     ),
-    encounter: run.encounter ? { ...run.encounter, nodeId: oldId(run.encounter.nodeId) } : null,
+    encounter: previous.encounter
+      ? { ...previous.encounter, nodeId: oldId(previous.encounter.nodeId) }
+      : null,
   })
 }

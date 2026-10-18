@@ -26,6 +26,7 @@ import {
   ADVENTURE_STOPS,
   ITEMS,
   ITEM_IDS,
+  SHOP_ITEM_IDS,
   NODE_LABELS,
   abandonEncounter,
   answerAdventureTrivia,
@@ -103,6 +104,7 @@ export default function Adventure({
   const encounterPanel = useRef<HTMLDivElement>(null)
   const mapPanel = useRef<HTMLDivElement>(null)
   const globePanel = useRef<HTMLDivElement>(null)
+  const ownedItems = ITEM_IDS.filter((id) => run.inventory[id] > 0)
   const scene = run.encounter
 
   useEffect(() => {
@@ -231,7 +233,7 @@ export default function Adventure({
         <div>
           <p className="somex-badge">A journey through what you know</p>
           <h2 id="somex-title">A little adventure.</h2>
-          <p>Nine stops. One final gate. Keep your heart in it.</p>
+          <p>Thirteen stops. One final gate. Keep your heart in it.</p>
         </div>
         <button className="secondary somex-satchel-button" onClick={() => setSatchel(true)}>
           <Backpack size={18} /> Satchel{' '}
@@ -549,10 +551,10 @@ export default function Adventure({
           {scene.kind === 'shop' && !ended && (
             <>
               <p className="somex-rules">
-                One of each item is in stock. Buy what you need, then continue your route.
+                One of each supply is in stock. Lucky stars can only be found along the way.
               </p>
               <div className="somex-item-grid">
-                {ITEM_IDS.map((id) => (
+                {SHOP_ITEM_IDS.map((id) => (
                   <button
                     key={id}
                     className="somex-item"
@@ -675,8 +677,11 @@ export default function Adventure({
             Find supplies at shops and discoveries. Trial-specific items can also be used directly
             from a challenge. Phoenix feathers activate automatically.
           </p>
+          {!ownedItems.length && (
+            <p role="status">Your satchel is empty. Find supplies at shops or discoveries.</p>
+          )}
           <div className="somex-item-grid">
-            {ITEM_IDS.map((id) => {
+            {ownedItems.map((id) => {
               const reason = itemUnavailable(run, id)
               return (
                 <button

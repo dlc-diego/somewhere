@@ -32,8 +32,8 @@ export const ITEMS = {
   },
   star: {
     name: 'Lucky star',
-    description: 'Auto-win one challenge, including the boss.',
-    price: 40,
+    description: 'Auto-win one non-boss challenge. Found only in discoveries or after a win.',
+    price: null,
     symbol: '★',
   },
   shield: {
@@ -69,6 +69,9 @@ export const ITEMS = {
 } as const
 export type ItemId = keyof typeof ITEMS
 export const ITEM_IDS = Object.keys(ITEMS) as ItemId[]
+export const SHOP_ITEM_IDS = ITEM_IDS.filter((id): id is Exclude<ItemId, 'star'> => id !== 'star')
+export const LUCKY_STAR_DROP_CHANCE = 0.1
+export const COIN_REWARDS = { normal: 6, elite: 10, boss: 15 } as const
 export const NODE_LABELS: Record<NodeKind, string> = {
   trivia: 'General Trivia',
   mystery: 'What am I',
@@ -93,10 +96,18 @@ const previewRows: NodeKind[][] = [
   ['rest'],
   ['boss'],
 ]
-const rows: NodeKind[][] = [
+const shortRows: NodeKind[][] = [
   ...previewRows.slice(0, 6),
   ['mystery', 'countries', 'elite'],
   ...previewRows.slice(6),
+]
+const rows: NodeKind[][] = [
+  ...shortRows.slice(0, -1),
+  ['capitals', 'flags', 'mystery'],
+  ['journey', 'countries', 'trivia'],
+  ['shop', 'event', 'elite'],
+  ['rest'],
+  ['boss'],
 ]
 export const ADVENTURE_STOPS = rows.length
 export interface AdventureNode {
@@ -130,7 +141,7 @@ export interface Encounter {
   method: 'played' | 'item' | 'carried'
 }
 export interface AdventureRun {
-  version: 2
+  version: 3
   id: string
   map: AdventureNode[]
   path: string[]
@@ -190,7 +201,7 @@ export function starterKit(): Record<ItemId, number> {
 }
 export function newAdventure(): AdventureRun {
   return {
-    version: 2,
+    version: 3,
     id: crypto.randomUUID(),
     map: rows.flatMap((kinds, row) =>
       shuffle(kinds).map((kind, index) => ({
@@ -338,14 +349,28 @@ function finish(
   const coins =
     success && reward && isCombat(scene.kind)
       ? scene.kind === 'boss'
-        ? 50
+        ? COIN_REWARDS.boss
         : scene.kind === 'elite'
-          ? 35
-          : 20
+          ? COIN_REWARDS.elite
+          : COIN_REWARDS.normal
       : 0
+  let foundStar = false
+  if (
+    success &&
+    reward &&
+    method === 'played' &&
+    isCombat(scene.kind) &&
+    scene.kind !== 'boss' &&
+    next.inventory.star < 99
+  ) {
+    const sample = new Uint32Array(1)
+    crypto.getRandomValues(sample)
+    foundStar = sample[0] < 2 ** 32 * LUCKY_STAR_DROP_CHANCE
+  }
   next = {
     ...next,
     coins: Math.min(999, next.coins + coins),
+    inventory: foundStar ? { ...next.inventory, star: next.inventory.star + 1 } : next.inventory,
     outcomes: { ...next.outcomes, [scene.nodeId]: result },
     encounter: {
       ...scene,
@@ -361,7 +386,7 @@ function finish(
           : scene.mystery,
     },
     message: success
-      ? `${method === 'item' ? 'Lucky star clear' : 'Stop cleared'}${coins ? ` · +${coins} coins` : ''}.`
+      ? `${method === 'item' ? 'Lucky star clear' : 'Stop cleared'}${coins ? ` · +${coins} coins` : ''}.${foundStar ? ' You found a Lucky star!' : ''}`
       : next.message,
   }
   if (success && scene.kind === 'boss') next.status = 'won'
@@ -514,6 +539,11 @@ export function buyItem(run: AdventureRun, item: ItemId): AdventureResult {
     !ITEM_IDS.includes(item)
   )
     return fail(run, 'Visit a shop to buy supplies.')
+  if (item === 'star')
+    return fail(
+      run,
+      'Lucky stars can only be found in discoveries or after a successful challenge.',
+    )
   if (scene.purchases.includes(item)) return fail(run, 'That item is sold out at this shop.')
   if (run.coins < ITEMS[item].price) return fail(run, 'You need more coins for that item.')
   if (run.inventory[item] >= 99) return fail(run, 'Your satchel is full of that item.')
@@ -564,8 +594,10 @@ export function itemUnavailable(run: AdventureRun, item: ItemId): string | null 
   if (item === 'container') return run.maxHearts >= 5 ? 'Five containers is the maximum.' : null
   if (item === 'shield') return run.shield ? 'A shield is already armed.' : null
   if (item === 'feather') return 'Activates automatically at your last heart.'
-  if (item === 'star')
-    return active && scene && isCombat(scene.kind) ? null : 'Use during a challenge.'
+  if (item === 'star') {
+    if (scene?.kind === 'boss') return 'Lucky stars cannot be used on the final boss.'
+    return active && scene && isCombat(scene.kind) ? null : 'Use during a non-boss challenge.'
+  }
   if (item === 'fifty' || item === 'reroll') {
     if (!active || !scene?.trivia || scene.trivia.choice !== null)
       return 'Use before answering a trivia question.'
@@ -589,6 +621,7 @@ export function trialItems(run: AdventureRun): ItemId[] {
   if (run.status !== 'playing' || scene?.result !== 'active' || !isCombat(scene.kind)) return []
   return ITEM_IDS.filter((id) => {
     if (!run.inventory[id] || id === 'feather') return false
+    if (id === 'star') return scene.kind !== 'boss'
     if (id === 'fifty' || id === 'reroll') return Boolean(scene.trivia)
     if (id === 'hint' || id === 'boots') return Boolean(scene.geography || scene.mystery)
     if (id === 'potion') return run.hearts < run.maxHearts
@@ -666,7 +699,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
     const raw: unknown = JSON.parse(value)
     if (
       !record(raw) ||
-      (raw.version !== 1 && raw.version !== 2) ||
+      (raw.version !== 1 && raw.version !== 2 && raw.version !== 3) ||
       typeof raw.id !== 'string' ||
       raw.id.length > 80 ||
       !['playing', 'won', 'lost'].includes(String(raw.status)) ||
@@ -681,7 +714,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
       return null
     const inventory = raw.inventory
     if (!ITEM_IDS.every((id) => integer(inventory[id], 0, 99))) return null
-    const layout = raw.version === 1 ? previewRows : rows
+    const layout = raw.version === 1 ? previewRows : raw.version === 2 ? shortRows : rows
     if (!Array.isArray(raw.map) || raw.map.length !== layout.flat().length) return null
     for (let row = 0; row < layout.length; row++) {
       const nodes = raw.map.filter((node) => record(node) && node.row === row)
@@ -852,16 +885,62 @@ export function parseAdventure(value: string | null): AdventureRun | null {
         migratedOutcomes['6-1'] = 'cleared'
       }
       const scene = raw.encounter as Encounter | null
+      return parseAdventure(
+        JSON.stringify({
+          ...raw,
+          version: 2,
+          map: [
+            ...map.map((node) => ({
+              ...node,
+              id: nextId(node.id),
+              row: node.row >= 6 ? node.row + 1 : node.row,
+            })),
+            ...shuffle(rows[6]).map((kind, lane) => ({ id: `6-${lane}`, row: 6, lane, kind })),
+          ].sort((a, b) => a.row - b.row || a.lane - b.lane),
+          path: migratedPath,
+          outcomes: migratedOutcomes,
+          encounter: scene
+            ? {
+                ...scene,
+                nodeId: nextId(scene.nodeId),
+                method: String(scene.method) === 'dev' ? 'carried' : scene.method,
+              }
+            : null,
+          message: /developer/i.test(raw.message)
+            ? 'Your adventure is ready to continue.'
+            : raw.message,
+        }),
+      )
+    }
+    if (raw.version === 2) {
+      // Insert a third section before the old boss; never send an active boss battle backwards.
+      const nextId = (id: string) => (id === '8-1' ? '12-1' : id)
+      const migratedPath = pathIds.map(nextId)
+      const migratedOutcomes = Object.fromEntries(
+        Object.entries(outcomes).map(([id, result]) => [nextId(id), result]),
+      )
+      if (pathIds.includes('8-1')) {
+        migratedPath.splice(8, 0, '8-1', '9-1', '10-1', '11-1')
+        for (const id of ['8-1', '9-1', '10-1', '11-1']) migratedOutcomes[id] = 'cleared'
+      }
+      const scene = raw.encounter as Encounter | null
       return {
         ...raw,
-        version: 2,
+        version: 3,
         map: [
           ...map.map((node) => ({
             ...node,
             id: nextId(node.id),
-            row: node.row >= 6 ? node.row + 1 : node.row,
+            row: node.row === 8 ? 12 : node.row,
           })),
-          ...shuffle(rows[6]).map((kind, lane) => ({ id: `6-${lane}`, row: 6, lane, kind })),
+          ...rows.slice(8, 12).flatMap((kinds, index) =>
+            shuffle(kinds).map((kind, lane) => ({
+              id: `${index + 8}-${kinds.length === 1 ? 1 : lane}`,
+              row: index + 8,
+              lane: kinds.length === 1 ? 1 : lane,
+              kind,
+            })),
+          ),
         ].sort((a, b) => a.row - b.row || a.lane - b.lane),
         path: migratedPath,
         outcomes: migratedOutcomes,
@@ -869,14 +948,17 @@ export function parseAdventure(value: string | null): AdventureRun | null {
           ? {
               ...scene,
               nodeId: nextId(scene.nodeId),
-              method: String(scene.method) === 'dev' ? 'carried' : scene.method,
+              method: scene.kind === 'boss' && scene.method === 'item' ? 'carried' : scene.method,
             }
           : null,
-        message: /developer/i.test(raw.message)
-          ? 'Your adventure is ready to continue.'
-          : raw.message,
       } as AdventureRun
     }
+    if (
+      raw.version === 3 &&
+      (raw.encounter as Encounter | null)?.kind === 'boss' &&
+      (raw.encounter as Encounter).method === 'item'
+    )
+      return null
     return raw as unknown as AdventureRun
   } catch {
     return null

@@ -5,7 +5,7 @@ import { questionById, mysteryById } from '../src/lib/something'
 import { countryById, locationFor } from '../src/lib/countries'
 import { shortestBorderRoute } from '../src/lib/journey'
 
-import { at, closeStop, previewSave } from './helpers/adventure'
+import { at, closeStop, previewSave, previousSave } from './helpers/adventure'
 async function seed(page: Page, run?: unknown) {
   await page.addInitScript(
     ({ run, key }) => {
@@ -63,7 +63,7 @@ test('Somex opens publicly with normal supplies, no developer controls, and pers
   ).toHaveCount(0)
   await expect(page.getByRole('status', { name: '3 of 3 hearts', exact: true })).toBeVisible()
   await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
-  await expect(page.locator('.somex-route-node')).toHaveCount(21)
+  await expect(page.locator('.somex-route-node')).toHaveCount(31)
   const original = await stored(page)
   expect(original.coins).toBe(25)
   expect(original.inventory).toEqual({
@@ -79,7 +79,7 @@ test('Somex opens publicly with normal supplies, no developer controls, and pers
   })
   expect(worlds).toEqual([])
   await page.getByRole('button', { name: /^Satchel/ }).click()
-  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(9)
+  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(3)
   await expect(page.getByRole('button', { name: /^Use Heart tonic,/ })).toBeDisabled()
   await page.getByRole('button', { name: 'Close dialog' }).click()
   await page.reload()
@@ -88,20 +88,22 @@ test('Somex opens publicly with normal supplies, no developer controls, and pers
   ).toBeVisible()
   expect((await stored(page)).id).toBe(original.id)
   await page.getByRole('button', { name: 'How to play', exact: true }).click()
-  await expect(page.getByRole('dialog', { name: 'How to play Somex' })).toContainText('nine stops')
+  await expect(page.getByRole('dialog', { name: 'How to play Somex' })).toContainText(
+    'thirteen stops',
+  )
   await expect(page.getByRole('dialog')).not.toContainText(/developer|password|Under construction/i)
 })
 
-test('the second route section has three rows of three choices and preview boss progress upgrades', async ({
+test('all three route sections have three-by-three choices and older boss progress upgrades', async ({
   page,
 }) => {
   const rested = closeStop(at('rest'))
   await seed(page, rested)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  await expect(page.locator('.somex-route-node')).toHaveCount(21)
+  await expect(page.locator('.somex-route-node')).toHaveCount(31)
   await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
-  for (let stop = 5; stop <= 7; stop++)
+  for (const stop of [1, 2, 3, 5, 6, 7, 9, 10, 11])
     await expect(
       page
         .locator('.somex-route-node')
@@ -115,11 +117,19 @@ test('the second route section has three rows of three choices and preview boss 
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
-  expect((await stored(page)).version).toBe(2)
+  await expect.poll(async () => (await stored(page)).version).toBe(3)
   expect((await stored(page)).inventory).toEqual(boss.inventory)
-  expect((await stored(page)).path).toHaveLength(9)
+  expect((await stored(page)).path).toHaveLength(13)
   await triviaAnswer(page)
   await expect(page.locator('.somex-on-fire')).toContainText('1/3')
+  await page.evaluate(({ key, saved }) => localStorage.setItem(key, saved), {
+    key: ADVENTURE_KEY,
+    saved: previousSave(boss),
+  })
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
+  await expect.poll(async () => (await stored(page)).version).toBe(3)
+  expect((await stored(page)).path).toHaveLength(13)
 })
 
 test('trial-specific item buttons, saved choices, normal trials and healing work through the interface', async ({
@@ -164,6 +174,10 @@ test('shops, rest stops and discoveries resolve once and return to connected cho
   await seed(page, at('shop'))
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
+  await expect(page.locator('.somex-stop .somex-item')).toHaveCount(8)
+  await expect(
+    page.locator('.somex-stop .somex-item').filter({ hasText: 'Lucky star' }),
+  ).toHaveCount(0)
   const before = await stored(page)
   await page.locator('.somex-stop .somex-item').filter({ hasText: 'Heart tonic' }).click()
   expect((await stored(page)).coins).toBe(before.coins - 8)
@@ -189,6 +203,108 @@ test('shops, rest stops and discoveries resolve once and return to connected cho
   await page.getByRole('button', { name: /^Take .* \+ 10 coins$/ }).click()
   expect((await stored(page)).coins).toBe(event.coins + 10)
   expect((await stored(page)).encounter!.result).toBe('cleared')
+})
+
+test('the satchel shows only owned items and an empty state after the last item is used', async ({
+  page,
+}) => {
+  const fixture = at('shapes')
+  for (const id of Object.keys(fixture.inventory) as (keyof typeof fixture.inventory)[])
+    fixture.inventory[id] = 0
+  fixture.inventory.hint = 1
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await page.getByRole('button', { name: /^Satchel/ }).click()
+  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(1)
+  await expect(page.locator('.somex-inventory-dialog .somex-item')).toContainText('Trail compass')
+  await page.getByRole('button', { name: /^Use Trail compass,/ }).click()
+  await expect(page.locator('.somex-stop .mystery-shape')).toHaveCount(1)
+  await expect(page.locator('.somex-stop .continent-hint')).toHaveCount(1)
+  await page.getByRole('button', { name: /^Satchel/ }).click()
+  await expect(page.getByRole('dialog')).toContainText('Your satchel is empty.')
+  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  await page.reload()
+  await page.getByRole('button', { name: /^Satchel/ }).click()
+  await expect(page.getByRole('dialog')).toContainText('Your satchel is empty.')
+})
+
+test('a natural win pays six coins and can drop a Lucky star, and discoveries can grant one', async ({
+  page,
+}) => {
+  const fixture = at('flags')
+  fixture.encounter!.geography!.answer = 'FRA'
+  fixture.inventory.star = 0
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeVisible()
+  await page.evaluate(() => {
+    const original = crypto.getRandomValues.bind(crypto)
+    Object.defineProperty(crypto, 'getRandomValues', {
+      configurable: true,
+      writable: true,
+      value: (values: Uint32Array<ArrayBuffer>) => {
+        if (values instanceof Uint32Array && values.length === 1) {
+          Object.defineProperty(crypto, 'getRandomValues', {
+            configurable: true,
+            writable: true,
+            value: original,
+          })
+          values[0] = 0
+          return values
+        }
+        return original(values)
+      },
+    })
+  })
+  await guess(page, 'France')
+  await expect(page.locator('.somex-notice')).toContainText('+6 coins')
+  await expect(page.locator('.somex-notice')).toContainText('found a Lucky star')
+  expect((await stored(page)).inventory.star).toBe(1)
+  expect((await stored(page)).coins).toBe(fixture.coins + 6)
+  await page.reload()
+  expect((await stored(page)).inventory.star).toBe(1)
+  const discovery = at('event')
+  discovery.encounter!.eventItem = 'star'
+  discovery.inventory.star = 0
+  await page.evaluate(({ key, run }) => localStorage.setItem(key, JSON.stringify(run)), {
+    key: ADVENTURE_KEY,
+    run: discovery,
+  })
+  await page.reload()
+  await page.getByRole('button', { name: 'Take Lucky star + 10 coins', exact: true }).click()
+  await expect(page.locator('.somex-notice')).toContainText('Found Lucky star')
+  expect((await stored(page)).inventory.star).toBe(1)
+  await page.getByRole('button', { name: /^Satchel/ }).click()
+  await expect(
+    page.locator('.somex-inventory-dialog .somex-item').filter({ hasText: 'Lucky star' }),
+  ).toBeVisible()
+})
+
+test('Lucky stars are hidden from boss trial actions and disabled with an explanation in the satchel', async ({
+  page,
+}) => {
+  const fixture = at('boss')
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
+  await expect(
+    page
+      .getByRole('group', { name: 'Items for this trial' })
+      .getByRole('button', { name: /Use Lucky star/ }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: /^Satchel/ }).click()
+  const star = page.getByRole('dialog').getByRole('button', { name: /^Use Lucky star,/ })
+  await expect(star).toBeDisabled()
+  await expect(star).toContainText('Lucky stars cannot be used on the final boss.')
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  await triviaAnswer(page)
+  expect((await stored(page)).status).toBe('playing')
+  expect((await stored(page)).inventory.star).toBe(fixture.inventory.star)
+  await expect(page.locator('.somex-on-fire')).toContainText('1/3')
 })
 
 for (const mode of ['countries', 'capitals', 'flags', 'shapes', 'journey'] as const)

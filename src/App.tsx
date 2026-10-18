@@ -683,7 +683,7 @@ export default function App() {
           <p className="eyebrow">A little adventure</p>
           <h2>Find your way to the final gate.</h2>
           <p>
-            Choose a highlighted stop on the branching route. Complete nine stops and defeat the
+            Choose a highlighted stop on the branching route. Complete thirteen stops and defeat the
             final boss before your hearts run out. Rest stops restore one heart; shops trade coins
             for supplies.
           </p>
@@ -707,8 +707,8 @@ export default function App() {
                 <p>
                   Use the item buttons in a trial or open your Satchel for healing, heart
                   containers, a shield, 50/50, clues, extra guesses, a fresh question, or a Lucky
-                  star that clears a challenge. A Phoenix feather automatically revives you with one
-                  heart. Invalid item uses never consume an item.
+                  star that clears a non-boss challenge. A Phoenix feather automatically revives you
+                  with one heart. Invalid item uses never consume an item.
                 </p>
               </div>
             </li>
@@ -719,16 +719,18 @@ export default function App() {
                 <p>
                   Elite trials need two correct answers in a row; the final boss needs three. Each
                   wrong answer resets the streak and costs a heart. A shield blocks one loss. Reach
-                  the final streak to win the run and celebrate.
+                  the final streak to win the run and celebrate. Lucky stars cannot be used on the
+                  boss.
                 </p>
               </div>
             </li>
           </ol>
           <p className="help-note">
             Start with three hearts, 25 coins, a Heart tonic, a 50/50 lens and a Trail compass.
-            Discoveries and shops replenish your supplies. Both route sections offer three rows of
-            three choices, with a rest stop at the end of each. Progress saves in this browser
-            separately from your other games.
+            Normal wins earn 6 coins; elites earn 10 and the boss earns 15. Each of the three route
+            sections has three rows of three choices and a rest stop. Lucky stars are found only in
+            discoveries or as a rare reward after a challenge win earned without a star. Progress
+            saves in this browser separately from your other games.
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s explore <ArrowRight size={17} />

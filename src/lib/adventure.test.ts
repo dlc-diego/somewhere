@@ -5,6 +5,8 @@ import { mysteryById, questionById } from './something'
 import {
   ADVENTURE_KEY,
   ADVENTURE_STOPS,
+  COIN_REWARDS,
+  SHOP_ITEM_IDS,
   trialItems,
   ITEM_IDS,
   ITEMS,
@@ -31,7 +33,10 @@ import {
   type NodeKind,
 } from './adventure'
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})
 import {
   at,
   answer,
@@ -39,17 +44,18 @@ import {
   completeEncounter,
   stockedAdventure,
   previewSave,
+  previousSave,
 } from '../../tests/helpers/adventure'
 const restore = (run: AdventureRun) => parseAdventure(JSON.stringify(run))
 
 describe('adventure routes and outcomes', () => {
-  it('starts with normal supplies and has two three-by-three sections joined by rests', () => {
+  it('starts with normal supplies and has three three-by-three sections joined by rests', () => {
     const run = newAdventure()
     expect(run.coins).toBe(25)
     expect(run.hearts).toBe(3)
     expect(ITEM_IDS.filter((id) => run.inventory[id] > 0)).toEqual(['potion', 'fifty', 'hint'])
     expect(Object.values(run.inventory).reduce((sum, count) => sum + count, 0)).toBe(3)
-    for (const start of [0, 4]) {
+    for (const start of [0, 4, 8]) {
       const section = run.map.filter((node) => node.row >= start && node.row < start + 3)
       expect(section).toHaveLength(9)
       for (let row = start; row < start + 3; row++)
@@ -62,11 +68,13 @@ describe('adventure routes and outcomes', () => {
     expect(availableNodes(rested).every((node) => node.row === 4)).toBe(true)
     expect(returnToRoute(rested).error).toBeTruthy()
   })
-  it('generates connected branches, two guaranteed rests and one final boss; rejects skips and duplicate entries', () => {
+  it('generates connected branches, three guaranteed rests and one final boss; rejects skips and duplicate entries', () => {
     const run = newAdventure()
-    expect(run.map).toHaveLength(21)
+    expect(run.map).toHaveLength(31)
     expect(availableNodes(run)).toHaveLength(3)
-    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([3, 7])
+    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([
+      3, 7, 11,
+    ])
     expect(chooseNode(run, run.map.find((node) => node.kind === 'boss')!.id).run).toBe(run)
     const left = run.map.find((node) => node.row === 0 && node.lane === 0)!
     const active = chooseNode(run, left.id).run
@@ -77,7 +85,7 @@ describe('adventure routes and outcomes', () => {
     expect(chooseNode(map, '1-2').error).toBeTruthy()
     expect(restore(map)).toEqual(map)
   })
-  it('completes nine stops, grants each reward once, and makes victory terminal', () => {
+  it('completes thirteen stops, grants each reward once, and makes victory terminal', () => {
     let run = newAdventure()
     for (let row = 0; row < ADVENTURE_STOPS; row++) {
       run = chooseNode(run, availableNodes(run).find((node) => node.lane === 1)!.id).run
@@ -107,7 +115,7 @@ describe('adventure routes and outcomes', () => {
       const success = pattern.filter(Boolean).length >= 2
       expect(run.encounter!.result).toBe(success ? 'cleared' : 'failed')
       expect(run.hearts).toBe(hearts - Number(!success))
-      expect(run.coins).toBe(coins + (success ? 20 : 0))
+      expect(run.coins).toBe(coins + (success ? COIN_REWARDS.normal : 0))
       expect(restore(run)).toEqual(run)
     }
   })
@@ -131,15 +139,84 @@ describe('adventure routes and outcomes', () => {
   })
   it('elite trials require two consecutive correct answers', () => {
     let run = at('elite')
+    const coins = run.coins
     run = answer(run)
     expect(run.encounter!.result).toBe('active')
     run = answer(nextAdventureQuestion(run).run)
     expect(run.encounter!.result).toBe('cleared')
+    expect(run.coins).toBe(coins + 10)
     expect(restore(run)).toEqual(run)
   })
 })
 
 describe('consumables and recovery', () => {
+  it('never sells Lucky stars, even with enough coins, and cannot spend them on the boss', () => {
+    const shop = { ...at('shop'), coins: 999 }
+    expect(SHOP_ITEM_IDS).not.toContain('star')
+    expect(SHOP_ITEM_IDS).toHaveLength(8)
+    const attempted = buyItem(shop, 'star')
+    expect(attempted.error).toMatch(/only be found/)
+    expect(attempted.run).toBe(shop)
+    const boss = at('boss')
+    expect(boss.inventory.star).toBeGreaterThan(0)
+    expect(trialItems(boss)).not.toContain('star')
+    expect(itemUnavailable(boss, 'star')).toMatch(/cannot be used.*boss/)
+    expect(useItem(boss, 'star').run).toBe(boss)
+    const cleared = completeEncounter(boss)
+    expect(cleared.status).toBe('won')
+    expect(cleared.inventory.star).toBe(boss.inventory.star)
+    expect(cleared.coins).toBe(boss.coins + COIN_REWARDS.boss)
+  })
+  it('awards reduced coins and a persisted random Lucky star only for a natural non-boss challenge win', () => {
+    const fixture = at('flags')
+    const target = fixture.encounter!.geography!.answer
+    const roll = vi.spyOn(crypto, 'getRandomValues')
+    roll.mockImplementationOnce((values) => {
+      ;(values as Uint32Array)[0] = 0
+      return values
+    })
+    const won = guessAdventureCountry(fixture, target).run
+    expect(won.coins).toBe(fixture.coins + 6)
+    expect(won.inventory.star).toBe(fixture.inventory.star + 1)
+    expect(won.message).toMatch(/found a Lucky star/)
+    expect(restore(won)).toEqual(won)
+    expect(guessAdventureCountry(won, target).run).toBe(won)
+    expect(roll).toHaveBeenCalledTimes(1)
+    roll.mockImplementationOnce((values) => {
+      ;(values as Uint32Array)[0] = 0xffffffff
+      return values
+    })
+    const unlucky = guessAdventureCountry(fixture, target).run
+    expect(unlucky.inventory.star).toBe(fixture.inventory.star)
+    expect(unlucky.message).not.toMatch(/found a Lucky star/)
+    roll.mockClear()
+    const assisted = useItem(fixture, 'star').run
+    expect(assisted.inventory.star).toBe(fixture.inventory.star - 1)
+    expect(assisted.message).not.toMatch(/found a Lucky star/)
+    expect(abandonEncounter(fixture).run.inventory.star).toBe(fixture.inventory.star)
+    const capped = { ...fixture, inventory: { ...fixture.inventory, star: 99 } }
+    expect(guessAdventureCountry(capped, target).run.inventory.star).toBe(99)
+    expect(roll).not.toHaveBeenCalled()
+  })
+  it('discoveries can grant a Lucky star once, while rests and shops never roll loot', () => {
+    const discovery = at('event')
+    const withStar = {
+      ...discovery,
+      encounter: { ...discovery.encounter!, eventItem: 'star' as const },
+    }
+    const rest = at('rest')
+    const shop = at('shop')
+    const roll = vi.spyOn(crypto, 'getRandomValues')
+    const found = resolveEvent(withStar, 'supplies').run
+    expect(found.inventory.star).toBe(withStar.inventory.star + 1)
+    expect(found.message).toContain('Lucky star')
+    expect(restore(found)).toEqual(found)
+    expect(resolveEvent(found, 'supplies').run).toBe(found)
+    expect(resolveEvent(withStar, 'heal').run.inventory.star).toBe(withStar.inventory.star)
+    resolveRest(rest)
+    leaveShop(shop)
+    expect(roll).not.toHaveBeenCalled()
+  })
   it('offers only stocked, relevant trial items and enforces restrictions after use', () => {
     const trivia = at('trivia')
     expect(trialItems(trivia)).toEqual(['container', 'fifty', 'star', 'shield', 'reroll'])
@@ -221,14 +298,13 @@ describe('consumables and recovery', () => {
     expect(run.inventory.reroll).toBe(stock - 1)
     expect(restore(run)).toEqual(run)
   })
-  it('Lucky stars auto-win challenges and bosses and consume exactly one item', () => {
-    for (const kind of ['trivia', 'boss', 'shapes', 'mystery'] as const) {
+  it('Lucky stars auto-win non-boss challenges and consume exactly one item', () => {
+    for (const kind of ['trivia', 'shapes', 'mystery'] as const) {
       const original = at(kind)
       const done = useItem(original, 'star').run
       expect(done.encounter!.result).toBe('cleared')
       expect(done.inventory.star).toBe(original.inventory.star - 1)
       expect(done.encounter!.method).toBe('item')
-      if (kind === 'boss') expect(done.status).toBe('won')
       expect(restore(done)).toEqual(done)
       expect(useItem(done, 'star').run).toBe(done)
     }
@@ -257,7 +333,7 @@ describe('consumables and recovery', () => {
     expect(run.coins).toBe(original.coins - ITEMS.potion.price)
     expect(run.inventory.potion).toBe(original.inventory.potion + 1)
     expect(buyItem(run, 'potion').error).toMatch(/sold out/)
-    expect(buyItem({ ...run, coins: 0 }, 'star').error).toMatch(/coins/)
+    expect(buyItem({ ...run, coins: 0 }, 'feather').error).toMatch(/coins/)
     expect(restore(run)).toEqual(run)
     run = leaveShop(run).run
     expect(buyItem(run, 'star').error).toBeTruthy()
@@ -328,11 +404,35 @@ describe('familiar geography and mystery encounters', () => {
 })
 
 describe('saved adventures', () => {
-  it('upgrades preview saves before and after both rests without losing trials, inventory or victory', () => {
+  it('preserves an earlier Lucky-star boss victory but rejects a new boss item-clear save', () => {
+    const won = completeEncounter(at('boss'))
+    const old = JSON.parse(previousSave(won))
+    old.encounter.method = 'item'
+    Object.assign(old.encounter.trivia, {
+      answered: 0,
+      score: 0,
+      streak: 0,
+      choice: null,
+      correct: null,
+    })
+    const upgraded = parseAdventure(JSON.stringify(old))!
+    expect(upgraded.status).toBe('won')
+    expect(upgraded.encounter!.method).toBe('carried')
+    expect(restore(upgraded)).toEqual(upgraded)
+    expect(restore({ ...won, encounter: { ...won.encounter!, method: 'item' } })).toBeNull()
+  })
+  it('upgrades both older save layouts before and after rests without losing trials, inventory or victory', () => {
     const firstRest = closeStop(at('rest'))
     let lastRest = at('boss')
-    // Return to the resolved second rest, before entering the boss.
-    lastRest = { ...lastRest, encounter: null, path: lastRest.path.slice(0, -1) }
+    // Model the second rest before the third section was introduced.
+    lastRest = {
+      ...lastRest,
+      encounter: null,
+      path: lastRest.path.slice(0, 8),
+      outcomes: Object.fromEntries(
+        Object.entries(lastRest.outcomes).filter(([id]) => Number(id.split('-')[0]) < 8),
+      ),
+    }
     const samples = [
       newAdventure(),
       at('trivia'),
@@ -343,17 +443,19 @@ describe('saved adventures', () => {
       completeEncounter(at('boss')),
     ]
     for (const original of samples) {
-      const upgraded = parseAdventure(previewSave(original))!
-      expect(upgraded.version).toBe(2)
-      expect(upgraded.map).toHaveLength(21)
-      expect(upgraded.id).toBe(original.id)
-      expect(upgraded.inventory).toEqual(original.inventory)
-      expect(upgraded.hearts).toBe(original.hearts)
-      expect(upgraded.coins).toBe(original.coins)
-      expect(upgraded.path).toEqual(original.path)
-      expect(upgraded.encounter).toEqual(original.encounter)
-      expect(upgraded.status).toBe(original.status)
-      expect(restore(upgraded)).toEqual(upgraded)
+      for (const save of [previewSave(original), previousSave(original)]) {
+        const upgraded = parseAdventure(save)!
+        expect(upgraded.version).toBe(3)
+        expect(upgraded.map).toHaveLength(31)
+        expect(upgraded.id).toBe(original.id)
+        expect(upgraded.inventory).toEqual(original.inventory)
+        expect(upgraded.hearts).toBe(original.hearts)
+        expect(upgraded.coins).toBe(original.coins)
+        expect(upgraded.path).toEqual(original.path)
+        expect(upgraded.encounter).toEqual(original.encounter)
+        expect(upgraded.status).toBe(original.status)
+        expect(restore(upgraded)).toEqual(upgraded)
+      }
     }
     const oldClear = JSON.parse(previewSave(completeEncounter(at('boss'))))
     oldClear.encounter.method = 'dev'
