@@ -249,6 +249,9 @@ export default function App() {
         <div className="experience-view" hidden={experience !== 'somewhere'}>
           {(hasVisitedSomewhere || experience === 'somewhere') && (
             <>
+              <div className="game-toolbar">
+                <ModeSelector mode={mode} onChange={changeMode} />
+              </div>
               {warning && (
                 <div className="storage-warning" role="status">
                   {warning}
@@ -270,7 +273,6 @@ export default function App() {
                             : 'Country search'
                   }
                 >
-                  <ModeSelector mode={mode} onChange={changeMode} />
                   {isJourney && <JourneyChallenge round={round} />}
                   {(mode === 'flags' || mode === 'shapes') && (
                     <VisualChallenge

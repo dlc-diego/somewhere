@@ -154,7 +154,7 @@ export default function Something({
       tabIndex={-1}
       aria-labelledby="something-title"
     >
-      <div className="something-toolbar">
+      <div className="game-toolbar">
         <div className="mode-selector">
           <Sparkles size={18} aria-hidden="true" />
           <label className="sr-only" htmlFor="something-mode">
