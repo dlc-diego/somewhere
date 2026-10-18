@@ -8,6 +8,7 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
   const [status, setStatus] = useState<Status>('idle')
   const [availableVersion, setAvailableVersion] = useState<string | null>(null)
   const [pendingVersion, setPendingVersion] = useState<string | null>(null)
+  const [showUpdateNotice, setShowUpdateNotice] = useState(false)
   const mounted = useRef(false)
   const lastCheck = useRef<number | null>(null)
   const inFlight = useRef<Promise<string> | null>(null)
@@ -33,6 +34,7 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
       if (!mounted.current || (!manual && manualCheck.current)) return
       const newer = latest !== APP_VERSION
       setAvailableVersion(newer ? latest : null)
+      if (!manual) setShowUpdateNotice(newer)
       if (manual && newer) {
         installing.current = true
         setPendingVersion(latest)
@@ -85,13 +87,19 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
     return () => window.clearTimeout(timer)
   }, [status, availableVersion])
 
+  useEffect(() => {
+    if (status !== 'available' || !showUpdateNotice) return
+    const timer = window.setTimeout(() => setShowUpdateNotice(false), 8000)
+    return () => window.clearTimeout(timer)
+  }, [status, showUpdateNotice])
+
   const busy = status === 'checking' || status === 'waiting' || status === 'updating'
   const label = availableVersion ? 'Download update' : 'Check for updates'
   const message = {
     idle: '',
     checking: 'Checking for updates…',
     current: 'You’re up to date.',
-    available: 'Update available. Use the download button to install it.',
+    available: 'An update is available. Tap the download icon to get the latest version.',
     waiting: 'Your update will open after the celebration.',
     updating: 'Opening the latest version…',
     error: 'Couldn’t check for updates. Please try again when you’re online.',
@@ -113,10 +121,9 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
         ) : (
           <Download size={16} aria-hidden="true" />
         )}
-        {availableVersion && <span>Update available</span>}
       </button>
       <span
-        className={status === 'available' ? 'sr-only' : 'update-feedback'}
+        className={status === 'available' && !showUpdateNotice ? 'sr-only' : 'update-feedback'}
         role="status"
         aria-live="polite"
         aria-atomic="true"

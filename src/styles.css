@@ -70,6 +70,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   --muted: #737e76;
+  --update-idle: #747e83;
   --accent: #bd4a2e;
   --logo-accent: #e9855e;
   --brand-ink: #fff9eb;
@@ -134,6 +135,7 @@ button:hover:not(:disabled) {
   margin: auto;
 }
 .site-header {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 97px;
@@ -173,6 +175,7 @@ button:hover:not(:disabled) {
   gap: 23px;
   align-items: center;
   margin-left: auto;
+  flex-shrink: 0;
 }
 .intro {
   display: flex;
@@ -668,7 +671,6 @@ h1 {
   color: var(--heat-found-text);
 }
 .site-footer {
-  position: relative;
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -685,29 +687,23 @@ h1 {
 .site-footer > span svg {
   color: var(--detail-accent);
 }
-.footer-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
 .update-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   min-width: 44px;
   min-height: 44px;
   padding: 6px;
   border-radius: 8px;
   background: transparent;
-  color: inherit;
+  color: var(--update-idle);
   font: inherit;
 }
 .update-button:hover {
   background: var(--surface-hover);
 }
 .update-button.update-available {
-  color: var(--accent);
+  color: var(--heat-found-text);
 }
 .update-button:disabled {
   cursor: wait;
@@ -717,17 +713,18 @@ h1 {
 }
 .update-feedback:not(:empty) {
   position: absolute;
-  z-index: 3;
-  bottom: calc(100% + 5px);
+  z-index: 4;
+  top: calc(100% + 8px);
   right: 0;
   width: max-content;
-  max-width: min(240px, calc(100vw - 48px));
+  max-width: min(280px, calc(100vw - 48px));
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border-card);
   background: var(--surface);
   color: var(--text-primary);
   font-size: 12px;
+  font-weight: 400;
   line-height: 1.5;
   box-shadow: 0 5px 20px #00000012;
 }
@@ -1829,6 +1826,7 @@ h1 {
   --accent-disabled: #32694c;
   --primary-ink: #14242a;
   --muted: #afbeb7;
+  --update-idle: #9ba6ab;
   --line: #30454b;
   --accent: #62e99a;
   --logo-accent: var(--accent);
@@ -1905,6 +1903,17 @@ h1 {
 @media (max-width: 480px) {
   .theme-toggle {
     padding: 6px 10px;
+  }
+}
+@media (max-width: 380px) {
+  .site-header {
+    gap: 4px;
+  }
+  .site-header nav {
+    gap: 2px;
+  }
+  .theme-toggle {
+    padding: 6px 4px;
   }
 }
 
@@ -2107,13 +2116,13 @@ h1 {
     transform: translateY(0);
   }
 }
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .brand-switcher .brand {
-    font-size: 23px;
+    font-size: 21px;
   }
   .brand-switcher .brand-icon {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     margin-right: 6px;
   }
   .brand-chevron {

@@ -226,7 +226,8 @@ export default function App() {
         <span className="brand-tagline">
           {experience === 'somewhere' ? 'A little world of discovery' : 'A little more to discover'}
         </span>
-        <nav aria-label="Appearance">
+        <nav aria-label="App controls">
+          <AppUpdate celebrating={celebrations.length > 0} />
           <button
             className="theme-toggle"
             onClick={toggleTheme}
@@ -436,12 +437,9 @@ export default function App() {
         <span>
           Built for Val <Heart size={12} />
         </span>
-        <div className="footer-actions">
-          <AppUpdate celebrating={celebrations.length > 0} />
-          <button className="text-button" onClick={() => setDialog('help')}>
-            How to play <ArrowRight size={13} />
-          </button>
-        </div>
+        <button className="text-button" onClick={() => setDialog('help')}>
+          How to play <ArrowRight size={13} />
+        </button>
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
