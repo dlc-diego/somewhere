@@ -11,6 +11,7 @@ import ValHeart from './components/ValHeart'
 import VisualChallenge from './components/VisualChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
+import AppUpdate from './components/AppUpdate'
 import VictoryCelebration from './components/VictoryCelebration'
 import {
   createCelebrationPicker,
@@ -435,9 +436,12 @@ export default function App() {
         <span>
           Built for Val <Heart size={12} />
         </span>
-        <button className="text-button" onClick={() => setDialog('help')}>
-          How to play <ArrowRight size={13} />
-        </button>
+        <div className="footer-actions">
+          <AppUpdate celebrating={celebrations.length > 0} />
+          <button className="text-button" onClick={() => setDialog('help')}>
+            How to play <ArrowRight size={13} />
+          </button>
+        </div>
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}

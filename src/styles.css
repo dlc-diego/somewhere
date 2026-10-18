@@ -668,6 +668,7 @@ h1 {
   color: var(--heat-found-text);
 }
 .site-footer {
+  position: relative;
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;
@@ -683,6 +684,57 @@ h1 {
 }
 .site-footer > span svg {
   color: var(--detail-accent);
+}
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.update-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.update-button:hover {
+  background: var(--surface-hover);
+}
+.update-button.update-available {
+  color: var(--accent);
+}
+.update-button:disabled {
+  cursor: wait;
+}
+.update-spinner {
+  animation: spin 1s linear infinite;
+}
+.update-feedback:not(:empty) {
+  position: absolute;
+  z-index: 3;
+  bottom: calc(100% + 5px);
+  right: 0;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-card);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 5px 20px #00000012;
+}
+@media (prefers-reduced-motion: reduce) {
+  .update-spinner {
+    animation: none;
+  }
 }
 .text-button {
   display: inline-flex;

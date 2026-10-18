@@ -1,3 +1,6 @@
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig({ test: { include: ['src/**/*.test.ts'] } })
+export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify('test-build') },
+  test: { include: ['src/**/*.test.ts'] },
+})
