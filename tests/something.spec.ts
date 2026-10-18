@@ -89,6 +89,9 @@ test('General Trivia locks answers, escalates fire at three, resets on a miss an
   await seed(page)
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
+  const originalIds: string[] = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('something.trivia.v1')!).round.ids,
+  )
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
   for (let index = 0; index < 4; index++) {
@@ -169,7 +172,7 @@ test('General Trivia locks answers, escalates fire at three, resets on a miss an
     () => JSON.parse(localStorage.getItem('something.trivia.v1')!).round,
   )
   expect(fresh.responses).toEqual([])
-  expect(fresh.ids.some((id: string) => /^animal-/.test(id))).toBe(false)
+  expect(fresh.ids.some((id: string) => originalIds.includes(id))).toBe(false)
 })
 
 test('perfect rounds queue their own trophy animation and all effects survive new rounds and experience changes', async ({

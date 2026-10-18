@@ -49,11 +49,13 @@ const knownMystery = (): MysteryRound => ({
 const session = <R>(round: R) => ({ version: 1 as const, round, seen: [] })
 
 describe('Something content', () => {
-  it('has 100 distinct, complete questions with four unique choices and one answer', () => {
-    expect(triviaQuestions).toHaveLength(100)
-    expect(new Set(triviaQuestions.map((q) => q.id)).size).toBe(100)
-    expect(new Set(triviaQuestions.map((q) => q.question)).size).toBe(100)
+  it('has 200 distinct, complete questions with four unique choices and one answer', () => {
+    expect(triviaQuestions).toHaveLength(200)
+    expect(new Set(triviaQuestions.map((q) => q.id)).size).toBe(200)
+    expect(new Set(triviaQuestions.map((q) => normalizeAnswer(q.question))).size).toBe(200)
     expect(new Set(triviaQuestions.map((q) => q.category)).size).toBe(10)
+    for (const category of new Set(triviaQuestions.map((q) => q.category)))
+      expect(triviaQuestions.filter((q) => q.category === category)).toHaveLength(20)
     for (const q of triviaQuestions) {
       expect(q.question.length).toBeGreaterThan(15)
       expect(q.choices).toHaveLength(4)
@@ -62,16 +64,40 @@ describe('Something content', () => {
       expect(q.explanation.length).toBeGreaterThan(25)
     }
   })
-  it('has 40 distinct mysteries with five progressive clues and useful answers', () => {
-    expect(mysteries).toHaveLength(40)
-    expect(new Set(mysteries.map((m) => m.id)).size).toBe(40)
-    expect(new Set(mysteries.map((m) => normalizeAnswer(m.answer))).size).toBe(40)
+  it('has 80 distinct mysteries with five progressive clues and useful answers', () => {
+    expect(mysteries).toHaveLength(80)
+    expect(new Set(mysteries.map((m) => m.id)).size).toBe(80)
+    expect(new Set(mysteries.map((m) => normalizeAnswer(m.answer))).size).toBe(80)
     for (const m of mysteries) {
       expect(m.clues).toHaveLength(5)
       expect(new Set(m.clues).size).toBe(5)
       expect(m.clues.every((clue) => clue.length > 15)).toBe(true)
       expect(normalizeAnswer(m.answer)).not.toBe('')
       expect(m.aliases.every((alias) => normalizeAnswer(alias).length > 0)).toBe(true)
+      expect(m.explanation.length).toBeGreaterThan(25)
+    }
+  })
+  it('accepts every mystery answer and alias without collisions between different mysteries', () => {
+    const owners = new Map<string, string>()
+    for (const m of mysteries) {
+      for (const answer of [m.answer, ...m.aliases]) {
+        const normalized = normalizeAnswer(answer)
+        expect(owners.get(normalized) || m.id).toBe(m.id)
+        owners.set(normalized, m.id)
+        const round: MysteryRound = {
+          version: 1,
+          id: m.id,
+          cluesShown: 1,
+          guesses: [],
+          revealed: false,
+        }
+        const solved = guessMystery(round, `The ${answer.toUpperCase()}!`)
+        expect(solved.error).toBeUndefined()
+        expect(mysterySolved(solved.round)).toBe(true)
+        expect(parseMysterySession(JSON.stringify(session(solved.round)))).toEqual(
+          session(solved.round),
+        )
+      }
     }
   })
 })
