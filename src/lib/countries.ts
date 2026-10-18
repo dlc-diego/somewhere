@@ -1,4 +1,4 @@
-import data from '../data/countries.json'
+import data from '../data/countries.json' with { type: 'json' }
 
 export type GameMode = 'countries' | 'capitals' | 'flags' | 'shapes' | 'journey'
 export interface Location {

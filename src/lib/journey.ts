@@ -1,4 +1,4 @@
-import exclusions from '../data/journey-border-exclusions.json'
+import exclusions from '../data/journey-border-exclusions.json' with { type: 'json' }
 import { areAdjacent, countries, countryById } from './countries'
 
 export const journeyColors = {

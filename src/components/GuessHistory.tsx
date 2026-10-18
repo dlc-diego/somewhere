@@ -8,17 +8,19 @@ export default function GuessHistory({
   guesses,
   onFocus,
   mode,
+  idPrefix = '',
 }: {
   guesses: Guess[]
   onFocus: (country: Country, location: Location) => void
   mode: GameMode
+  idPrefix?: string
 }) {
   const sorted = sortGuessesByDistance(guesses)
   const closest = sorted[0]
   return (
-    <section className="history" aria-labelledby="history-title">
+    <section className="history" aria-labelledby={`${idPrefix}history-title`}>
       <div className="history-heading">
-        <h2 id="history-title">Your journey</h2>
+        <h2 id={`${idPrefix}history-title`}>Your journey</h2>
         <span>
           {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}
         </span>

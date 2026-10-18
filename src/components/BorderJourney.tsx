@@ -45,18 +45,20 @@ export function JourneyChallenge({ round }: { round: Round }) {
 export function JourneyHistory({
   round,
   onFocus,
+  idPrefix = '',
 }: {
   round: Round
   onFocus: (country: Country) => void
+  idPrefix?: string
 }) {
   const route = [round.start!, ...round.guesses]
   const destination = countryById.get(round.answer)!
   const current = route.at(-1)!
   const remaining = round.revealed ? shortestBorderRoute(current, round.answer)! : null
   return (
-    <section className="history journey-history" aria-labelledby="history-title">
+    <section className="history journey-history" aria-labelledby={`${idPrefix}history-title`}>
       <div className="history-heading">
-        <h2 id="history-title">Your border journey</h2>
+        <h2 id={`${idPrefix}history-title`}>Your border journey</h2>
         <span>
           {round.guesses.length} {round.guesses.length === 1 ? 'crossing' : 'crossings'}
         </span>

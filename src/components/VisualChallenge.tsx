@@ -9,12 +9,16 @@ export default function VisualChallenge({
   hintUsed,
   ended,
   onHint,
+  hintDisabled = false,
+  hintLabel = 'Hint: reveal continent',
 }: {
   mode: 'flags' | 'shapes'
   country: Country
   hintUsed: boolean
   ended: boolean
   onHint: () => void
+  hintDisabled?: boolean
+  hintLabel?: string
 }) {
   const isShape = mode === 'shapes'
   const [loading, setLoading] = useState(isShape)
@@ -68,8 +72,8 @@ export default function VisualChallenge({
           <Lightbulb size={15} aria-hidden="true" /> Continent: <strong>{country.continent}</strong>
         </p>
       ) : !ended ? (
-        <button className="flag-hint-button" onClick={onHint}>
-          <Lightbulb size={15} aria-hidden="true" /> Hint: reveal continent
+        <button className="flag-hint-button" onClick={onHint} disabled={hintDisabled}>
+          <Lightbulb size={15} aria-hidden="true" /> {hintLabel}
         </button>
       ) : null}
     </div>

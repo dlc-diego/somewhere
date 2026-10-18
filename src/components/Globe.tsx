@@ -47,12 +47,14 @@ function Globe({
   mode,
   answerReveal,
   journey = null,
+  idPrefix = '',
 }: {
   guesses: Guess[]
   focus: Focus
   mode: GameMode
   answerReveal: RevealedLocation | null
   journey?: JourneyMap | null
+  idPrefix?: string
 }) {
   const [world, setWorld] = useState<FeatureCollection<Geometry> | null>(null)
   const [error, setError] = useState(false)
@@ -337,22 +339,22 @@ function Globe({
             onLostPointerCapture={(e) => pointers.current.delete(e.pointerId)}
           >
             <defs>
-              <radialGradient id="ocean" cx="33%" cy="25%" r="80%">
+              <radialGradient id={`${idPrefix}ocean`} cx="33%" cy="25%" r="80%">
                 <stop offset="0" stopColor="#294c5e" />
                 <stop offset="0.65" stopColor="#173747" />
                 <stop offset="1" stopColor="#0b2535" />
               </radialGradient>
-              <radialGradient id="shade" cx="36%" cy="28%" r="75%">
+              <radialGradient id={`${idPrefix}shade`} cx="36%" cy="28%" r="75%">
                 <stop offset="0.4" stopColor="#001927" stopOpacity="0" />
                 <stop offset="1" stopColor="#001927" stopOpacity="0.42" />
               </radialGradient>
-              <clipPath id="globe-clip">
+              <clipPath id={`${idPrefix}globe-clip`}>
                 <circle cx="300" cy="300" r={265 * renderedZoom} />
               </clipPath>
             </defs>
             <circle className="orbit" cx="300" cy="300" r="285" />
-            <circle cx="300" cy="300" r={265 * renderedZoom} fill="url(#ocean)" />
-            <g clipPath="url(#globe-clip)">
+            <circle cx="300" cy="300" r={265 * renderedZoom} fill={`url(#${idPrefix}ocean)`} />
+            <g clipPath={`url(#${idPrefix}globe-clip)`}>
               <path
                 d={rendered?.graticule ?? ''}
                 fill="none"
@@ -397,7 +399,7 @@ function Globe({
                 cx="300"
                 cy="300"
                 r={265 * renderedZoom}
-                fill="url(#shade)"
+                fill={`url(#${idPrefix}shade)`}
                 pointerEvents="none"
               />
               {journey &&

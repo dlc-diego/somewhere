@@ -45,6 +45,7 @@ import { useTheme } from './lib/useTheme'
 
 const Globe = lazy(() => import('./components/Globe'))
 const Something = lazy(() => import('./components/Something'))
+const Somex = lazy(() => import('./components/Somex'))
 type DialogType = 'help' | null
 type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensity?: number }
 
@@ -53,9 +54,11 @@ export default function App() {
   const { experience, transition, switchExperience } = useExperience()
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
+  const [hasVisitedSomex, setHasVisitedSomex] = useState(experience === 'somex')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
     else if (experience === 'something') setHasVisitedSomething(true)
+    else if (experience === 'somex') setHasVisitedSomex(true)
   }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
@@ -152,7 +155,9 @@ export default function App() {
         ? 'Something. General Trivia and What am I.'
         : next === 'someone'
           ? 'Someone. Under construction.'
-          : 'Welcome back to Somewhere. Your journey is saved.',
+          : next === 'somex'
+            ? 'Somex. Adventure under construction.'
+            : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
 
@@ -224,7 +229,9 @@ export default function App() {
             ? '#country-search'
             : experience === 'something'
               ? '#something-games'
-              : '#someone-content'
+              : experience === 'someone'
+                ? '#someone-content'
+                : '#somex-content'
         }
         className="skip-link"
       >
@@ -237,7 +244,9 @@ export default function App() {
             ? 'A little world of discovery'
             : experience === 'something'
               ? 'A little more to discover'
-              : 'A little space for someone new'}
+              : experience === 'someone'
+                ? 'A little space for someone new'
+                : 'A little adventure awaits'}
         </span>
         <nav aria-label="App controls">
           <AppUpdate celebrating={celebrations.length > 0} />
@@ -448,6 +457,19 @@ export default function App() {
         <div className="experience-view" hidden={experience !== 'someone'}>
           {experience === 'someone' && <Someone />}
         </div>
+        <div className="experience-view" hidden={experience !== 'somex'}>
+          {(hasVisitedSomex || experience === 'somex') && (
+            <Suspense
+              fallback={
+                <p className="something-loading" role="status">
+                  Preparing Somex…
+                </p>
+              }
+            >
+              <Somex onCelebrate={celebrate} />
+            </Suspense>
+          )}
+        </div>
       </main>
       <footer className="site-footer">
         <span>
@@ -650,6 +672,66 @@ export default function App() {
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s play <ArrowRight size={17} />
+          </button>
+        </Dialog>
+      )}
+      {dialog === 'help' && experience === 'somex' && (
+        <Dialog title="How to play Somex" onClose={() => setDialog(null)}>
+          <span className="dialog-emblem">
+            <Compass size={30} />
+          </span>
+          <p className="eyebrow">An early adventure</p>
+          <h2>Find your way to the final gate.</h2>
+          <p>
+            Choose a highlighted stop on the branching route. Complete eight stops and defeat the
+            final boss before your hearts run out. Rest stops restore one heart; shops trade coins
+            for supplies.
+          </p>
+          <ol className="help-steps">
+            <li>
+              <span>01</span>
+              <div>
+                <strong>Play familiar challenges</strong>
+                <p>
+                  Normal trivia needs two of three correct answers. Geography and What am I use a
+                  guess budget; a failed challenge costs one heart. Invalid or duplicate guesses do
+                  not count. Border Journey uses continuous land borders only. Extra mystery clues
+                  are free.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>02</span>
+              <div>
+                <strong>Pack a little possibility</strong>
+                <p>
+                  Open your Satchel for healing, heart containers, a shield, 50/50, clues, extra
+                  guesses, a fresh question, or a Lucky star that clears a challenge. A Phoenix
+                  feather automatically revives you with one heart. Invalid item uses never consume
+                  an item.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>03</span>
+              <div>
+                <strong>Face the final boss</strong>
+                <p>
+                  Elite trials need two correct answers in a row; the final boss needs three. Each
+                  wrong answer resets the streak and costs a heart. A shield blocks one loss. Reach
+                  the final streak to win the run and celebrate.
+                </p>
+              </div>
+            </li>
+          </ol>
+          <p className="help-note">
+            Under construction: this developer preview starts with all items and 100 coins.
+            Developer options let you clear encounters, jump to the boss, test damage, refill items
+            and restart. Progress saves in this browser separately from your other games. The
+            password is a testing gate, not account security.
+          </p>
+          <button className="primary" onClick={() => setDialog(null)}>
+            Let’s explore <ArrowRight size={17} />
           </button>
         </Dialog>
       )}

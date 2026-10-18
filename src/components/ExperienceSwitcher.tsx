@@ -1,4 +1,4 @@
-import { ChevronDown, Compass, Sparkles, UserRound } from 'lucide-react'
+import { ChevronDown, Compass, Sparkles, UserRound, Route } from 'lucide-react'
 import type { Experience } from '../lib/useExperience'
 
 export default function ExperienceSwitcher({
@@ -9,7 +9,13 @@ export default function ExperienceSwitcher({
   onChange: (next: Experience) => void
 }) {
   const Icon =
-    experience === 'somewhere' ? Compass : experience === 'something' ? Sparkles : UserRound
+    experience === 'somewhere'
+      ? Compass
+      : experience === 'something'
+        ? Sparkles
+        : experience === 'someone'
+          ? UserRound
+          : Route
   return (
     <div className="brand-switcher">
       <span className="brand" aria-hidden="true">
@@ -33,6 +39,7 @@ export default function ExperienceSwitcher({
         <option value="somewhere">somewhere.</option>
         <option value="something">something.</option>
         <option value="someone">someone.</option>
+        <option value="somex">somex. · Under construction</option>
       </select>
     </div>
   )
