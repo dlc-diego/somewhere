@@ -156,7 +156,7 @@ export default function App() {
         : next === 'someone'
           ? 'Someone. Under construction.'
           : next === 'somex'
-            ? 'Somex. Adventure under construction.'
+            ? 'Somex. A little adventure awaits.'
             : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
@@ -680,10 +680,10 @@ export default function App() {
           <span className="dialog-emblem">
             <Compass size={30} />
           </span>
-          <p className="eyebrow">An early adventure</p>
+          <p className="eyebrow">A little adventure</p>
           <h2>Find your way to the final gate.</h2>
           <p>
-            Choose a highlighted stop on the branching route. Complete eight stops and defeat the
+            Choose a highlighted stop on the branching route. Complete nine stops and defeat the
             final boss before your hearts run out. Rest stops restore one heart; shops trade coins
             for supplies.
           </p>
@@ -705,10 +705,10 @@ export default function App() {
               <div>
                 <strong>Pack a little possibility</strong>
                 <p>
-                  Open your Satchel for healing, heart containers, a shield, 50/50, clues, extra
-                  guesses, a fresh question, or a Lucky star that clears a challenge. A Phoenix
-                  feather automatically revives you with one heart. Invalid item uses never consume
-                  an item.
+                  Use the item buttons in a trial or open your Satchel for healing, heart
+                  containers, a shield, 50/50, clues, extra guesses, a fresh question, or a Lucky
+                  star that clears a challenge. A Phoenix feather automatically revives you with one
+                  heart. Invalid item uses never consume an item.
                 </p>
               </div>
             </li>
@@ -725,10 +725,10 @@ export default function App() {
             </li>
           </ol>
           <p className="help-note">
-            Under construction: this developer preview starts with all items and 100 coins.
-            Developer options let you clear encounters, jump to the boss, test damage, refill items
-            and restart. Progress saves in this browser separately from your other games. The
-            password is a testing gate, not account security.
+            Start with three hearts, 25 coins, a Heart tonic, a 50/50 lens and a Trail compass.
+            Discoveries and shops replenish your supplies. Both route sections offer three rows of
+            three choices, with a rest stop at the end of each. Progress saves in this browser
+            separately from your other games.
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s explore <ArrowRight size={17} />

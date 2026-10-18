@@ -83,7 +83,7 @@ export const NODE_LABELS: Record<NodeKind, string> = {
   shop: 'Shop',
   event: 'Discovery',
 }
-const rows: NodeKind[][] = [
+const previewRows: NodeKind[][] = [
   ['trivia', 'flags', 'mystery'],
   ['countries', 'capitals', 'shapes'],
   ['shop', 'event', 'elite'],
@@ -93,6 +93,12 @@ const rows: NodeKind[][] = [
   ['rest'],
   ['boss'],
 ]
+const rows: NodeKind[][] = [
+  ...previewRows.slice(0, 6),
+  ['mystery', 'countries', 'elite'],
+  ...previewRows.slice(6),
+]
+export const ADVENTURE_STOPS = rows.length
 export interface AdventureNode {
   id: string
   row: number
@@ -121,10 +127,10 @@ export interface Encounter {
   extraUsed: boolean
   purchases: ItemId[]
   eventItem: ItemId | null
-  method: 'played' | 'item' | 'dev'
+  method: 'played' | 'item' | 'carried'
 }
 export interface AdventureRun {
-  version: 1
+  version: 2
   id: string
   map: AdventureNode[]
   path: string[]
@@ -169,22 +175,22 @@ function pickUnseen(ids: string[], seen: string[], previous?: string): string {
   const fresh = ids.filter((id) => !seen.includes(id) && id !== previous)
   return shuffle(fresh.length ? fresh : ids.filter((id) => id !== previous))[0]
 }
-export function developerKit(): Record<ItemId, number> {
+export function starterKit(): Record<ItemId, number> {
   return {
-    potion: 3,
-    container: 2,
-    fifty: 3,
-    star: 3,
-    shield: 3,
-    hint: 3,
-    boots: 3,
-    reroll: 3,
-    feather: 1,
+    potion: 1,
+    container: 0,
+    fifty: 1,
+    star: 0,
+    shield: 0,
+    hint: 1,
+    boots: 0,
+    reroll: 0,
+    feather: 0,
   }
 }
 export function newAdventure(): AdventureRun {
   return {
-    version: 1,
+    version: 2,
     id: crypto.randomUUID(),
     map: rows.flatMap((kinds, row) =>
       shuffle(kinds).map((kind, index) => ({
@@ -200,18 +206,21 @@ export function newAdventure(): AdventureRun {
     status: 'playing',
     hearts: 3,
     maxHearts: 3,
-    coins: 100,
-    inventory: developerKit(),
+    coins: 25,
+    inventory: starterKit(),
     shield: false,
     seenTrivia: [],
     seenMysteries: [],
-    message: 'Your developer kit is ready. Choose your first stop.',
+    message: 'Your satchel is packed. Choose your first stop.',
   }
 }
 export function connected(from: AdventureNode, to: AdventureNode): boolean {
   return (
     to.row === from.row + 1 &&
-    (rows[from.row].length === 1 || rows[to.row].length === 1 || Math.abs(from.lane - to.lane) <= 1)
+    (from.kind === 'rest' ||
+      to.kind === 'rest' ||
+      to.kind === 'boss' ||
+      Math.abs(from.lane - to.lane) <= 1)
   )
 }
 export function availableNodes(run: AdventureRun): AdventureNode[] {
@@ -352,7 +361,7 @@ function finish(
           : scene.mystery,
     },
     message: success
-      ? `${method === 'dev' ? 'Developer clear' : method === 'item' ? 'Lucky star clear' : 'Stop cleared'}${coins ? ` · +${coins} coins` : ''}.`
+      ? `${method === 'item' ? 'Lucky star clear' : 'Stop cleared'}${coins ? ` · +${coins} coins` : ''}.`
       : next.message,
   }
   if (success && scene.kind === 'boss') next.status = 'won'
@@ -575,6 +584,19 @@ export function itemUnavailable(run: AdventureRun, item: ItemId): string | null 
   if (scene.hintUsed) return 'Already used at this stop.'
   return null
 }
+export function trialItems(run: AdventureRun): ItemId[] {
+  const scene = run.encounter
+  if (run.status !== 'playing' || scene?.result !== 'active' || !isCombat(scene.kind)) return []
+  return ITEM_IDS.filter((id) => {
+    if (!run.inventory[id] || id === 'feather') return false
+    if (id === 'fifty' || id === 'reroll') return Boolean(scene.trivia)
+    if (id === 'hint' || id === 'boots') return Boolean(scene.geography || scene.mystery)
+    if (id === 'potion') return run.hearts < run.maxHearts
+    if (id === 'container') return run.maxHearts < 5
+    if (id === 'shield') return !run.shield
+    return true
+  })
+}
 export function useItem(run: AdventureRun, item: ItemId): AdventureResult {
   if (!ITEM_IDS.includes(item)) return fail(run, 'Choose an item from your satchel.')
   const reason = itemUnavailable(run, item)
@@ -628,52 +650,6 @@ export function useItem(run: AdventureRun, item: ItemId): AdventureResult {
     }
   return ok(next)
 }
-export function developerAction(
-  run: AdventureRun,
-  action: 'win' | 'hurt' | 'refill' | 'boss',
-): AdventureResult {
-  if (run.status !== 'playing') return fail(run, 'Start a fresh run to keep testing.')
-  if (action === 'refill')
-    return ok({
-      ...run,
-      inventory: developerKit(),
-      coins: Math.max(100, run.coins),
-      message: 'Developer kit refilled. All items are available.',
-    })
-  if (action === 'hurt') {
-    const next = damage(run)
-    return ok(
-      next.status === 'lost' && next.encounter?.result === 'active'
-        ? {
-            ...next,
-            encounter: { ...next.encounter, result: 'failed' },
-            outcomes: { ...next.outcomes, [next.encounter.nodeId]: 'failed' },
-          }
-        : next,
-    )
-  }
-  if (action === 'win')
-    return run.encounter?.result === 'active' && isCombat(run.encounter.kind)
-      ? ok(finish(run, true, 'dev'))
-      : fail(run, 'Choose an active challenge to auto-win.')
-  if (run.encounter?.kind === 'boss') return fail(run, 'You are already at the final boss.')
-  let next = { ...run, encounter: null } as AdventureRun
-  const outcomes = { ...run.outcomes }
-  const path = [...run.path]
-  for (const id of path) outcomes[id] = outcomes[id] || 'cleared'
-  for (let row = path.length; row < 7; row++) {
-    const node = run.map.find((node) => node.row === row && node.lane === 1)!
-    path.push(node.id)
-    outcomes[node.id] = 'cleared'
-  }
-  next = { ...next, path, outcomes, message: 'Developer shortcut to the final boss.' }
-  return ok(
-    enter(
-      next,
-      run.map.find((node) => node.kind === 'boss')!,
-    ),
-  )
-}
 
 const record = (value: unknown): value is Record<string, unknown> =>
   Boolean(value && typeof value === 'object' && !Array.isArray(value))
@@ -690,7 +666,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
     const raw: unknown = JSON.parse(value)
     if (
       !record(raw) ||
-      raw.version !== 1 ||
+      (raw.version !== 1 && raw.version !== 2) ||
       typeof raw.id !== 'string' ||
       raw.id.length > 80 ||
       !['playing', 'won', 'lost'].includes(String(raw.status)) ||
@@ -705,17 +681,18 @@ export function parseAdventure(value: string | null): AdventureRun | null {
       return null
     const inventory = raw.inventory
     if (!ITEM_IDS.every((id) => integer(inventory[id], 0, 99))) return null
-    if (!Array.isArray(raw.map) || raw.map.length !== 18) return null
-    for (let row = 0; row < rows.length; row++) {
+    const layout = raw.version === 1 ? previewRows : rows
+    if (!Array.isArray(raw.map) || raw.map.length !== layout.flat().length) return null
+    for (let row = 0; row < layout.length; row++) {
       const nodes = raw.map.filter((node) => record(node) && node.row === row)
       if (
-        nodes.length !== rows[row].length ||
+        nodes.length !== layout[row].length ||
         nodes.some((node) => !integer(node.lane, 0, 2) || node.id !== `${row}-${node.lane}`) ||
         new Set(nodes.map((node) => node.lane)).size !== nodes.length ||
         nodes
           .map((node) => node.kind)
           .sort()
-          .join('|') !== [...rows[row]].sort().join('|') ||
+          .join('|') !== [...layout[row]].sort().join('|') ||
         (nodes.length === 1 && nodes[0].lane !== 1)
       )
         return null
@@ -725,7 +702,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
       !unique(
         raw.path,
         map.map((node) => node.id),
-        8,
+        layout.length,
       ) ||
       !record(raw.outcomes)
     )
@@ -766,7 +743,9 @@ export function parseAdventure(value: string | null): AdventureRun | null {
         e.nodeId !== path.at(-1)!.id ||
         e.kind !== path.at(-1)!.kind ||
         !['active', 'cleared', 'failed'].includes(String(e.result)) ||
-        !['played', 'item', 'dev'].includes(String(e.method)) ||
+        !(raw.version === 1 ? ['played', 'item', 'dev'] : ['played', 'item', 'carried']).includes(
+          String(e.method),
+        ) ||
         !integer(e.limit, 0, 20) ||
         typeof e.hintUsed !== 'boolean' ||
         typeof e.extraUsed !== 'boolean' ||
@@ -858,6 +837,46 @@ export function parseAdventure(value: string | null): AdventureRun | null {
       (raw.status === 'lost' && raw.hearts !== 0)
     )
       return null
+    if (raw.version === 1) {
+      // Keep preview progress, purchases and in-flight trials when adding the extra route row.
+      const nextId = (id: string) => {
+        const [row, lane] = id.split('-').map(Number)
+        return `${row >= 6 ? row + 1 : row}-${lane}`
+      }
+      const migratedPath = pathIds.map(nextId)
+      const migratedOutcomes = Object.fromEntries(
+        Object.entries(outcomes).map(([id, result]) => [nextId(id), result]),
+      )
+      if (pathIds.length > 6) {
+        migratedPath.splice(6, 0, '6-1')
+        migratedOutcomes['6-1'] = 'cleared'
+      }
+      const scene = raw.encounter as Encounter | null
+      return {
+        ...raw,
+        version: 2,
+        map: [
+          ...map.map((node) => ({
+            ...node,
+            id: nextId(node.id),
+            row: node.row >= 6 ? node.row + 1 : node.row,
+          })),
+          ...shuffle(rows[6]).map((kind, lane) => ({ id: `6-${lane}`, row: 6, lane, kind })),
+        ].sort((a, b) => a.row - b.row || a.lane - b.lane),
+        path: migratedPath,
+        outcomes: migratedOutcomes,
+        encounter: scene
+          ? {
+              ...scene,
+              nodeId: nextId(scene.nodeId),
+              method: String(scene.method) === 'dev' ? 'carried' : scene.method,
+            }
+          : null,
+        message: /developer/i.test(raw.message)
+          ? 'Your adventure is ready to continue.'
+          : raw.message,
+      } as AdventureRun
+    }
     return raw as unknown as AdventureRun
   } catch {
     return null
@@ -873,8 +892,7 @@ export function loadAdventure(): { run: AdventureRun; warning?: string } {
           run: newAdventure(),
           ...(saved
             ? {
-                warning:
-                  'The saved adventure could not be restored. A fresh developer run is ready.',
+                warning: 'The saved adventure could not be restored. A fresh adventure is ready.',
               }
             : {}),
         }

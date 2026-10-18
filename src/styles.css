@@ -2152,21 +2152,6 @@ h1 {
 .somex-stop {
   outline: none;
 }
-.somex-gate {
-  min-height: 480px;
-}
-.somex-unlock {
-  width: min(100%, 320px);
-  margin-top: 24px;
-  display: grid;
-  gap: 12px;
-  text-align: left;
-}
-.somex-unlock label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.somex-unlock input,
 .somex-adventure .mystery-form input {
   width: 100%;
   min-height: 48px;
@@ -2177,7 +2162,6 @@ h1 {
   color: var(--text-primary);
   font-size: 16px;
 }
-.somex-gate .somex-badge,
 .somex-badge {
   display: inline-flex;
   align-items: center;
@@ -2400,15 +2384,7 @@ h1 {
   font-size: 13px;
   color: var(--text-muted);
 }
-.somex-dev-win {
-  font-size: 11px;
-  color: var(--text-muted);
-  border: 1px dashed var(--border-input);
-  padding: 9px 12px;
-  border-radius: 7px;
-  margin-bottom: 18px;
-  min-height: 44px;
-}
+
 .somex-on-fire {
   color: var(--accent);
   font-weight: 600;
@@ -2559,16 +2535,14 @@ h1 {
 .somex-ending.victorious {
   border-color: var(--heat-found-text);
 }
-.somex-route-preview,
-.somex-devtools {
+.somex-route-preview {
   margin-top: 24px;
   padding: 18px 22px;
   border: 1px solid var(--border-card);
   border-radius: 12px;
   background: var(--surface);
 }
-.somex-route-preview summary,
-.somex-devtools summary {
+.somex-route-preview summary {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -2582,29 +2556,6 @@ h1 {
   margin-top: 22px;
   max-width: 700px;
   margin-inline: auto;
-}
-.somex-devtools {
-  border-style: dashed;
-  background: transparent;
-}
-.somex-devtools p {
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--text-muted);
-}
-.somex-devtools > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.somex-devtools .secondary {
-  width: auto;
-  padding: 10px 14px;
-  margin: 0;
-}
-.somex-devtools .text-button {
-  font-size: 12px;
-  padding: 12px;
 }
 .somex-item-grid {
   display: grid;
@@ -2727,12 +2678,6 @@ h1 {
   }
   .somex-inventory-dialog .dialog-inner {
     padding: 36px 18px 22px;
-  }
-  .somex-unlock {
-    margin-top: 20px;
-  }
-  .somex-devtools .secondary {
-    width: 100%;
   }
 }
 .coming-soon {
@@ -3211,4 +3156,38 @@ h1 {
   .mystery-clues p {
     font-size: 14px;
   }
+}
+
+.somex-trial-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 22px;
+}
+.somex-use-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-mode);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--hint-text);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+.somex-use-item:not(:disabled):hover {
+  background: var(--hint-hover);
+}
+.somex-use-item:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.somex-use-item small {
+  font-size: 11px;
+}
+.somex-use-item > span:first-child {
+  color: var(--accent);
 }

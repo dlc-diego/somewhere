@@ -4,6 +4,8 @@ import { shortestBorderRoute } from './journey'
 import { mysteryById, questionById } from './something'
 import {
   ADVENTURE_KEY,
+  ADVENTURE_STOPS,
+  trialItems,
   ITEM_IDS,
   ITEMS,
   abandonEncounter,
@@ -11,7 +13,6 @@ import {
   availableNodes,
   buyItem,
   chooseNode,
-  developerAction,
   guessAdventureCountry,
   guessAdventureMystery,
   itemUnavailable,
@@ -31,43 +32,41 @@ import {
 } from './adventure'
 
 afterEach(() => vi.unstubAllGlobals())
-function closeStop(run: AdventureRun) {
-  const kind = run.encounter!.kind
-  const done =
-    kind === 'rest'
-      ? resolveRest(run)
-      : kind === 'shop'
-        ? leaveShop(run)
-        : kind === 'event'
-          ? resolveEvent(run, 'supplies')
-          : developerAction(run, 'win')
-  return returnToRoute(done.run).run
-}
-function at(kind: NodeKind) {
-  let run = newAdventure()
-  const target = run.map.find((node) => node.kind === kind)!
-  while (run.path.length < target.row) {
-    run = chooseNode(run, availableNodes(run).find((node) => node.lane === 1)!.id).run
-    run = closeStop(run)
-  }
-  return chooseNode(run, target.id).run
-}
-function answer(run: AdventureRun, correct = true) {
-  const choices = triviaChoices(run.encounter!)
-  const correctAnswer = questionById.get(run.encounter!.trivia!.id)!.answer
-  return answerAdventureTrivia(
-    run,
-    choices.findIndex((choice) => (correct ? choice === correctAnswer : choice !== correctAnswer)),
-  ).run
-}
+import {
+  at,
+  answer,
+  closeStop,
+  completeEncounter,
+  stockedAdventure,
+  previewSave,
+} from '../../tests/helpers/adventure'
 const restore = (run: AdventureRun) => parseAdventure(JSON.stringify(run))
 
 describe('adventure routes and outcomes', () => {
+  it('starts with normal supplies and has two three-by-three sections joined by rests', () => {
+    const run = newAdventure()
+    expect(run.coins).toBe(25)
+    expect(run.hearts).toBe(3)
+    expect(ITEM_IDS.filter((id) => run.inventory[id] > 0)).toEqual(['potion', 'fifty', 'hint'])
+    expect(Object.values(run.inventory).reduce((sum, count) => sum + count, 0)).toBe(3)
+    for (const start of [0, 4]) {
+      const section = run.map.filter((node) => node.row >= start && node.row < start + 3)
+      expect(section).toHaveLength(9)
+      for (let row = start; row < start + 3; row++)
+        expect(section.filter((node) => node.row === row).map((node) => node.lane)).toEqual([
+          0, 1, 2,
+        ])
+    }
+    const rested = closeStop(at('rest'))
+    expect(availableNodes(rested)).toHaveLength(3)
+    expect(availableNodes(rested).every((node) => node.row === 4)).toBe(true)
+    expect(returnToRoute(rested).error).toBeTruthy()
+  })
   it('generates connected branches, two guaranteed rests and one final boss; rejects skips and duplicate entries', () => {
     const run = newAdventure()
-    expect(run.map).toHaveLength(18)
+    expect(run.map).toHaveLength(21)
     expect(availableNodes(run)).toHaveLength(3)
-    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([3, 6])
+    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([3, 7])
     expect(chooseNode(run, run.map.find((node) => node.kind === 'boss')!.id).run).toBe(run)
     const left = run.map.find((node) => node.row === 0 && node.lane === 0)!
     const active = chooseNode(run, left.id).run
@@ -78,19 +77,18 @@ describe('adventure routes and outcomes', () => {
     expect(chooseNode(map, '1-2').error).toBeTruthy()
     expect(restore(map)).toEqual(map)
   })
-  it('completes eight stops, grants each reward once, and makes victory terminal', () => {
+  it('completes nine stops, grants each reward once, and makes victory terminal', () => {
     let run = newAdventure()
-    for (let row = 0; row < 8; row++) {
+    for (let row = 0; row < ADVENTURE_STOPS; row++) {
       run = chooseNode(run, availableNodes(run).find((node) => node.lane === 1)!.id).run
       expect(restore(run)).toEqual(run)
-      if (row === 7) run = developerAction(run, 'win').run
+      if (row === ADVENTURE_STOPS - 1) run = completeEncounter(run)
       else run = closeStop(run)
       expect(restore(run)).toEqual(run)
     }
     expect(run.status).toBe('won')
-    expect(Object.keys(run.outcomes)).toHaveLength(8)
+    expect(Object.keys(run.outcomes)).toHaveLength(ADVENTURE_STOPS)
     expect(availableNodes(run)).toEqual([])
-    expect(developerAction(run, 'win').run).toBe(run)
     expect(useItem(run, 'star').run).toBe(run)
   })
   it('requires two of three normal trivia answers, locks responses, and charges one heart for a failed trial', () => {
@@ -142,11 +140,30 @@ describe('adventure routes and outcomes', () => {
 })
 
 describe('consumables and recovery', () => {
-  it('grants every item, prevents wasted healing, caps containers at five and spends items exactly once', () => {
-    let run = newAdventure()
-    expect(ITEM_IDS.every((id) => run.inventory[id] > 0)).toBe(true)
+  it('offers only stocked, relevant trial items and enforces restrictions after use', () => {
+    const trivia = at('trivia')
+    expect(trialItems(trivia)).toEqual(['container', 'fifty', 'star', 'shield', 'reroll'])
+    const shapes = at('shapes')
+    expect(trialItems(shapes)).toEqual(['container', 'star', 'shield', 'hint', 'boots'])
+    expect(trialItems({ ...shapes, hearts: 2 })).toContain('potion')
+    const hinted = useItem(shapes, 'hint').run
+    expect(hinted.inventory.hint).toBe(shapes.inventory.hint - 1)
+    expect(itemUnavailable(hinted, 'hint')).toMatch(/Already used/)
+    expect(useItem(hinted, 'hint').run).toBe(hinted)
+    expect(itemUnavailable(shapes, 'fifty')).toMatch(/trivia/)
+    expect(useItem(shapes, 'fifty').run).toBe(shapes)
+    expect(trialItems(newAdventure())).toEqual([])
+    expect(trialItems(completeEncounter(trivia))).toEqual([])
+    expect(trialItems({ ...trivia, inventory: { ...trivia.inventory, fifty: 0 } })).not.toContain(
+      'fifty',
+    )
+  })
+  it('prevents wasted healing, caps containers at five and spends items exactly once', () => {
+    let run = stockedAdventure()
     expect(useItem(run, 'potion').error).toMatch(/full/)
-    run = developerAction(run, 'hurt').run
+    run = abandonEncounter(
+      chooseNode(run, availableNodes(run).find((node) => node.kind === 'trivia')!.id).run,
+    ).run
     run = useItem(run, 'potion').run
     expect(run.hearts).toBe(3)
     expect(run.inventory.potion).toBe(2)
@@ -159,18 +176,18 @@ describe('consumables and recovery', () => {
     expect(restore(run)).toEqual(run)
   })
   it('blocks one loss with a shield, automatically revives once with a feather, then ends at zero hearts', () => {
-    let run = useItem(newAdventure(), 'shield').run
+    let run = useItem(at('trivia'), 'shield').run
     expect(useItem(run, 'shield').error).toBeTruthy()
-    run = developerAction(run, 'hurt').run
+    run = abandonEncounter(run).run
     expect(run.hearts).toBe(3)
     expect(run.shield).toBe(false)
-    run = { ...run, hearts: 1 }
+    run = { ...at('trivia'), hearts: 1 }
     expect(itemUnavailable(run, 'feather')).toMatch(/automatically/)
-    run = developerAction(run, 'hurt').run
+    run = abandonEncounter(run).run
     expect(run.hearts).toBe(1)
     expect(run.inventory.feather).toBe(0)
     expect(restore(run)).toEqual(run)
-    run = developerAction(run, 'hurt').run
+    run = abandonEncounter({ ...at('trivia'), hearts: 1, inventory: run.inventory }).run
     expect(run.hearts).toBe(0)
     expect(run.status).toBe('lost')
     expect(restore(run)).toEqual(run)
@@ -204,21 +221,21 @@ describe('consumables and recovery', () => {
     expect(run.inventory.reroll).toBe(stock - 1)
     expect(restore(run)).toEqual(run)
   })
-  it('Lucky stars auto-win challenges and bosses; the developer option does not consume inventory', () => {
-    for (const action of ['item', 'dev']) {
-      const original = at('boss')
-      const done =
-        action === 'item' ? useItem(original, 'star').run : developerAction(original, 'win').run
-      expect(done.status).toBe('won')
-      expect(done.inventory.star).toBe(original.inventory.star - Number(action === 'item'))
-      expect(done.encounter!.method).toBe(action)
+  it('Lucky stars auto-win challenges and bosses and consume exactly one item', () => {
+    for (const kind of ['trivia', 'boss', 'shapes', 'mystery'] as const) {
+      const original = at(kind)
+      const done = useItem(original, 'star').run
+      expect(done.encounter!.result).toBe('cleared')
+      expect(done.inventory.star).toBe(original.inventory.star - 1)
+      expect(done.encounter!.method).toBe('item')
+      if (kind === 'boss') expect(done.status).toBe('won')
       expect(restore(done)).toEqual(done)
       expect(useItem(done, 'star').run).toBe(done)
     }
   })
   it('rests heal one heart and discoveries pay their chosen reward only once', () => {
     let run = at('rest')
-    run = developerAction(run, 'hurt').run
+    run = { ...run, hearts: 2 }
     run = resolveRest(run).run
     expect(run.hearts).toBe(3)
     expect(resolveRest(run).error).toBeTruthy()
@@ -310,8 +327,44 @@ describe('familiar geography and mystery encounters', () => {
   })
 })
 
-describe('saved developer runs', () => {
-  it('restores every encounter kind and completed developer clear, including the boss shortcut', () => {
+describe('saved adventures', () => {
+  it('upgrades preview saves before and after both rests without losing trials, inventory or victory', () => {
+    const firstRest = closeStop(at('rest'))
+    let lastRest = at('boss')
+    // Return to the resolved second rest, before entering the boss.
+    lastRest = { ...lastRest, encounter: null, path: lastRest.path.slice(0, -1) }
+    const samples = [
+      newAdventure(),
+      at('trivia'),
+      firstRest,
+      at('journey'),
+      lastRest,
+      at('boss'),
+      completeEncounter(at('boss')),
+    ]
+    for (const original of samples) {
+      const upgraded = parseAdventure(previewSave(original))!
+      expect(upgraded.version).toBe(2)
+      expect(upgraded.map).toHaveLength(21)
+      expect(upgraded.id).toBe(original.id)
+      expect(upgraded.inventory).toEqual(original.inventory)
+      expect(upgraded.hearts).toBe(original.hearts)
+      expect(upgraded.coins).toBe(original.coins)
+      expect(upgraded.path).toEqual(original.path)
+      expect(upgraded.encounter).toEqual(original.encounter)
+      expect(upgraded.status).toBe(original.status)
+      expect(restore(upgraded)).toEqual(upgraded)
+    }
+    const oldClear = JSON.parse(previewSave(completeEncounter(at('boss'))))
+    oldClear.encounter.method = 'dev'
+    oldClear.message = 'Developer clear · +50 coins.'
+    const upgraded = parseAdventure(JSON.stringify(oldClear))!
+    expect(upgraded.status).toBe('won')
+    expect(upgraded.encounter!.method).toBe('carried')
+    expect(upgraded.message).not.toMatch(/developer/i)
+    expect(restore(upgraded)).toEqual(upgraded)
+  })
+  it('restores every encounter kind and completed run', () => {
     for (const kind of [
       'trivia',
       'elite',
@@ -329,11 +382,7 @@ describe('saved developer runs', () => {
       const run = at(kind)
       expect(restore(run)).toEqual(run)
     }
-    const jumped = developerAction(newAdventure(), 'boss').run
-    expect(jumped.path).toHaveLength(8)
-    expect(jumped.encounter!.kind).toBe('boss')
-    expect(restore(jumped)).toEqual(jumped)
-    expect(restore(developerAction(jumped, 'win').run)!.status).toBe('won')
+    expect(restore(completeEncounter(at('boss')))!.status).toBe('won')
   })
   it('rejects corrupt hearts, inventory, routes, answers and missing fields', () => {
     const original = at('trivia')
@@ -374,7 +423,7 @@ describe('saved developer runs', () => {
     ])
     vi.stubGlobal('localStorage', { getItem: (key: string) => data.get(key) ?? null })
     const recovered = loadAdventure()
-    expect(recovered.warning).toMatch(/fresh developer run/)
+    expect(recovered.warning).toMatch(/fresh adventure/)
     expect(data.get('somewhere.round.v1')).toBe('untouched')
     vi.stubGlobal('localStorage', {
       getItem: () => {

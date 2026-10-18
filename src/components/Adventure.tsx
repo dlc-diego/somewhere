@@ -20,10 +20,10 @@ import {
   TentTree,
   Zap,
   CircleHelp,
-  Construction,
 } from 'lucide-react'
 import {
   ADVENTURE_KEY,
+  ADVENTURE_STOPS,
   ITEMS,
   ITEM_IDS,
   NODE_LABELS,
@@ -33,7 +33,6 @@ import {
   buyItem,
   chooseNode,
   connected,
-  developerAction,
   guessAdventureCountry,
   guessAdventureMystery,
   isCombat,
@@ -48,6 +47,7 @@ import {
   returnToRoute,
   revealAdventureClue,
   triviaChoices,
+  trialItems,
   useItem,
   type AdventureNode,
   type AdventureResult,
@@ -84,10 +84,8 @@ const nodeIcons = {
 
 export default function Adventure({
   onCelebrate,
-  onLock,
 }: {
   onCelebrate: (events: CelebrationRequest[]) => void
-  onLock: () => void
 }) {
   const [initial] = useState(loadAdventure)
   const [run, setRun] = useState(initial.run)
@@ -231,11 +229,9 @@ export default function Adventure({
     <section className="somex-adventure" aria-labelledby="somex-title">
       <div className="somex-heading">
         <div>
-          <p className="somex-badge">
-            <Construction size={13} aria-hidden="true" /> Under construction · Developer preview
-          </p>
+          <p className="somex-badge">A journey through what you know</p>
           <h2 id="somex-title">A little adventure.</h2>
-          <p>Eight stops. One final gate. Keep your heart in it.</p>
+          <p>Nine stops. One final gate. Keep your heart in it.</p>
         </div>
         <button className="secondary somex-satchel-button" onClick={() => setSatchel(true)}>
           <Backpack size={18} /> Satchel{' '}
@@ -265,7 +261,9 @@ export default function Adventure({
           <Coins size={18} aria-hidden="true" />
           {run.coins} coins
         </span>
-        <span>{Object.keys(run.outcomes).length}/8 stops</span>
+        <span>
+          {Object.keys(run.outcomes).length}/{ADVENTURE_STOPS} stops
+        </span>
         {run.shield && (
           <span className="somex-shield">
             <Shield size={17} /> Shield armed
@@ -312,7 +310,9 @@ export default function Adventure({
               <Icon size={23} />
             </span>
             <div>
-              <p className="eyebrow">Stop {run.path.length} of 8</p>
+              <p className="eyebrow">
+                Stop {run.path.length} of {ADVENTURE_STOPS}
+              </p>
               <h3>{NODE_LABELS[scene.kind]}</h3>
             </div>
             <span className={`somex-result ${scene.result}`}>
@@ -323,14 +323,7 @@ export default function Adventure({
                   : 'Not this time'}
             </span>
           </div>
-          {!ended && !terminal && isCombat(scene.kind) && (
-            <button
-              className="somex-dev-win text-button"
-              onClick={() => apply(developerAction(current.current, 'win'))}
-            >
-              Dev option: win encounter
-            </button>
-          )}
+          {!ended && !terminal && isCombat(scene.kind) && <TrialItems run={run} onUse={consume} />}
           {isTrivia(scene.kind) && trial && question && (
             <>
               <p className="somex-rules">
@@ -459,20 +452,19 @@ export default function Adventure({
                   {geo.mode === 'journey' && <JourneyChallenge round={geo} />}
                   {(geo.mode === 'flags' || geo.mode === 'shapes') && (
                     <VisualChallenge
-                      key={scene.nodeId}
+                      key={`visual-${scene.nodeId}`}
                       mode={geo.mode}
                       country={answerCountry}
                       hintUsed={scene.hintUsed}
                       ended={ended}
                       onHint={() => consume('hint')}
-                      hintDisabled={Boolean(itemUnavailable(run, 'hint'))}
-                      hintLabel={`Use Trail compass (${run.inventory.hint})`}
+                      showHintButton={false}
                     />
                   )}
                   {!ended && (
                     <GuessSearch
                       mode={geo.mode}
-                      key={scene.nodeId}
+                      key={`search-${scene.nodeId}`}
                       onGuess={guessCountry}
                       guessed={geo.mode === 'journey' ? [] : geo.guesses}
                       disabled={terminal}
@@ -493,7 +485,7 @@ export default function Adventure({
                   >
                     <Globe
                       idPrefix="somex-"
-                      key={scene.nodeId}
+                      key={`visual-${scene.nodeId}`}
                       mode={geo.mode}
                       guesses={guesses}
                       focus={focus}
@@ -621,13 +613,7 @@ export default function Adventure({
                 </p>
               )}
               {mystery && <p>The answer was {mystery.answer}.</p>}
-              {scene.method !== 'played' && (
-                <p>
-                  {scene.method === 'dev'
-                    ? 'Cleared using the developer option.'
-                    : 'Cleared using a Lucky star.'}
-                </p>
-              )}
+              {scene.method === 'item' && <p>Cleared using a Lucky star.</p>}
               {!terminal && (
                 <button className="primary" onClick={backToMap}>
                   Return to the route <ArrowRight size={17} />
@@ -677,46 +663,6 @@ export default function Adventure({
           <AdventureMap run={run} onChoose={selectNode} />
         </details>
       )}
-      <details className="somex-devtools">
-        <summary>
-          Developer options <ChevronDown size={16} />
-        </summary>
-        <p>
-          This test build starts with every item and 100 coins. These controls do not consume items.
-        </p>
-        <div>
-          <button
-            className="secondary"
-            disabled={terminal || scene?.kind === 'boss'}
-            onClick={() => {
-              apply(developerAction(current.current, 'boss'))
-              scrollTo('encounter')
-            }}
-          >
-            Dev option: jump to boss
-          </button>
-          <button
-            className="secondary"
-            disabled={terminal}
-            onClick={() => apply(developerAction(current.current, 'hurt'))}
-          >
-            Dev option: lose one heart
-          </button>
-          <button
-            className="secondary"
-            disabled={terminal}
-            onClick={() => apply(developerAction(current.current, 'refill'))}
-          >
-            Dev option: refill all items
-          </button>
-          <button className="secondary" onClick={restart}>
-            Dev option: restart run
-          </button>
-          <button className="text-button" onClick={onLock}>
-            Lock developer preview
-          </button>
-        </div>
-      </details>
       {satchel && (
         <Dialog
           title="Your adventure satchel"
@@ -726,8 +672,8 @@ export default function Adventure({
           <p className="eyebrow">Pack a little possibility</p>
           <h2>Your satchel</h2>
           <p>
-            Every item is included in this developer preview. Phoenix feathers activate
-            automatically.
+            Find supplies at shops and discoveries. Trial-specific items can also be used directly
+            from a challenge. Phoenix feathers activate automatically.
           </p>
           <div className="somex-item-grid">
             {ITEM_IDS.map((id) => {
@@ -758,6 +704,31 @@ export default function Adventure({
   )
 }
 
+function TrialItems({ run, onUse }: { run: AdventureRun; onUse: (id: ItemId) => void }) {
+  const items = trialItems(run)
+  if (!items.length) return null
+  return (
+    <div className="somex-trial-items" role="group" aria-label="Items for this trial">
+      {items.map((id) => {
+        const reason = itemUnavailable(run, id)
+        return (
+          <button
+            key={id}
+            className="somex-use-item"
+            disabled={Boolean(reason)}
+            title={reason || ITEMS[id].description}
+            onClick={() => onUse(id)}
+          >
+            <span aria-hidden="true">{ITEMS[id].symbol}</span>
+            Use {ITEMS[id].name} <small>({run.inventory[id]})</small>
+            {reason && <span className="sr-only"> · {reason}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function AdventureMap({
   run,
   onChoose,
@@ -768,7 +739,11 @@ function AdventureMap({
   const available = availableNodes(run).map((node) => node.id)
   return (
     <div className="somex-route-map" aria-label="Branching adventure route">
-      <svg viewBox="0 0 300 768" preserveAspectRatio="none" aria-hidden="true">
+      <svg
+        viewBox={`0 0 300 ${ADVENTURE_STOPS * 96}`}
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
         {run.map.flatMap((from) =>
           run.map
             .filter((to) => connected(from, to))
