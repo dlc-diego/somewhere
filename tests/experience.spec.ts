@@ -12,7 +12,7 @@ async function seed(page: Page, guesses = ['DEU']) {
       )
   }, guesses)
 }
-async function switchTo(page: Page, value: 'somewhere' | 'something') {
+async function switchTo(page: Page, value: 'somewhere' | 'something' | 'someone') {
   await selector(page).selectOption(value)
   await expect(page.locator('.app-shell')).toHaveAttribute('data-experience', value)
   await expect(page.locator('.experience-transition')).toHaveCount(0)
@@ -47,6 +47,15 @@ test('header switches experiences with a screen-wide sweep and preserves the geo
   await expect(page).toHaveTitle('Something — a little more to discover')
   await expect(transition).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(before)
+  await switchTo(page, 'someone')
+  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.locator('.brand-word')).toHaveText('someone.')
+  await expect(page.locator('.brand-ending')).toHaveText('one.')
+  await expect(page).toHaveTitle('Someone — under construction')
+  await expect(page.getByRole('button', { name: /How to play/ })).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('somewhere.round.v1'))).toBe(before)
+  await switchTo(page, 'something')
+  await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
   await switchTo(page, 'somewhere')
   expect(await world.evaluate((el) => el.isConnected)).toBe(true)
   await expect(
@@ -55,6 +64,36 @@ test('header switches experiences with a screen-wide sweep and preserves the geo
   await expect(page.getByRole('list', { name: 'Guesses, closest first' })).toContainText('Germany')
   await expect(page.locator('.brand-ending')).toHaveText('where.')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('saved Someone opens without game modules and stays accessible at 320px in both themes', async ({
+  page,
+}) => {
+  await page.addInitScript(() => localStorage.setItem('somewhere.experience.v1', 'someone'))
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
+  const gameRequests: string[] = []
+  page.on('request', (request) => {
+    if (request.url().endsWith('/data/world.json') || /\/assets\/Something-/.test(request.url()))
+      gameRequests.push(request.url())
+  })
+  await page.goto('http://127.0.0.1:4174/wep-app/')
+  await expect(selector(page)).toHaveValue('someone')
+  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.locator('.skip-link')).toHaveAttribute('href', '#someone-content')
+  expect(gameRequests).toEqual([])
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+        .violations,
+    ).toEqual([])
+  }
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Under construction', exact: true })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  expect(gameRequests).toEqual([])
 })
 
 test('saved Something opens under a repository subpath without loading the globe', async ({

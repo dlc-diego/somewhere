@@ -2148,6 +2148,54 @@ h1 {
 .something-games {
   outline: none;
 }
+.coming-soon {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 1px solid var(--border-card);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: center;
+  outline: none;
+}
+.coming-soon-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 25px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  color: var(--accent);
+}
+.coming-soon-icon span {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-card);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.coming-soon h2 {
+  margin: 0 0 13px;
+  font: 400 clamp(27px, 4vw, 38px) / 1.15 var(--serif);
+  letter-spacing: -0.7px;
+}
+.coming-soon p {
+  margin: 0;
+  max-width: 320px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-muted);
+}
 .something-loading {
   min-height: 360px;
   display: grid;

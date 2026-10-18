@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Compass, Globe2, Heart, Sun, Moon, Sparkles } from 'lucide-react'
 import ExperienceSwitcher from './components/ExperienceSwitcher'
 import ExperienceTransition from './components/ExperienceTransition'
+import Someone from './components/Someone'
 import { useExperience, type Experience } from './lib/useExperience'
 import ModeSelector from './components/ModeSelector'
 import { JourneyChallenge, JourneyHistory } from './components/BorderJourney'
@@ -54,7 +55,7 @@ export default function App() {
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
-    else setHasVisitedSomething(true)
+    else if (experience === 'something') setHasVisitedSomething(true)
   }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
@@ -149,7 +150,9 @@ export default function App() {
     setAnnouncement(
       next === 'something'
         ? 'Something. General Trivia and What am I.'
-        : 'Welcome back to Somewhere. Your journey is saved.',
+        : next === 'someone'
+          ? 'Someone. Under construction.'
+          : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
 
@@ -216,7 +219,13 @@ export default function App() {
   return (
     <div className="app-shell" data-experience={experience} data-switch-phase={transition?.phase}>
       <a
-        href={experience === 'somewhere' ? '#country-search' : '#something-games'}
+        href={
+          experience === 'somewhere'
+            ? '#country-search'
+            : experience === 'something'
+              ? '#something-games'
+              : '#someone-content'
+        }
         className="skip-link"
       >
         {experience === 'somewhere' ? 'Skip to guessing' : 'Skip to content'}
@@ -224,7 +233,11 @@ export default function App() {
       <header className="site-header">
         <ExperienceSwitcher experience={experience} onChange={changeExperience} />
         <span className="brand-tagline">
-          {experience === 'somewhere' ? 'A little world of discovery' : 'A little more to discover'}
+          {experience === 'somewhere'
+            ? 'A little world of discovery'
+            : experience === 'something'
+              ? 'A little more to discover'
+              : 'A little space for someone new'}
         </span>
         <nav aria-label="App controls">
           <AppUpdate celebrating={celebrations.length > 0} />
@@ -432,14 +445,19 @@ export default function App() {
             </Suspense>
           )}
         </div>
+        <div className="experience-view" hidden={experience !== 'someone'}>
+          {experience === 'someone' && <Someone />}
+        </div>
       </main>
       <footer className="site-footer">
         <span>
           Built for Val <Heart size={12} />
         </span>
-        <button className="text-button" onClick={() => setDialog('help')}>
-          How to play <ArrowRight size={13} />
-        </button>
+        {experience !== 'someone' && (
+          <button className="text-button" onClick={() => setDialog('help')}>
+            How to play <ArrowRight size={13} />
+          </button>
+        )}
       </footer>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}

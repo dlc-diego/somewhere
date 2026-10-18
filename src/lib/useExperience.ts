@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { prefersReducedMotion } from './motion'
 
-export type Experience = 'somewhere' | 'something'
+export type Experience = 'somewhere' | 'something' | 'someone'
 const storageKey = 'somewhere.experience.v1'
 export const EXPERIENCE_SWITCH_MS = 800
 const CHANGE_AT_MS = 280
 
 function savedExperience(): Experience {
   try {
-    return localStorage.getItem(storageKey) === 'something' ? 'something' : 'somewhere'
+    const saved = localStorage.getItem(storageKey)
+    return saved === 'something' || saved === 'someone' ? saved : 'somewhere'
   } catch {
     return 'somewhere'
   }
@@ -69,9 +70,11 @@ export function useExperience() {
       /* This page still works without storage. */
     }
     document.title =
-      experience === 'something'
-        ? 'Something — a little more to discover'
-        : 'Somewhere — a little world of discovery'
+      experience === 'somewhere'
+        ? 'Somewhere — a little world of discovery'
+        : experience === 'something'
+          ? 'Something — a little more to discover'
+          : 'Someone — under construction'
   }, [experience])
 
   useEffect(() => {

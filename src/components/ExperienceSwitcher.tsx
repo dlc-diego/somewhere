@@ -1,4 +1,4 @@
-import { ChevronDown, Compass, Sparkles } from 'lucide-react'
+import { ChevronDown, Compass, Sparkles, UserRound } from 'lucide-react'
 import type { Experience } from '../lib/useExperience'
 
 export default function ExperienceSwitcher({
@@ -8,7 +8,8 @@ export default function ExperienceSwitcher({
   experience: Experience
   onChange: (next: Experience) => void
 }) {
-  const Icon = experience === 'somewhere' ? Compass : Sparkles
+  const Icon =
+    experience === 'somewhere' ? Compass : experience === 'something' ? Sparkles : UserRound
   return (
     <div className="brand-switcher">
       <span className="brand" aria-hidden="true">
@@ -18,7 +19,7 @@ export default function ExperienceSwitcher({
         <span className="brand-word">
           some
           <span key={experience} className="brand-ending">
-            {experience === 'somewhere' ? 'where' : 'thing'}.
+            {experience.slice(4)}.
           </span>
         </span>
         <ChevronDown className="brand-chevron" size={14} />
@@ -31,6 +32,7 @@ export default function ExperienceSwitcher({
       >
         <option value="somewhere">somewhere.</option>
         <option value="something">something.</option>
+        <option value="someone">someone.</option>
       </select>
     </div>
   )
