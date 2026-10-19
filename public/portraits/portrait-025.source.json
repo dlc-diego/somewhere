@@ -1,0 +1,127 @@
+{
+  "retrievedAt": "2026-10-19T22:33:29.494125+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2026-04-08T21:46:38Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Meryl_Streep-_Press_conference_for_the_film_\"The_Devil_Wears_Prada_2\"_-_55194765350_(cropped1).jpg",
+          "to": "File:Meryl Streep- Press conference for the film \"The Devil Wears Prada 2\" - 55194765350 (cropped1).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 188480445,
+          "ns": 6,
+          "title": "File:Meryl Streep- Press conference for the film \"The Devil Wears Prada 2\" - 55194765350 (cropped1).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 3035934,
+              "width": 1806,
+              "height": 2408,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg/960px-Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 600,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg/1280px-Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg/960px-Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 600,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg/1280px-Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_%28cropped1%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Meryl_Streep-_Press_conference_for_the_film_%22The_Devil_Wears_Prada_2%22_-_55194765350_(cropped1).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=188480445",
+              "sha1": "7f0b582016b7ddb090f3df9ad24a3b8a070236c6",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2026-05-14 13:59:51",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Meryl Streep- Press conference for the film \"The Devil Wears Prada 2\" - 55194765350 (cropped1)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Creative Commons Attribution-Share Alike missing SDC copyright status|Extracted images|Creative Commons Attribution-Share Alike 4.0 missing SDC copyright license|Meryl Streep in 2026|The Devil Wears Prada 2",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Press conference for the film \"The Devil Wears Prada 2\"\n<p>April 8, 2026 \n</p><p>Four Seasons Hotel Seoul, Seoul\n</p><p>Ministry of culture, sports and Tourism\nOfficial Photographer\u00a0: Lee jeong woo\n</p><p>All photographs in the official Flickr account of the Republic of Korea are available only for publication by news organizations and/or for public purposes with proper attribution to the correct source (photographer and organizations mentioned above).\n</p><p>Any distortion to the original meaning of a photograph for provision to a third party through posting and resale, partial reproduction, falsification or use of the photograph with other images is strictly prohibited without the express written permission of the government of the Republic of Korea.\n</p><p>Thank you.\n</p><p>\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n</p><p>\uc601\ud654 \u2018\uc545\ub9c8\ub294 \ud504\ub77c\ub2e4\ub97c \uc785\ub294\ub2e4 2\u2019 \ub0b4\ud55c \uae30\uc790\uac04\ub2f4\ud68c\n</p><p>2026-04-08\n</p><p>\uc11c\uc6b8\uc2dc \uc885\ub85c\uad6c \ud3ec\uc2dc\uc98c\uc2a4 \ud638\ud154\n</p><p>\ubb38\ud654\uccb4\uc721\uad00\uad11\ubd80\n\uc774\uc815\uc6b0\n</p><p>\ud50c\ub9ac\ucee4 \ucc44\ub110 'Republic of Korea'\uc5d0 \uac8c\uc7ac\ub418\ub294 \ub300\ud55c\ubbfc\uad6d\uc815\ubd80 \uc0ac\uc9c4\uc740 \uc62c\ubc14\ub978 \uc800\uc791\uad8c \uc774\ub984 (\ucd2c\uc601\uc790 / \uc0c1\uae30 \uba85\uae30\ub41c \uae30\uad00)\uc73c\ub85c \ud45c\uae30\ud55c \uc774\ud6c4 \ubcf4\ub3c4 \ud639\uc740 \uacf5\uc775\ubaa9\uc801\uc73c\ub85c \uc0ac\uc6a9\ud558\uc2e4 \uc218 \uc788\uc2b5\ub2c8\ub2e4.\n</p>\n\uc758\ubbf8\ub97c \uc65c\uace1\ud558\ub294 \ub9e5\ub77d\uc5d0\uc11c \uc0ac\uc9c4\uc744 \uac8c\uc2dc\ud558\uace0 \uc7ac\ud310\ub9e4, \ubd80\ubd84 \ubcf5\uc81c, \ubcc0\uc870 \ub610\ub294 \ub2e4\ub978 \uc774\ubbf8\uc9c0\uc5d0 \ud1b5\ud569\ud558\ub294 \uac83\uacfc \uac19\uc740 \uc0ac\uc9c4\uc758 \ubaa8\ub4e0 \uc218\uc815, \uc790\ub8cc\ub97c \uc81c3\uc790\uc5d0\uac8c \uc81c\uacf5\ud558\ub294 \uac83\uc740 \ub300\ud55c\ubbfc\uad6d\uc815\ubd80(\uc6b4\uc601\uc790/\uc800\uc791\uad8c\uc790)\uc758 \uba85\uc2dc\uc801\uc778 \ud5c8\uac00 \uc5c6\uc774 \uae08\uc9c0\ub429\ub2c8\ub2e4.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2026-04-08 09:58:15",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/koreanet/55194765350/\">https://www.flickr.com/photos/koreanet/55194765350/</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Ministry of culture, sports and Tourism- Lee Jeong-woo",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY-SA 4.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution-Share Alike 4.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by-sa/4.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-sa-4.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

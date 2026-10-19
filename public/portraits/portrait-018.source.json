@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:32:55.471031+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:John_Lennon_\"Walls_and_Bridges\"_1974_press_photo_2_(color)_(cropped).jpg",
+          "to": "File:John Lennon \"Walls and Bridges\" 1974 press photo 2 (color) (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 175003052,
+          "ns": 6,
+          "title": "File:John Lennon \"Walls and Bridges\" 1974 press photo 2 (color) (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 1972391,
+              "width": 1381,
+              "height": 1841,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg/960px-John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 600,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg/1280px-John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg/960px-John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 600,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg/1280px-John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_%28color%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:John_Lennon_%22Walls_and_Bridges%22_1974_press_photo_2_(color)_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=175003052",
+              "sha1": "ee356aa52c34855553a09b4be24e881452b47714",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-09-13 21:10:22",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "John Lennon \"Walls and Bridges\" 1974 press photo 2 (color) (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Images with extracted images|Extracted images|PD US no notice|John Lennon in 1974|PD-US missing SDC copyright status|Capitol Records publicity photos",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Press photo of John Lennon dated to 1974. It was a part of a press kit themed \"Listen to This __\" to promote his album <i>Walls and Bridges</i>. Bottom right reads \"Apple Records by Capitol Records\". No copyright markings on the photo.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1974-08-29",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.popsike.com/JOHN-LENNON-Walls-And-Bridges-RARE-1974-APPLE-PRESS-KIT-Listen-To-This-Beatles/335917037275.html\">Listen to This Press Kit (1974)</a> <br> <a rel=\"nofollow\" class=\"external text\" href=\"https://iscale.iheart.com/v3/surl/aHR0cDovL2ltYWdlLmloZWFydC5jb20vaW1hZ2VzL3JvdmkvMTA4MC8wMDAxLzM1My9NSTAwMDEzNTM4NTEuanBn?sn=eGtleWJhc2UyMDIxMTExMDpNef9L_qM1db2IDwPCtcZ-RxHI9x_EvjBxp6aBqnrKEQ%3D%3D&amp;surrogate=1cOXl179JY-syhxYSCX6Q1a_Mcu6UO8d-F4oJzpZf1hcUbJr4aInxNYZV0X0mk1YmEpYleyGfBTwZt90MyTfZfmZYmkxAXRNXhYjaPooG4vzqIYwkSxMCM22uDe-43lOU1BMbZQTz9dXgaZPMkUnyTgkeztaelEHuboMCoY2-CdVUGSwadzvHkJyx0aWW5vW05379jEIJI0NTimEv6Cdaw%3D%3D\">Immediate (iHeart)</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Bob Gruen; Distributed by Capitol Records",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "retrievedAt": "2026-10-19T22:38:35.920955+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "pages": [
+        {
+          "pageid": 49518461,
+          "ns": 6,
+          "title": "File:Usain Bolt 2011b.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 1186677,
+              "width": 1800,
+              "height": 1060,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Usain_Bolt_2011b.jpg/960px-Usain_Bolt_2011b.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 640,
+              "thumbheight": 377,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Usain_Bolt_2011b.jpg/1280px-Usain_Bolt_2011b.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Usain_Bolt_2011b.jpg/960px-Usain_Bolt_2011b.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 640,
+                "height": 377,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Usain_Bolt_2011b.jpg/1280px-Usain_Bolt_2011b.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/5/50/Usain_Bolt_2011b.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Usain_Bolt_2011b.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=49518461",
+              "sha1": "f29a27183f9ca91333c8ea5b3a35d6c1b166bee0",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2016-06-17 08:11:21",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Usain Bolt 2011b",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Flickr images reviewed by trusted users|Portraits of Usain Bolt|Usain Bolt in 2011",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "<p>Usain Bolt attends a Press briefing before accepting the IAAF men's Athlete of the Year award in Monaco.\n</p><p>Pic by Mohan\n</p>\n<a rel=\"nofollow\" class=\"external text\" href=\"http://www.dohastadiumplusqatar.com\">www.dohastadiumplusqatar.com</a>",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2011-11-12 13:42",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/dohastadiumplusqatar/6376500805/\">Usain Bolt</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/66463488@N06\">Doha Stadium Plus Qatar</a> from Doha, Qatar",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY 2.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution 2.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by/2.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-2.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

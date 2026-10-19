@@ -166,7 +166,7 @@ export default function App() {
       next === 'something'
         ? 'Something. General Trivia and What am I.'
         : next === 'someone'
-          ? 'Someone. Who am I.'
+          ? 'Someone. Who am I and Identify Me.'
           : next === 'somehow'
             ? 'Somehow. A little adventure awaits.'
             : 'Welcome back to Somewhere. Your journey is saved.',
@@ -727,19 +727,20 @@ export default function App() {
             <li>
               <span>03</span>
               <div>
-                <strong>Meet someone new</strong>
+                <strong>Identify Me</strong>
                 <p>
-                  Give up and reveal answer shows the person and all five clues without counting as
-                  a win. After solving or revealing, choose Try another person. The 80-person
-                  collection spans science, music, screen, sport, art, history, exploration and
-                  changemakers.
+                  Switch to Identify Me to name a person from a photograph or portrait. Reveal a
+                  clue for free if you need one. Creator and license credits stay available beside
+                  every picture; image credit titles and source pages may name the person.
                 </p>
               </div>
             </li>
           </ol>
           <p className="help-note">
-            Progress saves in this browser independently of the other games. New rounds prioritize
-            people you have not met yet.
+            Give up and reveal answer shows the person without counting as a win. Each mode keeps
+            its own saved round and prioritizes people you have not met yet. Who am I contains an
+            80-person collection spanning science, music, screen, sport, art, history, exploration
+            and changemakers.
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s play <ArrowRight size={17} />

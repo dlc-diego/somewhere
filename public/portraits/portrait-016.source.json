@@ -1,0 +1,123 @@
+{
+  "retrievedAt": "2026-10-19T22:32:51.742717+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2026-08-28T18:19:53Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Young-Dolly-Parton_(higher_quality_scan)_(cropped).jpg",
+          "to": "File:Young-Dolly-Parton (higher quality scan) (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 198249472,
+          "ns": 6,
+          "title": "File:Young-Dolly-Parton (higher quality scan) (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 2335860,
+              "width": 2049,
+              "height": 2633,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg/960px-Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 622,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg/1280px-Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg/960px-Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 622,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg/1280px-Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Young-Dolly-Parton_%28higher_quality_scan%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Young-Dolly-Parton_(higher_quality_scan)_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=198249472",
+              "sha1": "d63f4b71036cc71ca1cd5d72189c2e7ce304dc90",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2026-08-28 18:20:13",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Young-Dolly-Parton (higher quality scan) (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "1970s photographs|Extracted images|PD US no notice|Dolly Parton in 1977|1977 black and white portrait photographs of women|PD-US missing SDC copyright status|David Gahr",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Publicity shot of American singer Dolly Parton, 1977",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1977-03-22",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<p><a rel=\"nofollow\" class=\"external text\" href=\"http://www.ebay.com/itm/1977-Press-Photo-Dolly-Parton-cvp49777-/371801097807?hash=item569112864f:g:29sAAOSwA3dYFDtj\">eBay</a>\n<a rel=\"nofollow\" class=\"external text\" href=\"http://www.ebay.com/itm/1977-Press-Photo-Dolly-Parton-cvp49777-/371801097807?hash=item569112864f:g:29sAAOSwA3dYFDtj\">front</a>\n</p>\n<a rel=\"nofollow\" class=\"external text\" href=\"http://www.ebay.com/itm/1977-Press-Photo-Dolly-Parton-cvp49777-/371801097807?hash=item569112864f:g:29sAAOSwA3dYFDtj\">back</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "David Gahr",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

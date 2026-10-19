@@ -1,0 +1,125 @@
+{
+  "retrievedAt": "2026-10-19T22:34:37.738288+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Angelou_at_Clinton_inauguration_(cropped_2).jpg",
+          "to": "File:Angelou at Clinton inauguration (cropped 2).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 67072902,
+          "ns": 6,
+          "title": "File:Angelou at Clinton inauguration (cropped 2).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 697768,
+              "width": 1180,
+              "height": 1600,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg/960px-Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 590,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg/960px-Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 590,
+                "height": 800,
+                "srcset": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Angelou_at_Clinton_inauguration_%28cropped_2%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Angelou_at_Clinton_inauguration_(cropped_2).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=67072902",
+              "sha1": "fe222766512c3932cb9bebdf96f2bcf800222ff0",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2018-03-05 05:55:13",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Angelou at Clinton inauguration (cropped 2)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "PD US Government|Extracted images|CC-PD-Mark|20th-century portrait photographs of standing women at bust length|Women with earrings in the United States|United States photographs taken on 1993-01-20|1993 portrait photographs of women|Women wearing red lipstick|Women facing left and looking left|Women with AIDS red ribbon|Maya Angelou at the Bill Clinton 1993 presidential inauguration",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Maya Angelou reciting her poem \"On the Pulse of Morning\" at President Bill Clinton's inauguration in 1993.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1993-01-20",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "William J. Clinton Presidential Library",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Clinton Library",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "Courtesy, William J. Clinton Presidential Library",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

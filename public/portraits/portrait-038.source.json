@@ -1,0 +1,119 @@
+{
+  "retrievedAt": "2026-10-19T22:34:09.100578+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2022-12-30T10:30:14Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Pele_con_brasil_(cropped).jpg",
+          "to": "File:Pele con brasil (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 127169624,
+          "ns": 6,
+          "title": "File:Pele con brasil (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 102481,
+              "width": 388,
+              "height": 526,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 590,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 590,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pele_con_brasil_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Pele_con_brasil_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=127169624",
+              "sha1": "92e1514169f88386a54ca953bcf253b67a2690ba",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2023-01-08 17:41:41",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Pele con brasil (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Retouched pictures|1970 in association football in South America|PD-1996|Extracted images|Template Unknown (author)|CC-PD-Mark|Pel\u00e9 in 1970|Association football in El Gr\u00e1fico in 1970",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Pel\u00e9 with Brazil.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1970",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.elgrafico.com.ar/articulo/1088/35805/la-america-perdida\"><i>El Gr\u00e1fico</i></a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

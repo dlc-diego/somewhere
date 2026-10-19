@@ -15,7 +15,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "data:generate": "node scripts/generate-data.mjs && node scripts/generate-shapes.mjs",
-    "data:shapes": "node scripts/generate-shapes.mjs"
+    "data:shapes": "node scripts/generate-shapes.mjs",
+    "portraits:import": "python3 scripts/import-portraits.py --originals",
+    "portraits:verify": "node scripts/verify-portraits.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

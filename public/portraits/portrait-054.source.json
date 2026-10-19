@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:34:49.586732+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2020-03-25T10:14:13Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Joan_of_Arc_miniature_graded.jpg",
+          "to": "File:Joan of Arc miniature graded.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 123841,
+          "ns": 6,
+          "title": "File:Joan of Arc miniature graded.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 5180869,
+              "width": 1812,
+              "height": 2700,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Joan_of_Arc_miniature_graded.jpg/960px-Joan_of_Arc_miniature_graded.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 537,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Joan_of_Arc_miniature_graded.jpg/1280px-Joan_of_Arc_miniature_graded.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Joan_of_Arc_miniature_graded.jpg/960px-Joan_of_Arc_miniature_graded.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 537,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c3/Joan_of_Arc_miniature_graded.jpg/1280px-Joan_of_Arc_miniature_graded.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Joan_of_Arc_miniature_graded.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=123841",
+              "sha1": "986ccf4aa839ae4ca8256ca5ecb628525b1a3744",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2021-06-14 13:03:27",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Joan of Arc miniature graded",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Johan of Arc - Archives nationales (France) - AE/II/2490|Files with no machine-readable author|Spanish Forger|Art forgery|Media contributed by the Archives Nationales (France)|Georges Spetz|PD-Art (PD-old-100)|Artworks with Wikidata item|Artworks with known accession number|Extracted images|PD US expired|Pages with complex technique templates|CC-PD-Mark|Artworks with accession number from Wikidata|Artworks with Wikidata item missing genre|Artworks digital representation of unknown type of work|Cycle Les Remarquables - Jeanne d'Arc le premier portrait",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Joan of Arc depicted in an historiated initial. Miniature probably produced in the late 19th century by an anonymous artist, possibly the painter and collector Georges Spetz or the \"Spanish Forger\" - French National Archives, AE-II-2490.\u00a0<span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"//commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg#ooui-php-4\" title=\"Edit this at Structured Data on Commons\"><img alt=\"Edit this at Structured Data on Commons\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span>",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<p>Derived from original commons upload at which is now in the history version: 01:39, 13. 8. 2005\n</p>\n<ul><li>Colour-graded to reveal more detail using <a href=\"//commons.wikimedia.org/wiki/GIMP\" title=\"GIMP\">GIMP</a> software \"curves\" tool</li></ul>",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "Public domain works must be out of copyright in both the United States and in the source country of the work in order to be hosted on the Commons. If the work is not a U.S. work, the file <b>must</b> have an additional <a href=\"//commons.wikimedia.org/wiki/Commons:Copyright_tags\" title=\"Commons:Copyright tags\">copyright tag</a> indicating the copyright status in the source country.<br><b>Note:</b> This tag should <i>not</i> be used for sound recordings.<span style=\"display:none;\"><span class=\"licensetpl_short\">PD-1923</span><span class=\"licensetpl_long\"><a href=\"//commons.wikimedia.org/wiki/Public_domain\" class=\"mw-redirect\" title=\"Public domain\">Public domain</a> in the United States</span><span class=\"licensetpl_link\">//commons.wikimedia.org/wiki/File:Joan_of_Arc_miniature_graded.jpg</span></span>",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

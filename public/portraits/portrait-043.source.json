@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:34:26.395710+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Frida_Kahlo,_by_Guillermo_Kahlo.jpg",
+          "to": "File:Frida Kahlo, by Guillermo Kahlo.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 32639240,
+          "ns": 6,
+          "title": "File:Frida Kahlo, by Guillermo Kahlo.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 1156272,
+              "width": 1197,
+              "height": 1795,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg/960px-Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 533,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://upload.wikimedia.org/wikipedia/commons/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg/960px-Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 533,
+                "height": 800,
+                "srcset": "https://upload.wikimedia.org/wikipedia/commons/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Frida_Kahlo,_by_Guillermo_Kahlo.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=32639240",
+              "sha1": "f9eb0de1ebdc6d908f4a17cef2deb8d06f438774",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2014-05-07 12:59:05",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Frida Kahlo, by Guillermo Kahlo",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "PD-Mexico|Gelatin silver prints|Images with extracted images|PD-old-80-1996|People in 1932|Featured pictures on Wikipedia, Persian|1932 in Mexico City|CC-PD-Mark|Women with earrings|Posted to Wikimedia Foundation Pinterest|Images from Sotheby's|Photographs of Frida Kahlo|Photographs by Guillermo Kahlo",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "valued",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Frida Kahlo (gelatin silver print, 15.2 by 10.8 cm)",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1932-10-16",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"http://www.sothebys.com/en/auctions/ecatalogue/2014/latin-american-art-n09152/lot.148.html\">Sotheby's</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Guillermo_Kahlo\" class=\"extiw\" title=\"w:en:Guillermo Kahlo\"><span title=\"german-Mexican photographer (1871\u20131941)\">Guillermo Kahlo</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

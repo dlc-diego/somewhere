@@ -1,0 +1,128 @@
+{
+  "retrievedAt": "2026-10-19T22:32:44.408762+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2024-11-22T00:10:52Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Elvis_Presley_promoting_Jailhouse_Rock.jpg",
+          "to": "File:Elvis Presley promoting Jailhouse Rock.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 727693,
+          "ns": 6,
+          "title": "File:Elvis Presley promoting Jailhouse Rock.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 4662657,
+              "width": 2673,
+              "height": 3448,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg/960px-Elvis_Presley_promoting_Jailhouse_Rock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 620,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg/1280px-Elvis_Presley_promoting_Jailhouse_Rock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg/960px-Elvis_Presley_promoting_Jailhouse_Rock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 620,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg/1280px-Elvis_Presley_promoting_Jailhouse_Rock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Elvis_Presley_promoting_Jailhouse_Rock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Elvis_Presley_promoting_Jailhouse_Rock.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=727693",
+              "sha1": "a03414b6ec2020c8eac57dc24987c15af00e84fa",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-08-19 22:21:23",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Elvis Presley promoting Jailhouse Rock",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Jailhouse Rock (film)|Music in 1957|1957 in the United States|PD US not renewed|1950s photographs|Fashion in 1957|Images with extracted images|Horizontal striped clothing, male|Elvis Presley in 1957|Standing with wide open legs|Metro-Goldwyn-Mayer publicity photos",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "A photograph promoting the film <a href=\"https://en.wikipedia.org/wiki/en:Jailhouse_Rock_(film)\" class=\"extiw\" title=\"w:en:Jailhouse Rock (film)\"><i>Jailhouse Rock</i></a> depicts singer <a href=\"https://en.wikipedia.org/wiki/en:Elvis_Presley\" class=\"extiw\" title=\"w:en:Elvis Presley\">Elvis Presley</a>.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1957",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "The <a rel=\"nofollow\" class=\"external text\" href=\"https://www.loc.gov/rr/print/list/235_pop.html\">Library of Congress</a> retrieved <a rel=\"nofollow\" class=\"external text\" href=\"http://memory.loc.gov/pnp/cph/3d00000/3d02000/3d02000/3d02067r.jpg\">3d02067r.jpg</a> from <i><a href=\"https://en.wikipedia.org/wiki/en:Jailhouse_Rock_(film)\" class=\"extiw\" title=\"w:en:Jailhouse Rock (film)\">Jailhouse Rock</a></i>.",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a href=\"https://en.wikipedia.org/wiki/Metro-Goldwyn-Mayer\" class=\"extiw\" title=\"w:Metro-Goldwyn-Mayer\">Metro-Goldwyn-Mayer, Inc.</a><br> Reproduction Number: LC-USZ6-2067<br> Location: NYWTS -- BIOG",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "<a href=\"https://en.wikipedia.org/wiki/Library_of_Congress\" class=\"extiw\" title=\"w:Library of Congress\">Library of Congress</a> staff found no copyright in December 2000.<sup id=\"cite_ref-1\" class=\"reference\"><a href=\"#cite_note-1\"><span class=\"cite-bracket\">[</span>1<span class=\"cite-bracket\">]</span></a></sup>",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

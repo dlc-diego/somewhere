@@ -1,0 +1,141 @@
+{
+  "retrievedAt": "2026-10-19T22:35:55.812946+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2022-10-20T04:25:21Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Martin_Luther_King,_Jr._and_Lyndon_Johnson_(cropped).jpg",
+          "to": "File:Martin Luther King, Jr. and Lyndon Johnson (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 124398776,
+          "ns": 6,
+          "title": "File:Martin Luther King, Jr. and Lyndon Johnson (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 204266,
+              "width": 1141,
+              "height": 1521,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg/960px-Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 600,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg/960px-Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 600,
+                "height": 800,
+                "srcset": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Martin_Luther_King%2C_Jr._and_Lyndon_Johnson_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Martin_Luther_King,_Jr._and_Lyndon_Johnson_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=124398776",
+              "sha1": "a4119bd6ed3882afc9f074afa81b360d3ca05dae",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2024-03-03 07:42:33",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Martin Luther King, Jr. and Lyndon Johnson (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Black and white photographs|Executive Office of the President files|Images with extracted images|Extracted images|White House in 1966|Martin Luther King, Jr. in 1966|Files with coordinates missing SDC location of creation|Images from the Lyndon Baines Johnson Library and Museum|Photographs by Yoichi Okamoto",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "GPSLatitude": {
+                  "value": "38.897646",
+                  "source": "commons-desc-page"
+                },
+                "GPSLongitude": {
+                  "value": "-77.036476",
+                  "source": "commons-desc-page"
+                },
+                "GPSMapDatum": {
+                  "value": "WGS-84",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "President <a href=\"https://en.wikipedia.org/wiki/Lyndon_B._Johnson\" class=\"extiw\" title=\"en:Lyndon B. Johnson\">Lyndon B. Johnson</a> and <a href=\"https://en.wikipedia.org/wiki/Martin_Luther_King,_Jr.\" class=\"extiw\" title=\"en:Martin Luther King, Jr.\">Rev. Dr. Martin Luther King, Jr.</a> meet at the White House, 1966",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1966-03-18",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "Lyndon Baines Johnson Library and Museum. Image Serial Number: A2133-10. <a rel=\"nofollow\" class=\"external free\" href=\"http://photolab.lbjlib.utexas.edu/detail.asp?id=1083\">http://photolab.lbjlib.utexas.edu/detail.asp?id=1083</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Yoichi_Okamoto\" class=\"extiw\" title=\"w:en:Yoichi Okamoto\"><span title=\"American photographer (1915\u20131985)\">Yoichi Okamoto</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "Public domain.",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

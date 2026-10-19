@@ -1,0 +1,127 @@
+{
+  "retrievedAt": "2026-10-19T22:36:04.037607+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2024-10-21T08:36:03Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Malala_Yousafzai_2023_portrait_2x3.jpg",
+          "to": "File:Malala Yousafzai 2023 portrait 2x3.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 154127695,
+          "ns": 6,
+          "title": "File:Malala Yousafzai 2023 portrait 2x3.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 3884729,
+              "width": 3073,
+              "height": 4607,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Malala_Yousafzai_2023_portrait_2x3.jpg/960px-Malala_Yousafzai_2023_portrait_2x3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 533,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Malala_Yousafzai_2023_portrait_2x3.jpg/1280px-Malala_Yousafzai_2023_portrait_2x3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Malala_Yousafzai_2023_portrait_2x3.jpg/960px-Malala_Yousafzai_2023_portrait_2x3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 533,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Malala_Yousafzai_2023_portrait_2x3.jpg/1280px-Malala_Yousafzai_2023_portrait_2x3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Malala_Yousafzai_2023_portrait_2x3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Malala_Yousafzai_2023_portrait_2x3.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=154127695",
+              "sha1": "b91297dd3b3b09edf1ce26cc38d6ef3a859803d2",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2024-10-21 08:46:12",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Malala Yousafzai 2023 portrait 2x3",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Extracted images|Uploads using Flickypedia|2023 in Johannesburg|Malala Yousafzai in 2023|2023 Nelson Mandela Annual Lecture",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Malala Yousafzai at the 2023 Nelson Mandela Annual Lecture",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2023-12-04",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "flickrPhotoUrl=<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/flowcomm/53378313828/\">https://www.flickr.com/photos/flowcomm/53378313828/</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "flowcomm",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY 2.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution 2.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by/2.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-2.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

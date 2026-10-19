@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:33:37.120366+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Jackie_Chan.jpg",
+          "to": "File:Jackie Chan.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 173455654,
+          "ns": 6,
+          "title": "File:Jackie Chan.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 619710,
+              "width": 856,
+              "height": 1110,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/3/35/Jackie_Chan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 617,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/3/35/Jackie_Chan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 617,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/3/35/Jackie_Chan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Jackie_Chan.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=173455654",
+              "sha1": "826ceedf4e1614a4f91625d73c21500d9314fd0d",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-08-24 15:32:52",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Jackie Chan",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Personality rights warning|Self-published work|Extracted images|Jackie Chan in 2025|WikiPortraits at 2025 Locarno Film Festival|Uploaded via Campaign:wikiportraits-locarno-2025|People at the 2025 Locarno Film Festival",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Jackie Chan attends the Affeksjonsverdi red carpet during the 78th Locarno Film Festival on August 09, 2025 in Locarno, Switzerland.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2025-08-09 21:30:50",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a href=\"//commons.wikimedia.org/wiki/User:Segolene_Liger\" title=\"User:Segolene Liger\">Segolene Liger</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY-SA 4.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution-Share Alike 4.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by-sa/4.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "personality",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-sa-4.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

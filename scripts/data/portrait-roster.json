@@ -1,0 +1,482 @@
+[
+  {
+    "id": "portrait-001",
+    "personId": "person-einstein",
+    "wikipediaTitle": "Albert Einstein",
+    "commonsFile": "File:Albert Einstein Head cleaned.jpg"
+  },
+  {
+    "id": "portrait-002",
+    "personId": "person-curie",
+    "wikipediaTitle": "Marie Curie",
+    "commonsFile": "File:Marie Curie c. 1920s.jpg"
+  },
+  {
+    "id": "portrait-003",
+    "personId": "person-newton",
+    "wikipediaTitle": "Isaac Newton",
+    "commonsFile": "File:Portrait of Sir Isaac Newton, 1689 (brightened).jpg"
+  },
+  {
+    "id": "portrait-004",
+    "personId": "person-darwin",
+    "wikipediaTitle": "Charles Darwin",
+    "commonsFile": "File:Charles Darwin seated crop.jpg"
+  },
+  {
+    "id": "portrait-005",
+    "personId": "person-galileo",
+    "wikipediaTitle": "Galileo Galilei",
+    "commonsFile": "File:Justus Sustermans - Portrait of Galileo Galilei, 1636.jpg"
+  },
+  {
+    "id": "portrait-006",
+    "personId": "person-tesla",
+    "wikipediaTitle": "Nikola Tesla",
+    "commonsFile": "File:Tesla circa 1890.jpeg"
+  },
+  {
+    "id": "portrait-007",
+    "personId": "person-lovelace",
+    "wikipediaTitle": "Ada Lovelace",
+    "commonsFile": "File:Ada Lovelace daguerreotype by Antoine Claudet 1843 - cropped.png"
+  },
+  {
+    "id": "portrait-008",
+    "personId": "person-turing",
+    "wikipediaTitle": "Alan Turing",
+    "commonsFile": "File:Alan turing header.jpg"
+  },
+  {
+    "id": "portrait-009",
+    "personId": "person-hawking",
+    "wikipediaTitle": "Stephen Hawking",
+    "commonsFile": "File:Stephen Hawking.StarChild.jpg"
+  },
+  {
+    "id": "portrait-010",
+    "personId": "person-johnson",
+    "wikipediaTitle": "Katherine Johnson",
+    "commonsFile": "File:Katherine Johnson 1983.jpg"
+  },
+  {
+    "id": "portrait-011",
+    "personId": "person-swift",
+    "wikipediaTitle": "Taylor Swift",
+    "commonsFile": "File:Taylor Swift at the 2023 MTV Video Music Awards (3).png"
+  },
+  {
+    "id": "portrait-012",
+    "personId": "person-beyonce",
+    "wikipediaTitle": "Beyoncé",
+    "commonsFile": "File:Beyoncé - Tottenham Hotspur Stadium - 1st June 2023 (10 of 118) (52946364598) (best crop).jpg"
+  },
+  {
+    "id": "portrait-013",
+    "personId": "person-jackson",
+    "wikipediaTitle": "Michael Jackson",
+    "commonsFile": "File:Michael Jackson 1983 (3x4 cropped) (contrast).jpg"
+  },
+  {
+    "id": "portrait-014",
+    "personId": "person-presley",
+    "wikipediaTitle": "Elvis Presley",
+    "commonsFile": "File:Elvis Presley promoting Jailhouse Rock.jpg"
+  },
+  {
+    "id": "portrait-015",
+    "personId": "person-mercury",
+    "wikipediaTitle": "Freddie Mercury",
+    "commonsFile": "File:Freddie Mercury performing in New Haven, CT, November 1977.jpg"
+  },
+  {
+    "id": "portrait-016",
+    "personId": "person-parton",
+    "wikipediaTitle": "Dolly Parton",
+    "commonsFile": "File:Young-Dolly-Parton (higher quality scan) (cropped).jpg"
+  },
+  {
+    "id": "portrait-017",
+    "personId": "person-marley",
+    "wikipediaTitle": "Bob Marley",
+    "commonsFile": "File:Bob Marley circa 1976 (cropped).jpg"
+  },
+  {
+    "id": "portrait-018",
+    "personId": "person-lennon",
+    "wikipediaTitle": "John Lennon",
+    "commonsFile": "File:John Lennon \"Walls and Bridges\" 1974 press photo 2 (color) (cropped).jpg"
+  },
+  {
+    "id": "portrait-019",
+    "personId": "person-beethoven",
+    "wikipediaTitle": "Ludwig van Beethoven",
+    "commonsFile": "File:Joseph Karl Stieler's Beethoven mit dem Manuskript der Missa solemnis.jpg"
+  },
+  {
+    "id": "portrait-020",
+    "personId": "person-mozart",
+    "wikipediaTitle": "Wolfgang Amadeus Mozart",
+    "commonsFile": "File:The Mozart Family - Wolfgang Amadeus Mozart headshot.jpg"
+  },
+  {
+    "id": "portrait-021",
+    "personId": "person-chaplin",
+    "wikipediaTitle": "Charlie Chaplin",
+    "commonsFile": "File:Charlie Chaplin portrait Getty 1739411952.jpg"
+  },
+  {
+    "id": "portrait-022",
+    "personId": "person-hepburn",
+    "wikipediaTitle": "Audrey Hepburn",
+    "commonsFile": "File:Sabrina Audrey Hepburn (1954).jpg"
+  },
+  {
+    "id": "portrait-023",
+    "personId": "person-monroe",
+    "wikipediaTitle": "Marilyn Monroe",
+    "commonsFile": "File:Monroecirca1953.jpg"
+  },
+  {
+    "id": "portrait-024",
+    "personId": "person-hanks",
+    "wikipediaTitle": "Tom Hanks",
+    "commonsFile": "File:TomHanksPrincEdw031223 (11 of 41) (cropped).jpg"
+  },
+  {
+    "id": "portrait-025",
+    "personId": "person-streep",
+    "wikipediaTitle": "Meryl Streep",
+    "commonsFile": "File:Meryl Streep- Press conference for the film \"The Devil Wears Prada 2\" - 55194765350 (cropped1).jpg"
+  },
+  {
+    "id": "portrait-026",
+    "personId": "person-dwayne-johnson",
+    "wikipediaTitle": "Dwayne Johnson",
+    "commonsFile": "File:Dwayne Johnson-1764 (4x5 cropped with moderate headroom).jpg"
+  },
+  {
+    "id": "portrait-027",
+    "personId": "person-chan",
+    "wikipediaTitle": "Jackie Chan",
+    "commonsFile": "File:Jackie Chan.jpg"
+  },
+  {
+    "id": "portrait-028",
+    "personId": "person-spielberg",
+    "wikipediaTitle": "Steven Spielberg",
+    "commonsFile": "File:MKr25402 Steven Spielberg (Berlinale 2023) (3x4 cropped).jpg"
+  },
+  {
+    "id": "portrait-029",
+    "personId": "person-disney",
+    "wikipediaTitle": "Walt Disney",
+    "commonsFile": "File:Walt Disney 1946 (cropped2).JPG"
+  },
+  {
+    "id": "portrait-030",
+    "personId": "person-winfrey",
+    "wikipediaTitle": "Oprah Winfrey",
+    "commonsFile": "File:Oprah Winfrey 2016.jpg"
+  },
+  {
+    "id": "portrait-031",
+    "personId": "person-serena",
+    "wikipediaTitle": "Serena Williams",
+    "commonsFile": "File:Serena Williams at 2013 US Open.jpg"
+  },
+  {
+    "id": "portrait-032",
+    "personId": "person-jordan",
+    "wikipediaTitle": "Michael Jordan",
+    "commonsFile": "File:Michael jordan admad rashad (51276390562) (cropped).jpg"
+  },
+  {
+    "id": "portrait-033",
+    "personId": "person-messi",
+    "wikipediaTitle": "Lionel Messi",
+    "commonsFile": "File:Leo Messi Argentina v Egypt 7 July 2026-1.jpg"
+  },
+  {
+    "id": "portrait-034",
+    "personId": "person-ronaldo",
+    "wikipediaTitle": "Cristiano Ronaldo",
+    "commonsFile": "File:Cristiano Ronaldo Croatia v Portugal 2 July 2026-075 (cropped).jpg"
+  },
+  {
+    "id": "portrait-035",
+    "personId": "person-bolt",
+    "wikipediaTitle": "Usain Bolt",
+    "commonsFile": "File:Usain Bolt 2011b.jpg"
+  },
+  {
+    "id": "portrait-036",
+    "personId": "person-biles",
+    "wikipediaTitle": "Simone Biles",
+    "commonsFile": "File:Simone Biles National Team 2024.jpg"
+  },
+  {
+    "id": "portrait-037",
+    "personId": "person-ali",
+    "wikipediaTitle": "Muhammad Ali",
+    "commonsFile": "File:Muhammad Ali NYWTS.jpg"
+  },
+  {
+    "id": "portrait-038",
+    "personId": "person-pele",
+    "wikipediaTitle": "Pelé",
+    "commonsFile": "File:Pele con brasil (cropped).jpg"
+  },
+  {
+    "id": "portrait-039",
+    "personId": "person-phelps",
+    "wikipediaTitle": "Michael Phelps",
+    "commonsFile": "File:Michael Phelps Rio Olympics 2016.jpg"
+  },
+  {
+    "id": "portrait-040",
+    "personId": "person-federer",
+    "wikipediaTitle": "Roger Federer",
+    "commonsFile": "File:Roger Federer 2015 (cropped).jpg"
+  },
+  {
+    "id": "portrait-041",
+    "personId": "person-leonardo",
+    "wikipediaTitle": "Leonardo da Vinci",
+    "commonsFile": "File:Leonardo da Vinci - presumed self-portrait - WGA12798.jpg"
+  },
+  {
+    "id": "portrait-042",
+    "personId": "person-van-gogh",
+    "wikipediaTitle": "Vincent van Gogh",
+    "commonsFile": "File:Vincent van Gogh - Self-Portrait - Google Art Project (454045).jpg"
+  },
+  {
+    "id": "portrait-043",
+    "personId": "person-kahlo",
+    "wikipediaTitle": "Frida Kahlo",
+    "commonsFile": "File:Frida Kahlo, by Guillermo Kahlo.jpg"
+  },
+  {
+    "id": "portrait-044",
+    "personId": "person-picasso",
+    "wikipediaTitle": "Pablo Picasso",
+    "commonsFile": "File:Pablo picasso 1.jpg"
+  },
+  {
+    "id": "portrait-045",
+    "personId": "person-shakespeare",
+    "wikipediaTitle": "William Shakespeare",
+    "commonsFile": "File:William Shakespeare by John Taylor, edited.jpg"
+  },
+  {
+    "id": "portrait-046",
+    "personId": "person-austen",
+    "wikipediaTitle": "Jane Austen",
+    "commonsFile": "File:CassandraAusten-JaneAusten(c.1810) hires.jpg"
+  },
+  {
+    "id": "portrait-047",
+    "personId": "person-christie",
+    "wikipediaTitle": "Agatha Christie",
+    "commonsFile": "File:Agatha Christie in Nederland (detectiveschrijfster), bij aankomst op Schiphol me, Bestanddeelnr 916-8898 (cropped).jpg"
+  },
+  {
+    "id": "portrait-048",
+    "personId": "person-tolkien",
+    "wikipediaTitle": "J. R. R. Tolkien",
+    "commonsFile": "File:J. R. R. Tolkien, ca. 1925.jpg"
+  },
+  {
+    "id": "portrait-049",
+    "personId": "person-angelou",
+    "wikipediaTitle": "Maya Angelou",
+    "commonsFile": "File:Angelou at Clinton inauguration (cropped 2).jpg"
+  },
+  {
+    "id": "portrait-050",
+    "personId": "person-seuss",
+    "wikipediaTitle": "Dr. Seuss",
+    "commonsFile": "File:Theodor Seuss Geisel (01037v).jpg"
+  },
+  {
+    "id": "portrait-051",
+    "personId": "person-cleopatra",
+    "wikipediaTitle": "Cleopatra",
+    "commonsFile": "File:Kleopatra-VII.-Altes-Museum-Berlin1.jpg"
+  },
+  {
+    "id": "portrait-052",
+    "personId": "person-alexander",
+    "wikipediaTitle": "Alexander the Great",
+    "commonsFile": "File:Alexander Mosaic detail of Alexander the Great (3x4 cropped).jpg"
+  },
+  {
+    "id": "portrait-053",
+    "personId": "person-caesar",
+    "wikipediaTitle": "Julius Caesar",
+    "commonsFile": "File:Retrato de Julio César (26724093101) (cropped).jpg"
+  },
+  {
+    "id": "portrait-054",
+    "personId": "person-joan",
+    "wikipediaTitle": "Joan of Arc",
+    "commonsFile": "File:Joan of Arc miniature graded.jpg"
+  },
+  {
+    "id": "portrait-055",
+    "personId": "person-napoleon",
+    "wikipediaTitle": "Napoleon Bonaparte",
+    "commonsFile": "File:Jacques-Louis David - The Emperor Napoleon in His Study at the Tuileries - Google Art Project.jpg"
+  },
+  {
+    "id": "portrait-056",
+    "personId": "person-elizabeth",
+    "wikipediaTitle": "Elizabeth I",
+    "commonsFile": "File:Darnley stage 3.jpg"
+  },
+  {
+    "id": "portrait-057",
+    "personId": "person-lincoln",
+    "wikipediaTitle": "Abraham Lincoln",
+    "commonsFile": "File:Abraham Lincoln O-77 matte collodion print.jpg"
+  },
+  {
+    "id": "portrait-058",
+    "personId": "person-washington",
+    "wikipediaTitle": "George Washington",
+    "commonsFile": "File:Gilbert Stuart Williamstown Portrait of George Washington.jpg"
+  },
+  {
+    "id": "portrait-059",
+    "personId": "person-mandela",
+    "wikipediaTitle": "Nelson Mandela",
+    "commonsFile": "File:Nelson Mandela 1994.jpg"
+  },
+  {
+    "id": "portrait-060",
+    "personId": "person-gandhi",
+    "wikipediaTitle": "Mahatma Gandhi",
+    "commonsFile": "File:Mahatma-Gandhi, studio, 1931.jpg"
+  },
+  {
+    "id": "portrait-061",
+    "personId": "person-earhart",
+    "wikipediaTitle": "Amelia Earhart",
+    "commonsFile": "File:Amelia Earhart standing under nose of her Lockheed Model 10-E Electra, small (cropped).jpg"
+  },
+  {
+    "id": "portrait-062",
+    "personId": "person-armstrong",
+    "wikipediaTitle": "Neil Armstrong",
+    "commonsFile": "File:Neil Armstrong pose.jpg"
+  },
+  {
+    "id": "portrait-063",
+    "personId": "person-aldrin",
+    "wikipediaTitle": "Buzz Aldrin",
+    "commonsFile": "File:Buzz Aldrin (Apollo 11).jpg"
+  },
+  {
+    "id": "portrait-064",
+    "personId": "person-gagarin",
+    "wikipediaTitle": "Yuri Gagarin",
+    "commonsFile": "File:Yuri Gagarin with awards (cropped) 2.jpg"
+  },
+  {
+    "id": "portrait-065",
+    "personId": "person-tereshkova",
+    "wikipediaTitle": "Valentina Tereshkova",
+    "commonsFile": "File:Valentina Tereshkova (January 1963).jpg"
+  },
+  {
+    "id": "portrait-066",
+    "personId": "person-ride",
+    "wikipediaTitle": "Sally Ride",
+    "commonsFile": "File:Sally Ride (1984).jpg"
+  },
+  {
+    "id": "portrait-067",
+    "personId": "person-cousteau",
+    "wikipediaTitle": "Jacques Cousteau",
+    "commonsFile": "File:Cousteau1972 (cropped).jpg"
+  },
+  {
+    "id": "portrait-068",
+    "personId": "person-goodall",
+    "wikipediaTitle": "Jane Goodall",
+    "commonsFile": "File:Deputy Secretary Higginbottom Poses for a Photo With Dr. Jane Goodall and the State Department's Global Health Diplomacy Director Jordan in Washington (22365513310) (2) (cropped 2).jpg"
+  },
+  {
+    "id": "portrait-069",
+    "personId": "person-bell",
+    "wikipediaTitle": "Alexander Graham Bell",
+    "commonsFile": "File:Alexander Graham Bell.jpg"
+  },
+  {
+    "id": "portrait-070",
+    "personId": "person-gutenberg",
+    "wikipediaTitle": "Johannes Gutenberg",
+    "commonsFile": "File:Mainz Gutenbergdenkmal 2016 (cropped).jpg"
+  },
+  {
+    "id": "portrait-071",
+    "personId": "person-king",
+    "wikipediaTitle": "Martin Luther King Jr.",
+    "commonsFile": "File:Martin Luther King, Jr. and Lyndon Johnson (cropped).jpg"
+  },
+  {
+    "id": "portrait-072",
+    "personId": "person-parks",
+    "wikipediaTitle": "Rosa Parks",
+    "commonsFile": "File:Rosa Parks, November 1956 (cropped).jpg"
+  },
+  {
+    "id": "portrait-073",
+    "personId": "person-tubman",
+    "wikipediaTitle": "Harriet Tubman",
+    "commonsFile": "File:Carte-de-visite portrait of Harriet Tubman (cropped).jpg"
+  },
+  {
+    "id": "portrait-074",
+    "personId": "person-malala",
+    "wikipediaTitle": "Malala Yousafzai",
+    "commonsFile": "File:Malala Yousafzai 2023 portrait 2x3.jpg"
+  },
+  {
+    "id": "portrait-075",
+    "personId": "person-keller",
+    "wikipediaTitle": "Helen Keller",
+    "commonsFile": "File:Helen Keller (circa 1904).jpg"
+  },
+  {
+    "id": "portrait-076",
+    "personId": "person-nightingale",
+    "wikipediaTitle": "Florence Nightingale",
+    "commonsFile": "File:Florence Nightingale (H Hering NPG x82368).jpg"
+  },
+  {
+    "id": "portrait-077",
+    "personId": "person-maathai",
+    "wikipediaTitle": "Wangari Maathai",
+    "commonsFile": "File:Wangari Maathai in 2001.jpg"
+  },
+  {
+    "id": "portrait-078",
+    "personId": "person-thunberg",
+    "wikipediaTitle": "Greta Thunberg",
+    "commonsFile": "File:Greta Thunberg in May 2026 (cropped 3x4).jpg"
+  },
+  {
+    "id": "portrait-079",
+    "personId": "person-anthony",
+    "wikipediaTitle": "Susan B. Anthony",
+    "commonsFile": "File:SB Anthony from RoRaWW.jpg"
+  },
+  {
+    "id": "portrait-080",
+    "personId": "person-braille",
+    "wikipediaTitle": "Louis Braille",
+    "commonsFile": "File:Engraving of Louis Braille by Henri Thiriat (cropped).jpg"
+  }
+]

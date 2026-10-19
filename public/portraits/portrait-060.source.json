@@ -1,0 +1,128 @@
+{
+  "retrievedAt": "2026-10-19T22:35:14.130998+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2019-02-26T13:08:42Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Mahatma-Gandhi,_studio,_1931.jpg",
+          "to": "File:Mahatma-Gandhi, studio, 1931.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 76882768,
+          "ns": 6,
+          "title": "File:Mahatma-Gandhi, studio, 1931.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 3250029,
+              "width": 2620,
+              "height": 3270,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/960px-Mahatma-Gandhi%2C_studio%2C_1931.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 640,
+              "thumbheight": 799,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/1280px-Mahatma-Gandhi%2C_studio%2C_1931.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/960px-Mahatma-Gandhi%2C_studio%2C_1931.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 640,
+                "height": 799,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/1280px-Mahatma-Gandhi%2C_studio%2C_1931.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Mahatma-Gandhi,_studio,_1931.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=76882768",
+              "sha1": "fa170a323f1b18da2b820f9312635da1c9f6a766",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2019-02-26 13:14:24",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Mahatma-Gandhi, studio, 1931",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Elliott & Fry|PD-UK|Files uploaded by Yann Forget|Mohandas K. Gandhi in England|Images with extracted images|Works possibly copyrighted in the U.S.|Mohandas K. Gandhi in 1931|Speaking truth to power",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "valued",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Studio photograph of Mahatma Gandhi ji, London, 1931.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1931",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"http://philogalichet.fr/wp-content/uploads/2019/01/Gandhi_Photo-Alamy.jpg\">philogalichet.fr</a> (<a rel=\"nofollow\" class=\"external text\" href=\"https://philogalichet.fr/photolangage-images-a-telecharger/\">context</a>)",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/Elliott_%26_Fry\" class=\"extiw\" title=\"w:Elliott &amp; Fry\">Elliott &amp; Fry</a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "Copyright expired 50 years after publication. It was most probably published in USA at the time.",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -5,6 +5,7 @@ src/data
 public/data
 public/flags
 public/shapes
+public/portraits
 test-results
 playwright-report
 *.tsbuildinfo

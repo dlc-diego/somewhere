@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:36:17.622344+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Engraving_of_Louis_Braille_by_Henri_Thiriat_(cropped).jpg",
+          "to": "File:Engraving of Louis Braille by Henri Thiriat (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 176528024,
+          "ns": 6,
+          "title": "File:Engraving of Louis Braille by Henri Thiriat (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 1749904,
+              "width": 1886,
+              "height": 2424,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg/960px-Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 622,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg/1280px-Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg/960px-Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 622,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg/1280px-Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Engraving_of_Louis_Braille_by_Henri_Thiriat_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Engraving_of_Louis_Braille_by_Henri_Thiriat_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=176528024",
+              "sha1": "4a68b5e50fc3d1ea0303cab8d0d734899b8babf7",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-10-11 14:18:15",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Engraving of Louis Braille by Henri Thiriat (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "PD-Art (PD-old-auto-expired)|Extracted images|CC-PD-Mark|PD-old-95-expired|Drawings by Henri Thiriat|Louis Braille portraits",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Engraving of Louis Braille by Henri Thiriat",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1887",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<p>Original publication: <cite class=\"book\" style=\"font-style:normal\">(in French) (1887) <i> <a rel=\"nofollow\" class=\"external text\" href=\"https://books.google.be/books?id=aHYAAAAAMAAJ\">La Nature: revue des sciences et de leurs applications aux arts et \u00e0 l'industrie</a></i>, 15, G. Masson, p.\u00a020  <small></small></cite>\n</p>\nDirect link: <a rel=\"nofollow\" class=\"external free\" href=\"https://www.alamy.com/stock-photo-louis-braille-thiriat-56713536.html\">https://www.alamy.com/stock-photo-louis-braille-thiriat-56713536.html</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Henri_Thiriat\" class=\"extiw\" title=\"w:en:Henri Thiriat\"><span title=\"French wood-engraver (1843\u20131926)\">Henri Thiriat</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

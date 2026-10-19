@@ -1,0 +1,116 @@
+{
+  "retrievedAt": "2026-10-19T22:35:15.805613+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Amelia_Earhart_standing_under_nose_of_her_Lockheed_Model_10-E_Electra,_small_(cropped).jpg",
+          "to": "File:Amelia Earhart standing under nose of her Lockheed Model 10-E Electra, small (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 152789849,
+          "ns": 6,
+          "title": "File:Amelia Earhart standing under nose of her Lockheed Model 10-E Electra, small (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 342248,
+              "width": 689,
+              "height": 926,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/7/72/Amelia_Earhart_standing_under_nose_of_her_Lockheed_Model_10-E_Electra%2C_small_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 595,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/7/72/Amelia_Earhart_standing_under_nose_of_her_Lockheed_Model_10-E_Electra%2C_small_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 595,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Amelia_Earhart_standing_under_nose_of_her_Lockheed_Model_10-E_Electra%2C_small_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Amelia_Earhart_standing_under_nose_of_her_Lockheed_Model_10-E_Electra,_small_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=152789849",
+              "sha1": "c3b4dba944090a083b2d57fff1428ce63cfd53db",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2024-09-18 00:47:35",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Amelia Earhart standing under nose of her Lockheed Model 10-E Electra, small (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "March 1937|Files uploaded by Yann Forget|Extracted images|PD US no notice|Portraits of Amelia Earhart|1937 black and white portrait photographs of women|George R. Rinhart",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Amelia Earhart standing under nose of her Lockheed Model 10-E Electra. Gelatin silver print, 1937. National Portrait Gallery, Smithsonian Institution; gift of George R. Rinhart, in memory of Joan Rinhart",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1937-03",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external free\" href=\"http://amextbg2.wgbhdigital.org/wgbh/americanexperience/media/uploads/special_features/photo_gallery/amelia_gallery_07.jpg\">http://amextbg2.wgbhdigital.org/wgbh/americanexperience/media/uploads/special_features/photo_gallery/amelia_gallery_07.jpg</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Underwood &amp; Underwood (active 1880 \u2013 c. 1950)<a rel=\"nofollow\" class=\"external autonumber\" href=\"http://www.npg.si.edu/exhibit/earhart/pop-ups/12.html\">[1]</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "retrievedAt": "2026-10-19T22:35:36.641929+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2019-07-17T02:53:23Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Sally_Ride_(1984).jpg",
+          "to": "File:Sally Ride (1984).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 80459243,
+          "ns": 6,
+          "title": "File:Sally Ride (1984).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 3227288,
+              "width": 2790,
+              "height": 3487,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Sally_Ride_%281984%29.jpg/960px-Sally_Ride_%281984%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 640,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Sally_Ride_%281984%29.jpg/1280px-Sally_Ride_%281984%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Sally_Ride_%281984%29.jpg/960px-Sally_Ride_%281984%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 640,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/Sally_Ride_%281984%29.jpg/1280px-Sally_Ride_%281984%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Sally_Ride_%281984%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Sally_Ride_(1984).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=80459243",
+              "sha1": "9cf6400376c3924d02a0bdda916f0314f5cc94b2",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2019-07-17 03:20:45",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Sally Ride (1984)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Sally Ride|PD NASA|Retouched pictures|Smiling women in Florida|Featured pictures on Wikipedia, English|Women looking at viewer|Great Images in NASA|Featured pictures of people of the United States|Women smiling with teeth|June 1984 United States photographs|Featured photographs in the public domain|Files from NASA with known IDs|Official portrait photographs of NASA|Portraits with models of Space Shuttles|Female people with spacecraft",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "featured|potd",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Sally Ride was the first American woman in space. Born on May 26, 1951 in Los Angeles, California, she received a Bachelor in Physics and English in 1973 from Stanford University and, later, a Master in Physics in 1975 and a Doctorate in Physics in 1978, also from Stanford. NASA selected Dr. Ride as an astronaut candidate in January 1978. She completed her training in August 1979, and began her astronaut career as a mission specialist on STS-7, which launched from Kennedy Space Center, Florida on June 18, 1983. The mission spent 147 hours in space before landing on a lakebed runway at Edwards Air Force Base, California on June 24, 1983. Dr. Ride also served as a mission specialist on STS-41-G, which launched from Kennedy Space Center, Florida on October 5, 1984 and landed 197 hours later at Kennedy Space Center, Florida on October 13, 1984. <br><br>In June 1985, NASA assigned Dr. Ride to serve as mission specialist on STS-61-M. She discontinued mission training in January 1986 to serve as a member of the Presidential Commission on the Space Shuttle Challenger accident, also known as the Rogers Commission. Upon completing the investigation she returned to NASA Headquarters as Special Assistant to the Administrator for Long Range and Strategic Planning, where she lead a team that wrote NASA Leadership and America's Future in Space:A Report to the Administrator in August 1987. <br><br>Dr. Ride has also written a children's book, To Space and Back, describing her experiences in space, has received the Jefferson Award for Public Service, and has twice been awarded the National Spaceflight Medal. Her latest books include Voyager:An Adventure to the Edge of the Solar System and The Third Planet: Exploring the Earth from Space. She was also a member of the Columbia Accident Investigation Board (CAIB), which investigated the February 1, 2003 loss of Space Shuttle Columbia. Dr. Ride died of pancreatic cancer on July 23, 2012.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "Taken in\u00a0June 1984",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://images.nasa.gov/details-S84-37256.html\">Description page</a> (<a rel=\"nofollow\" class=\"external text\" href=\"https://images-assets.nasa.gov/image/S84-37256/S84-37256~orig.jpg\">direct image link</a>)",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "NASA; retouched by <a href=\"//commons.wikimedia.org/wiki/User_talk:Coffeeandcrumbs\" title=\"User talk:Coffeeandcrumbs\">Coffeeandcrumbs</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

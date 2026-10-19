@@ -1,0 +1,128 @@
+{
+  "retrievedAt": "2026-10-19T22:33:18.483005+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2025-06-16T00:32:19Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Charlie_Chaplin_portrait_Getty_1739411952.jpg",
+          "to": "File:Charlie Chaplin portrait Getty 1739411952.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 167766610,
+          "ns": 6,
+          "title": "File:Charlie Chaplin portrait Getty 1739411952.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 8103577,
+              "width": 2878,
+              "height": 4101,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Charlie_Chaplin_portrait_Getty_1739411952.jpg/960px-Charlie_Chaplin_portrait_Getty_1739411952.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 561,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Charlie_Chaplin_portrait_Getty_1739411952.jpg/1280px-Charlie_Chaplin_portrait_Getty_1739411952.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Charlie_Chaplin_portrait_Getty_1739411952.jpg/960px-Charlie_Chaplin_portrait_Getty_1739411952.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 561,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Charlie_Chaplin_portrait_Getty_1739411952.jpg/1280px-Charlie_Chaplin_portrait_Getty_1739411952.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/8/82/Charlie_Chaplin_portrait_Getty_1739411952.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Charlie_Chaplin_portrait_Getty_1739411952.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=167766610",
+              "sha1": "a1a13571bc060853f06cbd949b0eb8464c02faf0",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-06-16 15:31:35",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Charlie Chaplin portrait Getty 1739411952",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Bettmann Archive|Strauss-Peyton Studio|PD US expired|20th-century black and white portrait photographs of men at bust length|Charlie Chaplin in 1921|1921 black and white portrait photographs of men|Portrait photographs of Charlie Chaplin|Files by JayCubby",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Portrait of <a href=\"https://en.wikipedia.org/wiki/Charlie_Chaplin\" class=\"extiw\" title=\"en:Charlie Chaplin\">Charles Chaplin</a>.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1921",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<b>Original publication</b>: <a rel=\"nofollow\" class=\"external text\" href=\"https://archive.org/details/phojun22chic/page/n173/mode/2up?view=theater\">Magazine <i>Photoplay</i> No. 3, 1922</a><br><b>Immediate sources</b>: <a rel=\"nofollow\" class=\"external text\" href=\"https://img.buzzfeed.com/buzzfeed-static/static/2025-02/13/1/asset/f37d3877183c/sub-buzz-2159-1739411952-1.jpg\">this image</a><a rel=\"nofollow\" class=\"external text\" href=\"http://www.npg.org.uk/collections/search/portraitLarge/mw07186/Charlie-Chaplin\">also found at National Portrait Gallery</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Strauss-Peyton Studio",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "Despite the NPG's claim of copyright, any image that was published in the US before 1930 is in the public domain. This image was unquestionably published before 1930, as evidenced by the above-referenced 1922 issue of <i>Photoplay</i> magazine containing the photo in question.",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

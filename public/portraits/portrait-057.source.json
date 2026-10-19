@@ -1,0 +1,123 @@
+{
+  "retrievedAt": "2026-10-19T22:35:00.579706+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2023-05-19T11:54:24Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Abraham_Lincoln_O-77_matte_collodion_print.jpg",
+          "to": "File:Abraham Lincoln O-77 matte collodion print.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 42812335,
+          "ns": 6,
+          "title": "File:Abraham Lincoln O-77 matte collodion print.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 3898023,
+              "width": 2200,
+              "height": 2835,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/960px-Abraham_Lincoln_O-77_matte_collodion_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 621,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/1280px-Abraham_Lincoln_O-77_matte_collodion_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/960px-Abraham_Lincoln_O-77_matte_collodion_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 621,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/1280px-Abraham_Lincoln_O-77_matte_collodion_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Abraham_Lincoln_O-77_matte_collodion_print.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=42812335",
+              "sha1": "61bb61bed8175f8f669c288bf1ecba02b3a33a9e",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2025-06-12 02:53:24",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "<div class=\"fn\">\n<a href=\"https://en.wikipedia.org/wiki/Abraham_Lincoln\" class=\"extiw\" title=\"w:Abraham Lincoln\">Abraham Lincoln</a></div>",
+                  "source": "commons-desc-page"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Images from the Library of Congress|Mead Art Museum|PD-old-100-expired|PD-scan (PD-old-auto-expired)|Images with extracted images|CC-PD-Mark|Abraham Lincoln in 1863",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Alexander_Gardner_(photographer)\" class=\"extiw\" title=\"w:en:Alexander Gardner (photographer)\"><span title=\"Scottish photographer (1821\u20131882)\">Alexander Gardner</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "ImageDescription": {
+                  "value": "<div class=\"description\">\nScholars and enthusiasts alike believe this portrait of Abraham Lincoln, taken on November 8, 1863, eleven days before his famed Gettysburg Address, to be the best photograph of him ever taken. Lincoln\u2019s character was notoriously difficult to capture in pictures, but Alexander Gardner\u2019s close-up portrait, quite innovative in contrast to the typical full-length portrait style, comes closest to preserving the expressive contours of Lincoln\u2019s face and his penetrating gaze. Photograph taken by <a href=\"https://en.wikipedia.org/wiki/Alexander_Gardner_(photographer)\" class=\"extiw\" title=\"w:Alexander Gardner (photographer)\">Alexander Gardner</a>, 1863.</div>",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "8 November 1863<div style=\"display: none;\">date QS:P571,+1863-11-08T00:00:00Z/11</div>",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"http://museums.fivecolleges.edu/detail.php?t=objects&amp;type=ext&amp;f=&amp;s=&amp;record=0&amp;id_number=1947.135\">museums.fivecolleges.edu</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

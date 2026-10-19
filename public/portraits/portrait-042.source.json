@@ -1,0 +1,119 @@
+{
+  "retrievedAt": "2026-10-19T22:34:24.441426+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2012-10-09T00:03:39Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_(454045).jpg",
+          "to": "File:Vincent van Gogh - Self-Portrait - Google Art Project (454045).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 21977797,
+          "ns": 6,
+          "title": "File:Vincent van Gogh - Self-Portrait - Google Art Project (454045).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 10680065,
+              "width": 4747,
+              "height": 6000,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/960px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 633,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/1280px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/960px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 633,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg/1280px-Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_%28454045%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Vincent_van_Gogh_-_Self-Portrait_-_Google_Art_Project_(454045).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=21977797",
+              "sha1": "070cafac67f1ccc0d4fbfc065bfe695d5958b528",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2017-04-13 04:44:46",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "<div class=\"fn\">\n<div style=\"font-weight:bold;display:inline-block;\"><div style=\"display:inline-block\" dir=\"ltr\" lang=\"en\"><i>Self-Portrait\u00a0<span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"https://www.wikidata.org/wiki/Q9162657#P1476\" title=\"Edit this at Wikidata\"><img alt=\"Edit this at Wikidata\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span></i></div></div><div style=\"display: none;\">title QS:P1476,en:\"Self-Portrait\u00a0<span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"https://www.wikidata.org/wiki/Q9162657#P1476\" title=\"Edit this at Wikidata\"><img alt=\"Edit this at Wikidata\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span>\"</div><div style=\"display: none;\">label QS:Len,\"Self-Portrait\u00a0<span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"https://www.wikidata.org/wiki/Q9162657#P1476\" title=\"Edit this at Wikidata\"><img alt=\"Edit this at Wikidata\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span>\"</div><div style=\"display: none;\">label QS:Les,\"Autorretrato\"</div><div style=\"display: none;\">label QS:Lnds,\"S\u00fclvstportr\u00e4t\"</div><div style=\"display: none;\">label QS:Lcy,\"Hunanbortread\"</div><div style=\"display: none;\">label QS:Lbe,\"\u0410\u045e\u0442\u0430\u043f\u0430\u0440\u0442\u0440\u044d\u0442\"</div><div style=\"display: none;\">label QS:Lhy,\"\u053b\u0576\u0584\u0576\u0561\u057a\u0561\u057f\u056f\u0565\u0580\"</div><div style=\"display: none;\">label QS:Lzh,\"\u81ea\u753b\u50cf\"</div><div style=\"display: none;\">label QS:Lda,\"Selvportr\u00e6t\"</div><div style=\"display: none;\">label QS:Lja,\"\u81ea\u753b\u50cf\"</div><div style=\"display: none;\">label QS:Lsk,\"Autoportr\u00e9t\"</div><div style=\"display: none;\">label QS:Luk,\"\u0410\u0432\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lla,\"Effigies sui ipsius\"</div><div style=\"display: none;\">label QS:Lfi,\"Omakuva\"</div><div style=\"display: none;\">label QS:Lkk,\"\u0410\u0432\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lbs,\"Autoportret\"</div><div style=\"display: none;\">label QS:Lfr,\"Autoportrait\"</div><div style=\"display: none;\">label QS:Lhr,\"Autoportret\"</div><div style=\"display: none;\">label QS:Lpt,\"Autorretrato\"</div><div style=\"display: none;\">label QS:Lhe,\"\u05d3\u05d9\u05d5\u05e7\u05df \u05e2\u05e6\u05de\u05d9\"</div><div style=\"display: none;\">label QS:Lvec,\"Autoritrato\"</div><div style=\"display: none;\">label QS:Lbg,\"\u0410\u0432\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lsr,\"\u0410\u0443\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lsl,\"Avtoportret\"</div><div style=\"display: none;\">label QS:Lru,\"\u0410\u0432\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lpt-br,\"Autorretrato\"</div><div style=\"display: none;\">label QS:Let,\"Autoportree\"</div><div style=\"display: none;\">label QS:Lth,\"\u0e20\u0e32\u0e1e\u0e40\u0e2b\u0e21\u0e37\u0e2d\u0e19\u0e15\u0e19\u0e40\u0e2d\u0e07\"</div><div style=\"display: none;\">label QS:Lpl,\"Autoportret (F 345)\"</div><div style=\"display: none;\">label QS:Lmk,\"\u0410\u0432\u0442\u043e\u043f\u043e\u0440\u0442\u0440\u0435\u0442\"</div><div style=\"display: none;\">label QS:Lnl,\"Zelfportret\"</div><div style=\"display: none;\">label QS:Lga,\"f\u00e9inphortr\u00e1id\"</div><div style=\"display: none;\">label QS:Lde,\"Selbstbildnis\"</div><div style=\"display: none;\">label QS:Lbr,\"Emboltred\"</div><div style=\"display: none;\">label QS:Lfa,\"\u0686\u0647\u0631\u0647\u0654 \u062e\u0648\u062f\"</div><div style=\"display: none;\">label QS:Llt,\"Autoportretas\"</div><div style=\"display: none;\">label QS:Lar,\"\u0628\u0648\u0631\u062a\u0631\u064a\u0647 \u0630\u0627\u062a\u064a\"</div><div style=\"display: none;\">label QS:Lel,\"\u0391\u03c5\u03c4\u03bf\u03c0\u03c1\u03bf\u03c3\u03c9\u03c0\u03bf\u03b3\u03c1\u03b1\u03c6\u03af\u03b1\"</div><div style=\"display: none;\">label QS:Lcs,\"Autoportr\u00e9t\"</div></div>",
+                  "source": "commons-desc-page"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Self portrait by Vincent van Gogh (F345)|PD-old-100-expired|Featured pictures on Wikipedia, English|PD-Art (PD-old-100-expired)|Artworks with Wikidata item|Artworks with known accession number|Featured pictures on Wikipedia, Persian|Featured pictures on Wikipedia, Turkish|CC-PD-Mark|Artworks with accession number from Wikidata|Featured pictures of people of the Netherlands|Google Art Project works in The Art Institute of Chicago|Google Art Project works by Vincent van Gogh|Featured pictures in the public domain|Featured pictures of paintings by Vincent van Gogh|Artworks digital representation of 2D work|Files from Google Arts & Culture|Featured pictures on Wikipedia, Arabic|Gift of Wildenstein and Co., Inc.|Featured pictures from the Google Art Project",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "featured",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://en.wikipedia.org/wiki/en:Vincent_van_Gogh\" class=\"extiw\" title=\"w:en:Vincent van Gogh\"><span title=\"Dutch painter (1853\u20131890)\">Vincent van Gogh</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1887\u00a0<span class=\"mw-valign-text-top noprint\" typeof=\"mw:File/Frameless\"><a href=\"https://www.wikidata.org/wiki/Q9162657#P571\" title=\"Edit this at Wikidata\"><img alt=\"Edit this at Wikidata\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"10\" height=\"10\" class=\"mw-file-element\" data-file-width=\"20\" data-file-height=\"20\"></a></span>",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a href=\"https://en.wikipedia.org/wiki/en:Google_Arts_%26_Culture\" class=\"extiw\" title=\"w:en:Google Arts &amp; Culture\"><span title=\"app and website exploring partner museums\">Google Arts &amp; Culture</span></a>  \u2014 <a rel=\"nofollow\" class=\"external text\" href=\"//www.google.com/culturalinstitute/asset-viewer/mwF3N6F_RfJ4_w\">mwF3N6F_RfJ4_w</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

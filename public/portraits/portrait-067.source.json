@@ -1,0 +1,128 @@
+{
+  "retrievedAt": "2026-10-19T22:35:38.386260+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2014-06-22T03:34:45Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Cousteau1972_(cropped).jpg",
+          "to": "File:Cousteau1972 (cropped).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 33519331,
+          "ns": 6,
+          "title": "File:Cousteau1972 (cropped).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 528547,
+              "width": 755,
+              "height": 1060,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/1/10/Cousteau1972_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 570,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/1/10/Cousteau1972_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 570,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/1/10/Cousteau1972_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Cousteau1972_(cropped).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=33519331",
+              "sha1": "30a32b8d53bd77786ec60c5acde5dfa7e1fe6fa8",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2016-12-03 11:48:13",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Cousteau1972 (cropped)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Jacques-Yves Cousteau|CC-Zero|Retouched pictures|Images from Anefo|Extracted images|Photographs by Hans Peters (flat list)|Portrait photographs by Hans Peters",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Commander Cousteau in C.E.1972 in The Hague for a conference. Royalty-free photo. Archives of the Netherlands. Anefo",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1972-03-30",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external free\" href=\"http://proxy.handle.net/10648/abe56934-d0b4-102d-bcf8-003048976d84\">http://proxy.handle.net/10648/abe56934-d0b4-102d-bcf8-003048976d84</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a href=\"//commons.wikimedia.org/wiki/Category:Hans_Peters\" title=\"Category:Hans Peters\">Hans Peters</a> for <a href=\"//commons.wikimedia.org/wiki/Category:Anefo\" title=\"Category:Anefo\">Anefo</a> .",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "<a rel=\"nofollow\" class=\"external free\" href=\"http://www.gahetna.nl/en/about-us/open-data\">http://www.gahetna.nl/en/about-us/open-data</a>",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "CC0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Zero, Public Domain Dedication",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

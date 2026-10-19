@@ -1,0 +1,126 @@
+{
+  "retrievedAt": "2026-10-19T22:38:47.556629+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2019-06-22T06:08:26Z",
+      "continue": "||"
+    },
+    "query": {
+      "pages": [
+        {
+          "pageid": 79860511,
+          "ns": 6,
+          "title": "File:Valentina Tereshkova (January 1963).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 168498,
+              "width": 601,
+              "height": 853,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Valentina_Tereshkova_%28January_1963%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 564,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Valentina_Tereshkova_%28January_1963%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 564,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Valentina_Tereshkova_%28January_1963%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Valentina_Tereshkova_(January_1963).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=79860511",
+              "sha1": "e6e9b6f971a5ac21c5e9c6f36e65b814755336bf",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2019-06-22 06:09:28",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Valentina Tereshkova (January 1963)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Extracted images|Portraits of Valentina Tereshkova|Valentina Tereshkova in 1963|Photos by Alexander Mokletsov|Images from RIA Novosti uploaded with Wikimedia partnership, 1963",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "<b>\u201cPilot-cosmonaut Valentina Tereshkova\u201d.</b> Pilot-cosmonaut Valentina Tereshkova.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "1963",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<p>RIA Novosti archive, image #616304, <a rel=\"nofollow\" class=\"external free\" href=\"http://visualrian.ru/ru/site/gallery/#616304\">http://visualrian.ru/ru/site/gallery/#616304</a>\n</p>\n35 mm film / 35 \u043c\u043c \u043d\u0435\u0433\u0430\u0442\u0438\u0432",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Alexander Mokletsov / \u0410\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440 \u041c\u043e\u043a\u043b\u0435\u0446\u043e\u0432",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "<a href=\"//commons.wikimedia.org/wiki/Commons:RIA_Novosti\" title=\"Commons:RIA Novosti\">Commons:RIA Novosti</a>",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "CC BY-SA 3.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution-Share Alike 3.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Attribution": {
+                  "value": "RIA Novosti archive, image #616304 / Alexander Mokletsov / CC-BY-SA 3.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by-sa/3.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-sa-3.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

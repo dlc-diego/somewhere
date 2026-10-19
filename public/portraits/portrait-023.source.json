@@ -1,0 +1,121 @@
+{
+  "retrievedAt": "2026-10-19T22:33:21.975661+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2020-09-06T18:11:55Z",
+      "continue": "||"
+    },
+    "query": {
+      "pages": [
+        {
+          "pageid": 49950311,
+          "ns": 6,
+          "title": "File:Monroecirca1953.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 751245,
+              "width": 2008,
+              "height": 2951,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Monroecirca1953.jpg/960px-Monroecirca1953.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 544,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Monroecirca1953.jpg/1280px-Monroecirca1953.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Monroecirca1953.jpg/960px-Monroecirca1953.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 544,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Monroecirca1953.jpg/1280px-Monroecirca1953.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Monroecirca1953.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Monroecirca1953.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=49950311",
+              "sha1": "378659ea62721ed03345a55f4e8c98f20f3c00fe",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2021-01-27 17:15:03",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Monroecirca1953",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "PD US not renewed|Sweater girl|Female beauty|Knitting motifs|20th-century portrait photographs of sitting women at half length|Marilyn Monroe in 1953|White sweaters|Modern Screen, 1953|1953 portrait photographs of women",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Artist": {
+                  "value": "<div class=\"fn value\">\n<a href=\"//commons.wikimedia.org/wiki/Category:Bert_Parry\" title=\"Category:Bert Parry\">Bert Parry</a></div>",
+                  "source": "commons-desc-page"
+                },
+                "ImageDescription": {
+                  "value": "Photo of actress in a late 1953 issue of <i>Modern Screen</i>.<br>\n<ul><li>A search revealed that this was taken for 1954 film <i><a href=\"//commons.wikimedia.org/wiki/Category:River_of_No_Return\" title=\"Category:River of No Return\">River of No Return</a></i>.</li></ul>",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "November 1953",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://archive.org/stream/modernscreen4647unse#page/n1159/mode/1up\">Page 39</a>",
+                  "source": "commons-desc-page"
+                },
+                "Permission": {
+                  "value": "*A renewal search was done at copyright.gov using the title Modern Screen.  There were no listings for the publication; there's no evidence of continued copyright on the magazine.",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "retrievedAt": "2026-10-19T22:33:35.563715+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Dwayne_Johnson-1764_(4x5_cropped_with_moderate_headroom).jpg",
+          "to": "File:Dwayne Johnson-1764 (4x5 cropped with moderate headroom).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 191912221,
+          "ns": 6,
+          "title": "File:Dwayne Johnson-1764 (4x5 cropped with moderate headroom).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 8905209,
+              "width": 3368,
+              "height": 4210,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg/960px-Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 640,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg/1280px-Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg/960px-Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 640,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg/1280px-Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Dwayne_Johnson-1764_%284x5_cropped_with_moderate_headroom%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dwayne_Johnson-1764_(4x5_cropped_with_moderate_headroom).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=191912221",
+              "sha1": "d165a1304aecec9fdc75bb2ea5e1875811abe766",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2026-05-13 16:16:35",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Dwayne Johnson-1764 (4x5 cropped with moderate headroom)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Personality rights warning|Extracted images|Information field template with formatting|Uploaded with LrMediaWiki|Dwayne Johnson in 2025|Supported by Wikimedia \u00d6sterreich in 2025|2025 Venice Film Festival|Dwayne Johnson in the 2020s|Supported by Wikimedia Deutschland 2025|Supported by Wikimedia Italia in 2025|Photographs by Harald Krichel from 2025|WikiPortraits at 2025 Venice Film Festival|The Smashing Machine (2025 film)",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Actor <a href=\"https://en.wikipedia.org/wiki/Dwayne_Johnson\" class=\"extiw\" title=\"en:Dwayne Johnson\">Dwayne Johnson</a> at the <a href=\"https://en.wikipedia.org/wiki/2025_Venice_Film_Festival\" class=\"extiw\" title=\"en:2025 Venice Film Festival\">2025 Venice Film Festival</a>",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2025-09-01",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<bdi><a href=\"https://www.wikidata.org/wiki/Q640\" class=\"extiw\" title=\"d:Q640\"><span title=\"German photographer; former vice chair of Wikimedia Deutschland\">Harald Krichel</span></a></bdi>",
+                  "source": "commons-desc-page"
+                },
+                "Attribution": {
+                  "value": "Harald Krichel\u00a0/\u00a0WikiPortraits",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseShortName": {
+                  "value": "CC BY-SA 4.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution-Share Alike 4.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by-sa/4.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "personality",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-sa-4.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

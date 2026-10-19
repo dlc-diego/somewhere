@@ -1,0 +1,123 @@
+{
+  "retrievedAt": "2026-10-19T22:33:42.014253+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2023-06-01T19:31:33Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Oprah_Winfrey_2016.jpg",
+          "to": "File:Oprah Winfrey 2016.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 132568423,
+          "ns": 6,
+          "title": "File:Oprah Winfrey 2016.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 659858,
+              "width": 1108,
+              "height": 1604,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Oprah_Winfrey_2016.jpg/960px-Oprah_Winfrey_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 552,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Oprah_Winfrey_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Oprah_Winfrey_2016.jpg/960px-Oprah_Winfrey_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 552,
+                "height": 800,
+                "srcset": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Oprah_Winfrey_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Oprah_Winfrey_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Oprah_Winfrey_2016.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=132568423",
+              "sha1": "9af5dd8a76969784bd2e5cdeb72dba8d72397ca3",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2023-06-01 19:32:53",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Oprah Winfrey 2016",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "PD US DOS|Images with extracted images|Flickr images reviewed by FlickreviewR 2|Oprah Winfrey in 2016|Files from the U.S. Embassy in South Africa Flickr stream|Meetings in Pretoria",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "U.S. Ambassador Patrick Gaspard hosted an audience of young South African women on Friday for a once-in-a-lifetime opportunity to meet global media leader and philanthropist Oprah Winfrey. Ms. Winfrey, who is in South Africa visiting the Oprah Winfrey Leadership Academy for Girls, took time out of her schedule speak to 250 invited guests, including participants in the U.S. government-funded DREAMS program and alumni of U.S. exchange programs.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2016-12-02 17:13:10",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/usembassysa/30637612874/\">https://www.flickr.com/photos/usembassysa/30637612874/</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "US Embassy  South Africa",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

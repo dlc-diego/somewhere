@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:32:39.568558+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Beyonc\u00e9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_(10_of_118)_(52946364598)_(best_crop).jpg",
+          "to": "File:Beyonc\u00e9 - Tottenham Hotspur Stadium - 1st June 2023 (10 of 118) (52946364598) (best crop).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 133542431,
+          "ns": 6,
+          "title": "File:Beyonc\u00e9 - Tottenham Hotspur Stadium - 1st June 2023 (10 of 118) (52946364598) (best crop).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 656983,
+              "width": 900,
+              "height": 1200,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 600,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 600,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_%2810_of_118%29_%2852946364598%29_%28best_crop%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Beyonc%C3%A9_-_Tottenham_Hotspur_Stadium_-_1st_June_2023_(10_of_118)_(52946364598)_(best_crop).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=133542431",
+              "sha1": "93956b73693dae4d4b083524721887387d11269d",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2023-06-24 20:53:29",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Beyonc\u00e9 - Tottenham Hotspur Stadium - 1st June 2023 (10 of 118) (52946364598) (best crop)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Extracted images|Beyonce - Tottenham Hotspur Stadium - Thursday 1st June 2023|Files from Raph PH Flickr stream",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "\u0411\u0435\u0451\u043d\u0441\u044d \u045e \u0440\u0430\u043c\u043a\u0430\u0445 \u0441\u0443\u0441\u0432\u0435\u0442\u043d\u0430\u0433\u0430 \u0442\u0443\u0440\u0430 Renaissance World Tour \u043d\u0430 \u0441\u0442\u0430\u0434\u044b\u0451\u043d\u0435 \u00ab\u0422\u043e\u0442\u044d\u043d\u0445\u044d\u043c \u0425\u043e\u0442\u0441\u043f\u0443\u0440\u00bb \u0443 \u041b\u043e\u043d\u0434\u0430\u043d\u0435 1 \u0447\u044d\u0440\u0432\u0435\u043d\u044f 2023 \u0433\u043e\u0434\u0430",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2023-06-01 19:49",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/raph_ph/52946364598/\">BeyonceSpurs010623 (10 of 118)</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/69880995@N04\">Raph_PH</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY 2.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution 2.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by/2.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-2.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

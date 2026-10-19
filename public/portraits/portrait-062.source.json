@@ -1,0 +1,123 @@
+{
+  "retrievedAt": "2026-10-19T22:35:19.616905+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "continue": {
+      "iistart": "2019-02-04T21:55:29Z",
+      "continue": "||"
+    },
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Neil_Armstrong_pose.jpg",
+          "to": "File:Neil Armstrong pose.jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 55244,
+          "ns": 6,
+          "title": "File:Neil Armstrong pose.jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 5406252,
+              "width": 3300,
+              "height": 4125,
+              "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Neil_Armstrong_pose.jpg/960px-Neil_Armstrong_pose.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "thumbwidth": 640,
+              "thumbheight": 800,
+              "responsiveUrls": {
+                "2": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Neil_Armstrong_pose.jpg/1280px-Neil_Armstrong_pose.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+              },
+              "thumbattribs": {
+                "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Neil_Armstrong_pose.jpg/960px-Neil_Armstrong_pose.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 640,
+                "height": 800,
+                "srcset": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Neil_Armstrong_pose.jpg/1280px-Neil_Armstrong_pose.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail 2x"
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Neil_Armstrong_pose.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_pose.jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=55244",
+              "sha1": "e75ad508ea394877b0a815109e7696db20de0d01",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2019-07-20 21:55:28",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Neil Armstrong pose",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Apollo Program A7L Suit|PD NASA|Images with extracted images|Template Unknown (author)|20th-century portrait photographs of standing men at three-quarter length|United States photographs taken on 1969-07-01|Neil Armstrong in 1969|Files from NASA with known IDs|Portraits in an Apollo space suit|Men facing left and looking at viewer|Color portrait photographs|Neil Armstrong in the United States|Male people with helmets",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Portrait of Astronaut Neil A. Armstrong, commander of the Apollo 11 Lunar Landing mission in his space suit, with his helmet on the table in front of him. Behind him is a large photograph of the lunar surface.",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "Taken on\u00a01 July 1969",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<a rel=\"nofollow\" class=\"external text\" data-mw-original-href=\"http://www.nasa.gov/images/content/464436main_S69-31741_full.jpg\" href=\"https://www.nasa.gov/images/content/464436main_S69-31741_full.jpg\">NASA Photo ID: S69-31741 - Program: Apollo XI</a>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Public domain",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "false",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Copyrighted": {
+                  "value": "False",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "pd",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

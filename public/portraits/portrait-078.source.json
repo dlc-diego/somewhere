@@ -1,0 +1,120 @@
+{
+  "retrievedAt": "2026-10-19T22:36:12.317143+00:00",
+  "api": "https://commons.wikimedia.org/w/api.php",
+  "response": {
+    "batchcomplete": true,
+    "query": {
+      "normalized": [
+        {
+          "fromencoded": false,
+          "from": "File:Greta_Thunberg_in_May_2026_(cropped_3x4).jpg",
+          "to": "File:Greta Thunberg in May 2026 (cropped 3x4).jpg"
+        }
+      ],
+      "pages": [
+        {
+          "pageid": 200215125,
+          "ns": 6,
+          "title": "File:Greta Thunberg in May 2026 (cropped 3x4).jpg",
+          "imagerepository": "local",
+          "imageinfo": [
+            {
+              "size": 682732,
+              "width": 743,
+              "height": 990,
+              "thumburl": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Greta_Thunberg_in_May_2026_%28cropped_3x4%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+              "thumbwidth": 600,
+              "thumbheight": 800,
+              "thumbattribs": {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Greta_Thunberg_in_May_2026_%28cropped_3x4%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+                "decoding": "async",
+                "loading": "lazy",
+                "width": 600,
+                "height": 800
+              },
+              "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Greta_Thunberg_in_May_2026_%28cropped_3x4%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+              "descriptionurl": "https://commons.wikimedia.org/wiki/File:Greta_Thunberg_in_May_2026_(cropped_3x4).jpg",
+              "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=200215125",
+              "sha1": "fab8f94baae7fbdc1fe2e06e01f5b134d4c528a4",
+              "extmetadata": {
+                "DateTime": {
+                  "value": "2026-09-25 13:08:49",
+                  "source": "mediawiki-metadata",
+                  "hidden": ""
+                },
+                "ObjectName": {
+                  "value": "Greta Thunberg in May 2026 (cropped 3x4)",
+                  "source": "mediawiki-metadata"
+                },
+                "CommonsMetadataExtension": {
+                  "value": 1.2,
+                  "source": "extension",
+                  "hidden": ""
+                },
+                "Categories": {
+                  "value": "Greta Thunberg|Creative Commons Attribution-Share Alike missing SDC copyright status|Self-published work|Portraits of women|Extracted images|Creative Commons Attribution-Share Alike 4.0 missing SDC copyright license|Self-published work missing SDC copyright license|Young women with necklaces",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "Assessments": {
+                  "value": "",
+                  "source": "commons-categories",
+                  "hidden": ""
+                },
+                "ImageDescription": {
+                  "value": "Greta Thunberg",
+                  "source": "commons-desc-page"
+                },
+                "DateTimeOriginal": {
+                  "value": "2026-05-15 15:44:04",
+                  "source": "commons-desc-page"
+                },
+                "Credit": {
+                  "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+                  "source": "commons-desc-page"
+                },
+                "Artist": {
+                  "value": "<a href=\"//commons.wikimedia.org/wiki/User:Babaidas\" title=\"User:Babaidas\">Kushal Das</a>",
+                  "source": "commons-desc-page"
+                },
+                "LicenseShortName": {
+                  "value": "CC BY-SA 4.0",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "UsageTerms": {
+                  "value": "Creative Commons Attribution-Share Alike 4.0",
+                  "source": "commons-desc-page"
+                },
+                "AttributionRequired": {
+                  "value": "true",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "LicenseUrl": {
+                  "value": "https://creativecommons.org/licenses/by-sa/4.0",
+                  "source": "commons-desc-page"
+                },
+                "Copyrighted": {
+                  "value": "True",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "Restrictions": {
+                  "value": "",
+                  "source": "commons-desc-page",
+                  "hidden": ""
+                },
+                "License": {
+                  "value": "cc-by-sa-4.0",
+                  "source": "commons-templates",
+                  "hidden": ""
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
