@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { ADVENTURE_KEY, type AdventureRun } from '../src/lib/adventure'
+import { ADVENTURE_KEY, adventureMysteryGame, type AdventureRun } from '../src/lib/adventure'
 import { questionById, mysteryById } from '../src/lib/something'
 import { countryById, locationFor } from '../src/lib/countries'
 import { shortestBorderRoute } from '../src/lib/journey'
@@ -121,7 +121,7 @@ test('all three route sections have three-by-three choices and older boss progre
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
-  await expect.poll(async () => (await stored(page)).version).toBe(3)
+  await expect.poll(async () => (await stored(page)).version).toBe(4)
   expect((await stored(page)).inventory).toEqual(boss.inventory)
   expect((await stored(page)).path).toHaveLength(13)
   await triviaAnswer(page)
@@ -132,7 +132,7 @@ test('all three route sections have three-by-three choices and older boss progre
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
-  await expect.poll(async () => (await stored(page)).version).toBe(3)
+  await expect.poll(async () => (await stored(page)).version).toBe(4)
   expect((await stored(page)).path).toHaveLength(13)
 })
 
@@ -387,6 +387,192 @@ test('What am I gives clues, rejects repeats and lets a Lucky star resolve an en
   ).toHaveCount(5)
 })
 
+for (const kind of ['who', 'identify'] as const) {
+  test(`${kind} adventure preserves its person and clues, accepts aliases and keeps standalone games separate`, async ({
+    page,
+  }) => {
+    const fixture = at(kind)
+    const person = adventureMysteryGame(kind).byId.get(fixture.encounter!.mystery!.id)!
+    await seed(page, fixture)
+    await page.addInitScript(() => {
+      localStorage.setItem('someone.who.v1', 'standalone Who am I untouched')
+      localStorage.setItem('someone.identify.v1', 'standalone Identify Me untouched')
+    })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('http://127.0.0.1:4174/wep-app/')
+    await expect(
+      page.getByRole('heading', { name: kind === 'who' ? 'Who am I' : 'Identify Me', exact: true }),
+    ).toBeVisible()
+    if (kind === 'identify') {
+      const photo = page.getByRole('img', { name: 'Mystery person to identify' })
+      await expect(photo).toBeVisible()
+      await photo.evaluate((img: HTMLImageElement) => img.decode())
+      await expect(photo).toHaveAttribute('src', /^\.\/portraits\/portrait-\d+.webp$/)
+      await page.getByRole('button', { name: 'Image credits', exact: true }).click()
+      await expect(page.getByRole('dialog', { name: 'Image credits' })).toContainText('Creator')
+      await expect(page.getByRole('link', { name: 'Wikimedia Commons file page' })).toHaveAttribute(
+        'href',
+        /^https:\/\/commons.wikimedia.org\/wiki\/File:/,
+      )
+      await page.getByRole('button', { name: 'Close dialog' }).click()
+    }
+    await page
+      .getByRole('button', {
+        name: kind === 'who' ? 'Reveal another clue' : 'Reveal a clue',
+        exact: true,
+      })
+      .click()
+    await page.getByRole('button', { name: /^Use Trail compass/ }).click()
+    await expect(page.locator('.somex-hint')).toHaveCount(1)
+    if (kind === 'identify') {
+      await expect(page.locator('.portrait-frame img')).toHaveCount(1)
+      await expect(page.locator('.portrait-hint')).toHaveCount(1)
+    }
+    await page.getByRole('button', { name: /^Use Second wind/ }).click()
+    await page.getByRole('textbox', { name: 'Your answer', exact: true }).fill('Wrong person')
+    await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    await page.getByRole('textbox', { name: 'Your answer', exact: true }).fill('WRONG PERSON!')
+    await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    await expect(page.getByRole('alert')).toContainText('already tried')
+    await page.reload()
+    const loaded = await stored(page)
+    expect(loaded.encounter!.mystery!.id).toBe(person.id)
+    expect(loaded.encounter!.mystery!.cluesShown).toBe(kind === 'who' ? 3 : 2)
+    expect(loaded.encounter!.mystery!.guesses).toEqual(['Wrong person'])
+    expect(loaded.encounter!.limit).toBe(7)
+    await expect(page.locator('.somex-hint')).toBeVisible()
+    await page
+      .getByRole('textbox', { name: 'Your answer', exact: true })
+      .fill(person.aliases[0] || person.answer)
+    await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    await expect(page.locator('.somex-stop-result')).toContainText(person.answer)
+    expect((await stored(page)).encounter!.result).toBe('cleared')
+    expect((await stored(page)).coins).toBe(fixture.coins + 6)
+    expect((await stored(page)).hearts).toBe(fixture.hearts)
+    if (kind === 'identify')
+      await expect(
+        page.getByRole('img', { name: `Portrait of ${person.answer}`, exact: true }),
+      ).toBeVisible()
+    expect(await page.evaluate(() => localStorage.getItem('someone.who.v1'))).toBe(
+      'standalone Who am I untouched',
+    )
+    expect(await page.evaluate(() => localStorage.getItem('someone.identify.v1'))).toBe(
+      'standalone Identify Me untouched',
+    )
+    await page.reload()
+    await expect(page.locator('.victory-celebration')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Return to the route', exact: true }).click()
+    await expect(page.locator('.somex-route-node.reachable')).not.toHaveCount(0)
+  })
+
+  test(`${kind} victory plays fully when a new run is confirmed`, async ({ page }) => {
+    const fixture = at(kind)
+    const person = adventureMysteryGame(kind).byId.get(fixture.encounter!.mystery!.id)!
+    await seed(page, fixture)
+    await page.goto('/')
+    await expect(page.getByRole('textbox', { name: 'Your answer', exact: true })).toBeVisible()
+    await page.clock.install()
+    await page.clock.pauseAt(new Date(Date.now() + 1000))
+    await page.getByRole('textbox', { name: 'Your answer', exact: true }).fill(person.answer)
+    await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    const canvas = page.locator('.victory-celebration')
+    await expect(canvas).toHaveCount(1)
+    const original = (await canvas.elementHandle())!
+    await page.getByRole('button', { name: 'New run', exact: true }).click()
+    expect((await stored(page)).id).toBe(fixture.id)
+    await page.getByRole('button', { name: 'Start new run', exact: true }).click()
+    expect(await original.evaluate((el) => el.isConnected)).toBe(true)
+    expect((await stored(page)).path).toEqual([])
+    await page.clock.runFor(4900)
+    await expect(canvas).toHaveCount(0)
+  })
+}
+
+test('New run confirmation preserves progress on cancel or Escape and resets only the adventure on confirm', async ({
+  page,
+}) => {
+  const fixture = at('who')
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const input = page.getByRole('textbox', { name: 'Your answer', exact: true })
+  await input.fill('An unfinished name')
+  await page.getByRole('button', { name: 'New run', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Start a new run?' })
+  await expect(dialog).toContainText('hearts, coins and supplies')
+  expect(await stored(page)).toEqual(fixture)
+  await page.getByRole('button', { name: 'Keep this run', exact: true }).click()
+  await expect(input).toHaveValue('An unfinished name')
+  await page.getByRole('button', { name: 'New run', exact: true }).click()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  expect(await stored(page)).toEqual(fixture)
+  await page.getByRole('button', { name: 'New run', exact: true }).click()
+  await page.getByRole('button', { name: 'Start new run', exact: true }).click()
+  const fresh = await stored(page)
+  expect(fresh.id).not.toBe(fixture.id)
+  expect(fresh.path).toEqual([])
+  expect(fresh.encounter).toBeNull()
+  expect(fresh.hearts).toBe(3)
+  expect(fresh.coins).toBe(25)
+  expect(fresh.inventory.star).toBe(0)
+  await expect(page.locator('.somex-route-node')).toHaveCount(31)
+  await expect(page.getByRole('button', { name: /^Who am I, stop / })).toHaveCount(2)
+  await expect(page.getByRole('button', { name: /^Identify Me, stop / })).toHaveCount(2)
+  await page.reload()
+  await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
+  expect((await stored(page)).id).toBe(fresh.id)
+})
+
+test('an unavailable adventure portrait can be retried and giving up still reveals without a win', async ({
+  page,
+}) => {
+  const fixture = at('identify')
+  const person = adventureMysteryGame('identify').byId.get(fixture.encounter!.mystery!.id)!
+  await seed(page, fixture)
+  let unavailable = true
+  await page.route('**/portraits/manifest.json', (route) =>
+    unavailable ? route.fulfill({ status: 503, body: 'Unavailable' }) : route.continue(),
+  )
+  await page.goto('/')
+  await expect(page.getByRole('alert')).toContainText('Your trial is saved')
+  unavailable = false
+  await page.getByRole('button', { name: 'Try loading portraits again', exact: true }).click()
+  await expect(page.getByRole('img', { name: 'Mystery person to identify' })).toBeVisible()
+  expect((await stored(page)).encounter!.mystery!.id).toBe(person.id)
+  await page
+    .getByRole('button', { name: 'Give up and reveal answer · risk 1 heart', exact: true })
+    .click()
+  await expect(page.locator('.somex-stop-result')).toContainText(person.answer)
+  expect((await stored(page)).hearts).toBe(fixture.hearts - 1)
+  await expect(page.locator('.victory-celebration')).toHaveCount(0)
+})
+
+test('Someone trials, image credits and restart confirmation are accessible in both themes on mobile', async ({
+  page,
+}) => {
+  await seed(page, at('identify'))
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
+  await page.goto('/')
+  await expect(page.getByRole('img', { name: 'Mystery person to identify' })).toBeVisible()
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark')
+      await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click()
+    for (const action of [null, 'Image credits', 'New run']) {
+      if (action) await page.getByRole('button', { name: action, exact: true }).click()
+      expect(
+        (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+          .violations,
+      ).toEqual([])
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      )
+      if (action) await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+    }
+  }
+})
+
 test('boss victory queues fire and trophy effects and they survive immediate restarts and experience changes', async ({
   page,
 }) => {
@@ -406,6 +592,7 @@ test('boss victory queues fire and trophy effects and they survive immediate res
   await expect(canvas).toHaveAttribute('data-effect', 'fire-streak')
   const original = await canvas.elementHandle()
   await page.getByRole('button', { name: 'Start a new adventure', exact: true }).click()
+  await page.getByRole('button', { name: 'Start new run', exact: true }).click()
   expect(await original!.evaluate((el) => el.isConnected)).toBe(true)
   await page.getByRole('combobox', { name: 'Choose experience' }).selectOption('someone')
   await page.clock.runFor(900)
@@ -434,6 +621,7 @@ test('defeat and corrupt saves remain recoverable without developer shortcuts', 
   ).toBeVisible()
   expect((await stored(page)).status).toBe('lost')
   await page.getByRole('button', { name: 'Start a new adventure', exact: true }).click()
+  await page.getByRole('button', { name: 'Start new run', exact: true }).click()
   expect((await stored(page)).coins).toBe(25)
   await page.evaluate(() => localStorage.setItem('somex.run.v1', '{'))
   await page.reload()

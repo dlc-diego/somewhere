@@ -11,10 +11,11 @@ import {
   triviaChoices,
   guessAdventureCountry,
   guessAdventureMystery,
+  adventureMysteryGame,
   type AdventureRun,
   type NodeKind,
 } from '../../src/lib/adventure'
-import { questionById, mysteryById } from '../../src/lib/something'
+import { questionById } from '../../src/lib/something'
 import { shortestBorderRoute } from '../../src/lib/journey'
 
 // Test fixtures use ordinary game actions; production has no testing shortcuts.
@@ -65,7 +66,10 @@ export function completeEncounter(run: AdventureRun): AdventureRun {
     for (const id of route) run = guessAdventureCountry(run, id).run
     return run
   }
-  return guessAdventureMystery(run, mysteryById.get(scene.mystery!.id)!.answer).run
+  return guessAdventureMystery(
+    run,
+    adventureMysteryGame(scene.kind).byId.get(scene.mystery!.id)!.answer,
+  ).run
 }
 export function closeStop(run: AdventureRun): AdventureRun {
   return returnToRoute(completeEncounter(run)).run
@@ -81,15 +85,16 @@ export function at(kind: NodeKind): AdventureRun {
 }
 
 export function previousSave(run: AdventureRun): string {
+  const legacy = JSON.parse(legacySave(run)) as AdventureRun
   const keep = (id: string) => {
     const row = Number(id.split('-')[0])
     return row < 8 || row === 12
   }
   const oldId = (id: string) => (id === '12-1' ? '8-1' : id)
   return JSON.stringify({
-    ...run,
+    ...legacy,
     version: 2,
-    map: run.map
+    map: legacy.map
       .filter((node) => keep(node.id))
       .map((node) => ({ ...node, id: oldId(node.id), row: node.row === 12 ? 8 : node.row })),
     path: run.path.filter(keep).map(oldId),
@@ -99,6 +104,28 @@ export function previousSave(run: AdventureRun): string {
         .map(([id, result]) => [oldId(id), result]),
     ),
     encounter: run.encounter ? { ...run.encounter, nodeId: oldId(run.encounter.nodeId) } : null,
+  })
+}
+
+// Model the real version-3 layout, before Someone trials existed.
+export function legacySave(run: AdventureRun): string {
+  if (run.encounter?.kind === 'who' || run.encounter?.kind === 'identify')
+    throw new Error('Someone trials did not exist in legacy adventures')
+  const oldKinds: Record<number, NodeKind> = {
+    1: 'capitals',
+    4: 'trivia',
+    8: 'mystery',
+    9: 'trivia',
+  }
+  return JSON.stringify({
+    ...run,
+    version: 3,
+    seenWho: undefined,
+    seenPortraits: undefined,
+    map: run.map.map((node) => ({
+      ...node,
+      kind: node.kind === 'who' || node.kind === 'identify' ? oldKinds[node.row] : node.kind,
+    })),
   })
 }
 export function previewSave(run: AdventureRun): string {

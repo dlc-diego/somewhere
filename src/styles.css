@@ -2174,6 +2174,7 @@ h1 {
 }
 .somex-heading {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
@@ -2199,6 +2200,30 @@ h1 {
 .somex-satchel-button span {
   font-size: 11px;
   color: var(--text-muted);
+}
+.somex-heading-actions,
+.somex-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.somex-heading-actions {
+  flex-shrink: 0;
+}
+.somex-confirm-actions {
+  margin-top: 24px;
+}
+.somex-confirm-actions > button {
+  flex: 1 1 150px;
+  margin: 0;
+}
+.somex-stop .portrait-frame {
+  max-width: 720px;
+  margin: 20px auto 12px;
+}
+.somex-stop .portrait-credit-line {
+  max-width: 720px;
+  margin-inline: auto;
 }
 .somex-hud {
   display: flex;
@@ -3189,7 +3214,7 @@ h1 {
   font-size: 11px;
 }
 .somex-use-item > span:first-child {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .portrait-frame {

@@ -20,10 +20,15 @@ import {
   TentTree,
   Zap,
   CircleHelp,
+  UserRound,
+  Image as ImageIcon,
+  RotateCcw,
+  Lightbulb,
 } from 'lucide-react'
 import {
   ADVENTURE_KEY,
   ADVENTURE_STOPS,
+  adventureMysteryGame,
   ITEMS,
   ITEM_IDS,
   SHOP_ITEM_IDS,
@@ -57,7 +62,7 @@ import {
 } from '../lib/adventure'
 import { countryById, locationFor, type Country, type Location } from '../lib/countries'
 import { guessDetails, hasWon } from '../lib/game'
-import { mysteryById, questionById } from '../lib/something'
+import { questionById } from '../lib/something'
 import { shortestBorderRoute } from '../lib/journey'
 import { prefersReducedMotion } from '../lib/motion'
 import type { CelebrationRequest } from '../lib/celebrations'
@@ -68,9 +73,12 @@ import VisualChallenge from './VisualChallenge'
 import Dialog from './Dialog'
 
 const Globe = lazy(() => import('./Globe'))
+const AdventurePortrait = lazy(() => import('./AdventurePortrait'))
 const nodeIcons = {
   trivia: Brain,
   mystery: CircleHelp,
+  who: UserRound,
+  identify: ImageIcon,
   countries: Globe2,
   capitals: MapPin,
   flags: Flag,
@@ -94,6 +102,7 @@ export default function Adventure({
   const [warning, setWarning] = useState(initial.warning || '')
   const [error, setError] = useState('')
   const [satchel, setSatchel] = useState(false)
+  const [confirmRestart, setConfirmRestart] = useState(false)
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState<{
     countryId: string
@@ -191,6 +200,9 @@ export default function Adventure({
     setRun(next)
     setError('')
     setFocus(null)
+    setQuery('')
+    setSatchel(false)
+    setConfirmRestart(false)
     scrollTo('map')
   }
   function consume(item: ItemId) {
@@ -210,7 +222,9 @@ export default function Adventure({
   const ended = scene?.result !== 'active'
   const terminal = run.status !== 'playing'
   const geo = scene?.geography
-  const mystery = scene?.mystery ? mysteryById.get(scene.mystery.id)! : null
+  const mystery = scene?.mystery
+    ? adventureMysteryGame(scene.kind).byId.get(scene.mystery.id)!
+    : null
   const trial = scene?.trivia
   const question = trial ? questionById.get(trial.id)! : null
   const answerCountry = geo ? countryById.get(geo.answer)! : null
@@ -235,10 +249,18 @@ export default function Adventure({
           <h2 id="somex-title">A little adventure.</h2>
           <p>Thirteen stops. One final gate. Keep your heart in it.</p>
         </div>
-        <button className="secondary somex-satchel-button" onClick={() => setSatchel(true)}>
-          <Backpack size={18} /> Satchel{' '}
-          <span>{ITEM_IDS.reduce((sum, id) => sum + run.inventory[id], 0)}</span>
-        </button>
+        <div className="somex-heading-actions">
+          <button
+            className="secondary somex-satchel-button"
+            onClick={() => setConfirmRestart(true)}
+          >
+            <RotateCcw size={17} /> New run
+          </button>
+          <button className="secondary somex-satchel-button" onClick={() => setSatchel(true)}>
+            <Backpack size={18} /> Satchel{' '}
+            <span>{ITEM_IDS.reduce((sum, id) => sum + run.inventory[id], 0)}</span>
+          </button>
+        </div>
       </div>
       <div className="somex-hud">
         <div
@@ -300,7 +322,7 @@ export default function Adventure({
               ? 'Final boss defeated. Adventure complete.'
               : 'This run is over. Your next route will be different.'}
           </p>
-          <button className="primary" onClick={restart}>
+          <button className="primary" onClick={() => setConfirmRestart(true)}>
             Start a new adventure <ArrowRight size={17} />
           </button>
         </div>
@@ -385,29 +407,61 @@ export default function Adventure({
               )}
             </>
           )}
-          {scene.kind === 'mystery' && scene.mystery && mystery && (
+          {scene.mystery && mystery && (
             <>
               <p className="somex-rules">
-                Solve the mystery within {scene.limit} guesses. Clues are free; a failed mystery
-                costs one heart.
+                {scene.kind === 'identify' ? 'Identify the person' : 'Solve the mystery'} within{' '}
+                {scene.limit} guesses.{' '}
+                {scene.kind === 'identify' ? 'One clue is free' : 'Clues are free'}; a failed
+                mystery costs one heart.
               </p>
-              <ol className="mystery-clues" aria-label="Adventure mystery clues">
-                {mystery.clues.slice(0, ended ? 5 : scene.mystery.cluesShown).map((clue, index) => (
-                  <li key={clue}>
-                    <span>{String(index + 1).padStart(2, '0')}</span>
-                    <p>{clue}</p>
-                  </li>
-                ))}
-              </ol>
+              {scene.kind === 'identify' ? (
+                <>
+                  <Suspense
+                    fallback={
+                      <p className="something-loading" role="status">
+                        Loading the portrait…
+                      </p>
+                    }
+                  >
+                    <AdventurePortrait
+                      personId={scene.mystery.id}
+                      answer={ended ? mystery.answer : null}
+                    />
+                  </Suspense>
+                  {(ended || scene.mystery.cluesShown > 1) && (
+                    <p className="portrait-hint" role="status">
+                      <Lightbulb size={16} /> {mystery.clues[1]}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <ol className="mystery-clues" aria-label="Adventure mystery clues">
+                  {mystery.clues
+                    .slice(0, ended ? mystery.clues.length : scene.mystery.cluesShown)
+                    .map((clue, index) => (
+                      <li key={clue}>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <p>{clue}</p>
+                      </li>
+                    ))}
+                </ol>
+              )}
               {!ended && (
                 <>
-                  <button
-                    className="text-button"
-                    disabled={scene.mystery.cluesShown >= 5}
-                    onClick={() => apply(revealAdventureClue(current.current))}
-                  >
-                    {scene.mystery.cluesShown >= 5 ? 'All clues revealed' : 'Reveal another clue'}
-                  </button>
+                  {(scene.kind !== 'identify' || scene.mystery.cluesShown < 2) && (
+                    <button
+                      className="text-button"
+                      disabled={scene.mystery.cluesShown >= mystery.clues.length}
+                      onClick={() => apply(revealAdventureClue(current.current))}
+                    >
+                      {scene.kind === 'identify'
+                        ? 'Reveal a clue'
+                        : scene.mystery.cluesShown >= mystery.clues.length
+                          ? 'All clues revealed'
+                          : 'Reveal another clue'}
+                    </button>
+                  )}
                   <form
                     className="mystery-form"
                     onSubmit={(event) => {
@@ -422,6 +476,8 @@ export default function Adventure({
                       maxLength={100}
                       onChange={(event) => setQuery(event.target.value)}
                       autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
                     />
                     <button className="primary" disabled={!query.trim() || terminal}>
                       Make a guess <ArrowRight size={17} />
@@ -664,6 +720,24 @@ export default function Adventure({
           </summary>
           <AdventureMap run={run} onChoose={selectNode} />
         </details>
+      )}
+      {confirmRestart && (
+        <Dialog title="Start a new run?" onClose={() => setConfirmRestart(false)}>
+          <p className="eyebrow">A fresh path</p>
+          <h2>Start a new run?</h2>
+          <p>
+            This replaces your current adventure, including its route, hearts, coins and supplies.
+            Your other games stay saved.
+          </p>
+          <div className="somex-confirm-actions">
+            <button className="secondary" autoFocus onClick={() => setConfirmRestart(false)}>
+              Keep this run
+            </button>
+            <button className="primary" onClick={restart}>
+              Start new run <ArrowRight size={17} />
+            </button>
+          </div>
+        </Dialog>
       )}
       {satchel && (
         <Dialog

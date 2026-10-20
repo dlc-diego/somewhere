@@ -2,6 +2,10 @@ import { people } from '../data/people'
 import { createMysteryGame } from './mystery'
 
 export const IDENTIFY_KEY = 'someone.identify.v1'
+export const portraitPeople = people.map((person) => ({
+  ...person,
+  clues: ['Identify the person in the portrait.', person.clues[3]],
+}))
 export interface Portrait {
   id: string
   personId: string
@@ -121,14 +125,13 @@ export async function fetchPortraits(signal?: AbortSignal): Promise<Portrait[]> 
   return validatePortraits(await response.json())
 }
 export function identifyGame(portraits: readonly Portrait[]) {
-  const byPerson = new Map(people.map((person) => [person.id, person]))
+  const byPerson = new Map(portraitPeople.map((person) => [person.id, person]))
   return createMysteryGame(
     portraits.map((portrait) => {
       const person = byPerson.get(portrait.personId)!
       return {
         ...person,
         id: portrait.id,
-        clues: ['Identify the person in the portrait.', person.clues[3]],
       }
     }),
   )

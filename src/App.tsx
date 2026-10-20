@@ -765,10 +765,10 @@ export default function App() {
               <div>
                 <strong>Play familiar challenges</strong>
                 <p>
-                  Normal trivia needs two of three correct answers. Geography and What am I use a
-                  guess budget; a failed challenge costs one heart. Invalid or duplicate guesses do
-                  not count. Border Journey uses continuous land borders only. Extra mystery clues
-                  are free.
+                  Normal trivia needs two of three correct answers. Geography, What am I, Who am I
+                  and Identify Me use a guess budget; a failed challenge costs one heart. Invalid or
+                  duplicate guesses do not count. Border Journey uses continuous land borders only.
+                  Extra mystery clues are free; Identify Me offers one optional text clue.
                 </p>
               </div>
             </li>
@@ -802,7 +802,8 @@ export default function App() {
             Normal wins earn 6 coins; elites earn 10 and the boss earns 15. Each of the three route
             sections has three rows of three choices and a rest stop. Lucky stars are found only in
             discoveries or as a rare reward after a challenge win earned without a star. Progress
-            saves in this browser separately from your other games.
+            saves in this browser separately from your other games. New run, beside the Satchel,
+            asks for confirmation before replacing your adventure.
           </p>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s explore <ArrowRight size={17} />

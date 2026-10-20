@@ -5,6 +5,7 @@ import { mysteryById, questionById } from './something'
 import {
   ADVENTURE_KEY,
   ADVENTURE_STOPS,
+  adventureMysteryGame,
   COIN_REWARDS,
   SHOP_ITEM_IDS,
   trialItems,
@@ -45,6 +46,7 @@ import {
   stockedAdventure,
   previewSave,
   previousSave,
+  legacySave,
 } from '../../tests/helpers/adventure'
 const restore = (run: AdventureRun) => parseAdventure(JSON.stringify(run))
 
@@ -53,6 +55,8 @@ describe('adventure routes and outcomes', () => {
     const run = newAdventure()
     expect(run.coins).toBe(25)
     expect(run.hearts).toBe(3)
+    expect(run.map.filter((node) => node.kind === 'who')).toHaveLength(2)
+    expect(run.map.filter((node) => node.kind === 'identify')).toHaveLength(2)
     expect(ITEM_IDS.filter((id) => run.inventory[id] > 0)).toEqual(['potion', 'fifty', 'hint'])
     expect(Object.values(run.inventory).reduce((sum, count) => sum + count, 0)).toBe(3)
     for (const start of [0, 4, 8]) {
@@ -299,7 +303,7 @@ describe('consumables and recovery', () => {
     expect(restore(run)).toEqual(run)
   })
   it('Lucky stars auto-win non-boss challenges and consume exactly one item', () => {
-    for (const kind of ['trivia', 'shapes', 'mystery'] as const) {
+    for (const kind of ['trivia', 'shapes', 'mystery', 'who', 'identify'] as const) {
       const original = at(kind)
       const done = useItem(original, 'star').run
       expect(done.encounter!.result).toBe('cleared')
@@ -341,6 +345,49 @@ describe('consumables and recovery', () => {
 })
 
 describe('familiar geography and mystery encounters', () => {
+  for (const kind of ['who', 'identify'] as const) {
+    it(`${kind} has its own people history, free clues, aliases, finite attempts and consumables`, () => {
+      const original = at(kind)
+      let run = original
+      const scene = run.encounter!
+      const game = adventureMysteryGame(kind)
+      const person = game.byId.get(scene.mystery!.id)!
+      const key = kind === 'who' ? 'seenWho' : 'seenPortraits'
+      expect(run[key]).toContain(person.id)
+      expect(run.encounter!.limit).toBe(5)
+      expect(trialItems(run)).toContain('hint')
+      expect(trialItems(run)).toContain('boots')
+      expect(trialItems(run)).not.toContain('fifty')
+      run = guessAdventureMystery(run, 'a wrong name').run
+      expect(guessAdventureMystery(run, 'A WRONG NAME!').run).toBe(run)
+      run = revealAdventureClue(run).run
+      expect(run.encounter!.mystery!.guesses).toHaveLength(1)
+      expect(run.encounter!.mystery!.cluesShown).toBe(2)
+      run = useItem(run, 'hint').run
+      expect(run.encounter!.mystery!.cluesShown).toBe(kind === 'identify' ? 2 : 3)
+      expect(run.encounter!.hintUsed).toBe(true)
+      expect(useItem(run, 'hint').run).toBe(run)
+      run = useItem(run, 'boots').run
+      expect(run.encounter!.limit).toBe(7)
+      expect(restore(run)).toEqual(run)
+      const solved = guessAdventureMystery(run, person.aliases[0] || person.answer).run
+      expect(solved.encounter!.result).toBe('cleared')
+      expect(solved.coins).toBe(run.coins + COIN_REWARDS.normal)
+      expect(solved.hearts).toBe(run.hearts)
+      expect(restore(solved)).toEqual(solved)
+      expect(guessAdventureMystery(solved, person.answer).run).toBe(solved)
+      const gaveUp = abandonEncounter(run).run
+      expect(gaveUp.hearts).toBe(run.hearts - 1)
+      expect(gaveUp.encounter!.mystery!.revealed).toBe(true)
+      expect(restore(gaveUp)).toEqual(gaveUp)
+      let failed = original
+      for (let i = 0; i < 5; i++) failed = guessAdventureMystery(failed, `Wrong name ${i}`).run
+      expect(failed.encounter!.result).toBe('failed')
+      expect(failed.encounter!.mystery!.revealed).toBe(true)
+      expect(failed.hearts).toBe(original.hearts - 1)
+      expect(restore(failed)).toEqual(failed)
+    })
+  }
   for (const kind of ['countries', 'capitals', 'flags', 'shapes'] as const)
     it(`${kind} keeps one target, rejects duplicates, accepts an exact win and persists`, () => {
       let run = at(kind)
@@ -404,6 +451,86 @@ describe('familiar geography and mystery encounters', () => {
 })
 
 describe('saved adventures', () => {
+  it('preserves old active trials in the exact rows that now offer Someone games', () => {
+    for (const [kind, row] of [
+      ['capitals', 1],
+      ['trivia', 4],
+      ['mystery', 8],
+      ['trivia', 9],
+    ] as const) {
+      const sample = at(kind)
+      const old = JSON.parse(legacySave(newAdventure()))
+      const target = old.map.find(
+        (n: { row: number; kind: string }) => n.row === row && n.kind === kind,
+      )
+      old.path = [
+        ...old.map
+          .filter((n: { row: number; lane: number }) => n.row < row && n.lane === 1)
+          .map((n: { id: string }) => n.id),
+        target.id,
+      ]
+      old.outcomes = Object.fromEntries(old.path.slice(0, -1).map((id: string) => [id, 'cleared']))
+      old.encounter = { ...sample.encounter, nodeId: target.id }
+      old.seenTrivia = sample.seenTrivia
+      old.seenMysteries = sample.seenMysteries
+      const restored = parseAdventure(JSON.stringify(old))!
+      expect(restored.encounter).toEqual(old.encounter)
+      expect(restored.map.find((n) => n.id === target.id)?.kind).toBe(kind)
+      expect(restored.map.filter((n) => n.row <= row)).toEqual(
+        old.map.filter((n: { row: number }) => n.row <= row),
+      )
+      expect(restore(restored)).toEqual(restored)
+    }
+  })
+  it('upgrades version-3 saves without changing any visited node, active trial or completed boss', () => {
+    for (const original of [
+      newAdventure(),
+      at('trivia'),
+      at('journey'),
+      at('boss'),
+      completeEncounter(at('boss')),
+    ]) {
+      const old = JSON.parse(legacySave(original))
+      const restored = parseAdventure(JSON.stringify(old))!
+      expect(restored.version).toBe(4)
+      expect(restored.id).toBe(original.id)
+      expect(restored.path).toEqual(original.path)
+      expect(restored.encounter).toEqual(original.encounter)
+      expect(restored.inventory).toEqual(original.inventory)
+      expect(restored.status).toBe(original.status)
+      expect(restored.seenWho).toEqual([])
+      expect(restored.seenPortraits).toEqual([])
+      const lastRow = original.path.length - 1
+      expect(restored.map.filter((n) => n.row <= lastRow)).toEqual(
+        old.map.filter((n: { row: number }) => n.row <= lastRow),
+      )
+      if (lastRow < 1) expect(restored.map.some((n) => n.kind === 'who')).toBe(true)
+      if (lastRow < 9) expect(restored.map.some((n) => n.kind === 'identify')).toBe(true)
+      expect(restore(restored)).toEqual(restored)
+    }
+  })
+  it('rejects missing people histories, wrong banks and impossible Someone trial results', () => {
+    for (const kind of ['who', 'identify'] as const) {
+      const original = at(kind)
+      const scene = original.encounter!
+      expect(restore({ ...original, seenWho: undefined } as unknown as AdventureRun)).toBeNull()
+      expect(restore({ ...original, seenPortraits: ['unknown-person'] })).toBeNull()
+      for (const patch of [
+        { id: 'mystery-not-a-person' },
+        { cluesShown: kind === 'identify' ? 3 : 6 },
+        { guesses: ['Already tried', 'ALREADY TRIED!'] },
+        { revealed: true },
+      ])
+        expect(
+          restore({
+            ...original,
+            encounter: { ...scene, mystery: { ...scene.mystery!, ...patch } },
+          }),
+        ).toBeNull()
+      const key = kind === 'who' ? 'seenWho' : 'seenPortraits'
+      expect(restore({ ...original, [key]: [] })).toBeNull()
+    }
+  })
   it('preserves an earlier Lucky-star boss victory but rejects a new boss item-clear save', () => {
     const won = completeEncounter(at('boss'))
     const old = JSON.parse(previousSave(won))
@@ -445,7 +572,7 @@ describe('saved adventures', () => {
     for (const original of samples) {
       for (const save of [previewSave(original), previousSave(original)]) {
         const upgraded = parseAdventure(save)!
-        expect(upgraded.version).toBe(3)
+        expect(upgraded.version).toBe(4)
         expect(upgraded.map).toHaveLength(31)
         expect(upgraded.id).toBe(original.id)
         expect(upgraded.inventory).toEqual(original.inventory)
@@ -472,6 +599,8 @@ describe('saved adventures', () => {
       'elite',
       'boss',
       'mystery',
+      'who',
+      'identify',
       'countries',
       'capitals',
       'flags',
