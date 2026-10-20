@@ -765,10 +765,11 @@ export default function App() {
               <div>
                 <strong>Play familiar challenges</strong>
                 <p>
-                  Normal trivia needs two of three correct answers. Geography, What am I, Who am I
-                  and Identify Me use a guess budget; a failed challenge costs one heart. Invalid or
+                  Normal trivia needs all three correct answers. Geography, What am I, Who am I and
+                  Identify Me use a guess budget; a failed challenge costs one heart. Invalid or
                   duplicate guesses do not count. Border Journey uses continuous land borders only.
-                  Extra mystery clues are free; Identify Me offers one optional text clue.
+                  What am I and Who am I offer up to three free clues; a Trail compass reveals
+                  another clue and the first letter. Identify Me offers one optional text clue.
                 </p>
               </div>
             </li>
@@ -789,7 +790,7 @@ export default function App() {
               <div>
                 <strong>Face the final boss</strong>
                 <p>
-                  Elite trials need two correct answers in a row; the final boss needs three. Each
+                  Elite trials need three correct answers in a row; the final boss needs four. Each
                   wrong answer resets the streak and costs a heart. A shield blocks one loss. Reach
                   the final streak to win the run and celebrate. Lucky stars cannot be used on the
                   boss.
@@ -798,9 +799,10 @@ export default function App() {
             </li>
           </ol>
           <p className="help-note">
-            Start with three hearts, 25 coins, a Heart tonic, a 50/50 lens and a Trail compass.
-            Normal wins earn 6 coins; elites earn 10 and the boss earns 15. Each of the three route
-            sections has three rows of three choices and a rest stop. Lucky stars are found only in
+            Start with two hearts, 8 coins and one Trail compass. Geography allows five guesses,
+            mystery modes allow three, and Border Journey allows one spare crossing beyond the
+            shortest route. Normal wins earn 4 coins; elites earn 7 and the boss earns 12. There is
+            one guaranteed rest stop, halfway through the run. Lucky stars are found only in
             discoveries or as a rare reward after a challenge win earned without a star. Progress
             saves in this browser separately from your other games. New run, beside the Satchel,
             asks for confirmation before replacing your adventure.

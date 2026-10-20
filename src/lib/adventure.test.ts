@@ -32,6 +32,7 @@ import {
   useItem,
   type AdventureRun,
   type NodeKind,
+  type Encounter,
 } from './adventure'
 
 afterEach(() => {
@@ -47,18 +48,34 @@ import {
   previewSave,
   previousSave,
   legacySave,
+  someoneSave,
 } from '../../tests/helpers/adventure'
 const restore = (run: AdventureRun) => parseAdventure(JSON.stringify(run))
+const migratedEncounter = (scene: Encounter | null) =>
+  scene
+    ? {
+        ...scene,
+        goal:
+          scene.kind === 'boss'
+            ? scene.result === 'active'
+              ? 4
+              : 3
+            : scene.kind === 'trivia' || scene.kind === 'elite'
+              ? 2
+              : 0,
+      }
+    : null
 
 describe('adventure routes and outcomes', () => {
   it('starts with normal supplies and has three three-by-three sections joined by rests', () => {
     const run = newAdventure()
-    expect(run.coins).toBe(25)
-    expect(run.hearts).toBe(3)
+    expect(run.coins).toBe(8)
+    expect(run.hearts).toBe(2)
+    expect(run.maxHearts).toBe(2)
     expect(run.map.filter((node) => node.kind === 'who')).toHaveLength(2)
     expect(run.map.filter((node) => node.kind === 'identify')).toHaveLength(2)
-    expect(ITEM_IDS.filter((id) => run.inventory[id] > 0)).toEqual(['potion', 'fifty', 'hint'])
-    expect(Object.values(run.inventory).reduce((sum, count) => sum + count, 0)).toBe(3)
+    expect(ITEM_IDS.filter((id) => run.inventory[id] > 0)).toEqual(['hint'])
+    expect(Object.values(run.inventory).reduce((sum, count) => sum + count, 0)).toBe(1)
     for (const start of [0, 4, 8]) {
       const section = run.map.filter((node) => node.row >= start && node.row < start + 3)
       expect(section).toHaveLength(9)
@@ -69,16 +86,14 @@ describe('adventure routes and outcomes', () => {
     }
     const rested = closeStop(at('rest'))
     expect(availableNodes(rested)).toHaveLength(3)
-    expect(availableNodes(rested).every((node) => node.row === 4)).toBe(true)
+    expect(availableNodes(rested).every((node) => node.row === 8)).toBe(true)
     expect(returnToRoute(rested).error).toBeTruthy()
   })
-  it('generates connected branches, three guaranteed rests and one final boss; rejects skips and duplicate entries', () => {
+  it('generates connected branches, one guaranteed rest and one final boss; rejects skips and duplicate entries', () => {
     const run = newAdventure()
     expect(run.map).toHaveLength(31)
     expect(availableNodes(run)).toHaveLength(3)
-    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([
-      3, 7, 11,
-    ])
+    expect(run.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([7])
     expect(chooseNode(run, run.map.find((node) => node.kind === 'boss')!.id).run).toBe(run)
     const left = run.map.find((node) => node.row === 0 && node.lane === 0)!
     const active = chooseNode(run, left.id).run
@@ -103,8 +118,9 @@ describe('adventure routes and outcomes', () => {
     expect(availableNodes(run)).toEqual([])
     expect(useItem(run, 'star').run).toBe(run)
   })
-  it('requires two of three normal trivia answers, locks responses, and charges one heart for a failed trial', () => {
+  it('requires all three normal trivia answers, locks responses, and charges one heart for a failed trial', () => {
     for (const pattern of [
+      [true, true, true],
       [true, false, true],
       [false, true, false],
     ]) {
@@ -116,14 +132,14 @@ describe('adventure routes and outcomes', () => {
         expect(answerAdventureTrivia(run, 0).error).toBeTruthy()
         if (index < 2) run = nextAdventureQuestion(run).run
       }
-      const success = pattern.filter(Boolean).length >= 2
+      const success = pattern.filter(Boolean).length === 3
       expect(run.encounter!.result).toBe(success ? 'cleared' : 'failed')
       expect(run.hearts).toBe(hearts - Number(!success))
       expect(run.coins).toBe(coins + (success ? COIN_REWARDS.normal : 0))
       expect(restore(run)).toEqual(run)
     }
   })
-  it('resets boss streaks on a wrong answer, applies damage, and wins only at three consecutive correct answers', () => {
+  it('resets boss streaks on a wrong answer, applies damage, and wins only at four consecutive correct answers', () => {
     let run = at('boss')
     run = answer(run)
     run = nextAdventureQuestion(run).run
@@ -133,22 +149,28 @@ describe('adventure routes and outcomes', () => {
     expect(run.encounter!.trivia!.streak).toBe(0)
     expect(run.hearts).toBe(2)
     run = nextAdventureQuestion(run).run
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       run = answer(run)
-      if (i < 2) run = nextAdventureQuestion(run).run
+      if (i < 3) {
+        expect(run.status).toBe('playing')
+        expect(restore(run)).toEqual(run)
+      }
+      if (i < 3) run = nextAdventureQuestion(run).run
     }
     expect(run.status).toBe('won')
-    expect(run.encounter!.trivia!.streak).toBe(3)
+    expect(run.encounter!.trivia!.streak).toBe(4)
     expect(restore(run)).toEqual(run)
   })
-  it('elite trials require two consecutive correct answers', () => {
+  it('elite trials require three consecutive correct answers', () => {
     let run = at('elite')
     const coins = run.coins
     run = answer(run)
     expect(run.encounter!.result).toBe('active')
     run = answer(nextAdventureQuestion(run).run)
+    expect(run.encounter!.result).toBe('active')
+    run = answer(nextAdventureQuestion(run).run)
     expect(run.encounter!.result).toBe('cleared')
-    expect(run.coins).toBe(coins + 10)
+    expect(run.coins).toBe(coins + 7)
     expect(restore(run)).toEqual(run)
   })
 })
@@ -180,7 +202,7 @@ describe('consumables and recovery', () => {
       return values
     })
     const won = guessAdventureCountry(fixture, target).run
-    expect(won.coins).toBe(fixture.coins + 6)
+    expect(won.coins).toBe(fixture.coins + 4)
     expect(won.inventory.star).toBe(fixture.inventory.star + 1)
     expect(won.message).toMatch(/found a Lucky star/)
     expect(restore(won)).toEqual(won)
@@ -323,7 +345,7 @@ describe('consumables and recovery', () => {
     const discovery = at('event')
     const item = discovery.encounter!.eventItem!
     const found = resolveEvent(discovery, 'supplies').run
-    expect(found.coins).toBe(discovery.coins + 10)
+    expect(found.coins).toBe(discovery.coins + 5)
     expect(found.inventory[item]).toBe(discovery.inventory[item] + 1)
     expect(resolveEvent(found, 'supplies').error).toBeTruthy()
     expect(restore(found)).toEqual(found)
@@ -345,6 +367,19 @@ describe('consumables and recovery', () => {
 })
 
 describe('familiar geography and mystery encounters', () => {
+  it('caps free text clues at three while a compass can reveal an extra clue without spending a guess', () => {
+    for (const kind of ['mystery', 'who'] as const) {
+      let run = at(kind)
+      run = revealAdventureClue(revealAdventureClue(run).run).run
+      expect(run.encounter!.mystery!.cluesShown).toBe(3)
+      expect(revealAdventureClue(run).error).toMatch(/free clues/)
+      expect(run.encounter!.mystery!.guesses).toEqual([])
+      run = useItem(run, 'hint').run
+      expect(run.encounter!.mystery!.cluesShown).toBe(4)
+      expect(run.encounter!.hintUsed).toBe(true)
+      expect(restore(run)).toEqual(run)
+    }
+  })
   for (const kind of ['who', 'identify'] as const) {
     it(`${kind} has its own people history, free clues, aliases, finite attempts and consumables`, () => {
       const original = at(kind)
@@ -354,7 +389,7 @@ describe('familiar geography and mystery encounters', () => {
       const person = game.byId.get(scene.mystery!.id)!
       const key = kind === 'who' ? 'seenWho' : 'seenPortraits'
       expect(run[key]).toContain(person.id)
-      expect(run.encounter!.limit).toBe(5)
+      expect(run.encounter!.limit).toBe(3)
       expect(trialItems(run)).toContain('hint')
       expect(trialItems(run)).toContain('boots')
       expect(trialItems(run)).not.toContain('fifty')
@@ -368,7 +403,7 @@ describe('familiar geography and mystery encounters', () => {
       expect(run.encounter!.hintUsed).toBe(true)
       expect(useItem(run, 'hint').run).toBe(run)
       run = useItem(run, 'boots').run
-      expect(run.encounter!.limit).toBe(7)
+      expect(run.encounter!.limit).toBe(5)
       expect(restore(run)).toEqual(run)
       const solved = guessAdventureMystery(run, person.aliases[0] || person.answer).run
       expect(solved.encounter!.result).toBe('cleared')
@@ -381,7 +416,7 @@ describe('familiar geography and mystery encounters', () => {
       expect(gaveUp.encounter!.mystery!.revealed).toBe(true)
       expect(restore(gaveUp)).toEqual(gaveUp)
       let failed = original
-      for (let i = 0; i < 5; i++) failed = guessAdventureMystery(failed, `Wrong name ${i}`).run
+      for (let i = 0; i < 3; i++) failed = guessAdventureMystery(failed, `Wrong name ${i}`).run
       expect(failed.encounter!.result).toBe('failed')
       expect(failed.encounter!.mystery!.revealed).toBe(true)
       expect(failed.hearts).toBe(original.hearts - 1)
@@ -410,9 +445,9 @@ describe('familiar geography and mystery encounters', () => {
     expect(run.encounter!.hintUsed).toBe(true)
     expect(useItem(run, 'hint').error).toBeTruthy()
     run = useItem(run, 'boots').run
-    expect(run.encounter!.limit).toBe(10)
+    expect(run.encounter!.limit).toBe(7)
     expect(useItem(run, 'boots').error).toBeTruthy()
-    for (const country of countries.filter((c) => c.id !== target).slice(0, 10))
+    for (const country of countries.filter((c) => c.id !== target).slice(0, 7))
       run = guessAdventureCountry(run, country.id).run
     expect(run.encounter!.result).toBe('failed')
     expect(run.hearts).toBe(2)
@@ -425,6 +460,7 @@ describe('familiar geography and mystery encounters', () => {
     expect(guessAdventureCountry(run, geo.answer).error).toMatch(/mainland border/)
     run = useItem(run, 'hint').run
     const route = shortestBorderRoute(geo.start!, geo.answer)!
+    expect(run.encounter!.limit).toBe(route.length)
     for (const id of route.slice(1)) run = guessAdventureCountry(run, id).run
     expect(run.encounter!.result).toBe('cleared')
     expect(restore(run)).toEqual(run)
@@ -438,7 +474,7 @@ describe('familiar geography and mystery encounters', () => {
     run = useItem(run, 'hint').run
     expect(run.encounter!.mystery!.cluesShown).toBe(3)
     run = useItem(run, 'boots').run
-    expect(run.encounter!.limit).toBe(7)
+    expect(run.encounter!.limit).toBe(5)
     expect(restore(run)).toEqual(run)
     const solved = guessAdventureMystery(run, mystery.aliases[0] || mystery.answer).run
     expect(solved.encounter!.result).toBe('cleared')
@@ -451,6 +487,42 @@ describe('familiar geography and mystery encounters', () => {
 })
 
 describe('saved adventures', () => {
+  it('upgrades version-4 supplies and active guess budgets while removing only future extra rests', () => {
+    const fixture = at('who')
+    const old = JSON.parse(someoneSave(fixture))
+    old.coins = 19
+    old.encounter.limit = 5
+    old.encounter.mystery.cluesShown = 4
+    old.encounter.mystery.guesses = ['wrong one', 'wrong two', 'wrong three']
+    const upgraded = parseAdventure(JSON.stringify(old))!
+    expect(upgraded.version).toBe(5)
+    expect(upgraded.id).toBe(old.id)
+    expect(upgraded.coins).toBe(19)
+    expect(upgraded.hearts).toBe(old.hearts)
+    expect(upgraded.inventory).toEqual(old.inventory)
+    expect(upgraded.encounter).toEqual({ ...old.encounter, goal: 0 })
+    expect(upgraded.map.filter((n) => n.kind === 'rest').map((n) => n.row)).toEqual([7])
+    expect(restore(upgraded)).toEqual(upgraded)
+    const rested = JSON.parse(someoneSave(closeStop(at('rest'))))
+    const continued = parseAdventure(JSON.stringify(rested))!
+    expect(continued.path).toEqual(rested.path)
+    expect(continued.map.filter((n) => n.kind === 'rest').map((n) => n.row)).toEqual([3, 7])
+    expect(availableNodes(continued)).toHaveLength(3)
+  })
+  it('keeps an old three-answer boss victory completed but raises an active boss to four', () => {
+    const oldWin = JSON.parse(someoneSave(completeEncounter(at('boss'))))
+    Object.assign(oldWin.encounter.trivia, { answered: 3, score: 3, streak: 3 })
+    const completed = parseAdventure(JSON.stringify(oldWin))!
+    expect(completed.status).toBe('won')
+    expect(completed.encounter!.goal).toBe(3)
+    expect(restore(completed)).toEqual(completed)
+    const oldFight = JSON.parse(someoneSave(answer(at('boss'))))
+    const active = parseAdventure(JSON.stringify(oldFight))!
+    expect(active.encounter!.goal).toBe(4)
+    expect(active.encounter!.trivia!.streak).toBe(1)
+    expect(restore(active)).toEqual(active)
+    expect(restore({ ...active, encounter: { ...active.encounter!, goal: 3 } })).toBeNull()
+  })
   it('preserves old active trials in the exact rows that now offer Someone games', () => {
     for (const [kind, row] of [
       ['capitals', 1],
@@ -474,7 +546,7 @@ describe('saved adventures', () => {
       old.seenTrivia = sample.seenTrivia
       old.seenMysteries = sample.seenMysteries
       const restored = parseAdventure(JSON.stringify(old))!
-      expect(restored.encounter).toEqual(old.encounter)
+      expect(restored.encounter).toEqual(migratedEncounter(old.encounter))
       expect(restored.map.find((n) => n.id === target.id)?.kind).toBe(kind)
       expect(restored.map.filter((n) => n.row <= row)).toEqual(
         old.map.filter((n: { row: number }) => n.row <= row),
@@ -492,10 +564,10 @@ describe('saved adventures', () => {
     ]) {
       const old = JSON.parse(legacySave(original))
       const restored = parseAdventure(JSON.stringify(old))!
-      expect(restored.version).toBe(4)
+      expect(restored.version).toBe(5)
       expect(restored.id).toBe(original.id)
       expect(restored.path).toEqual(original.path)
-      expect(restored.encounter).toEqual(original.encounter)
+      expect(restored.encounter).toEqual(migratedEncounter(original.encounter))
       expect(restored.inventory).toEqual(original.inventory)
       expect(restored.status).toBe(original.status)
       expect(restored.seenWho).toEqual([])
@@ -572,14 +644,14 @@ describe('saved adventures', () => {
     for (const original of samples) {
       for (const save of [previewSave(original), previousSave(original)]) {
         const upgraded = parseAdventure(save)!
-        expect(upgraded.version).toBe(4)
+        expect(upgraded.version).toBe(5)
         expect(upgraded.map).toHaveLength(31)
         expect(upgraded.id).toBe(original.id)
         expect(upgraded.inventory).toEqual(original.inventory)
         expect(upgraded.hearts).toBe(original.hearts)
         expect(upgraded.coins).toBe(original.coins)
         expect(upgraded.path).toEqual(original.path)
-        expect(upgraded.encounter).toEqual(original.encounter)
+        expect(upgraded.encounter).toEqual(migratedEncounter(original.encounter))
         expect(upgraded.status).toBe(original.status)
         expect(restore(upgraded)).toEqual(upgraded)
       }
@@ -662,6 +734,6 @@ describe('saved adventures', () => {
       },
     })
     expect(loadAdventure().warning).toMatch(/unavailable/)
-    expect(loadAdventure().run.hearts).toBe(3)
+    expect(loadAdventure().run.hearts).toBe(2)
   })
 })

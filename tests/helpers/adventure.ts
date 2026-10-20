@@ -24,6 +24,8 @@ export function stockedAdventure(): AdventureRun {
   return {
     ...run,
     coins: 100,
+    hearts: 3,
+    maxHearts: 3,
     inventory: {
       potion: 3,
       container: 2,
@@ -103,7 +105,22 @@ export function previousSave(run: AdventureRun): string {
         .filter(([id]) => keep(id))
         .map(([id, result]) => [oldId(id), result]),
     ),
-    encounter: run.encounter ? { ...run.encounter, nodeId: oldId(run.encounter.nodeId) } : null,
+    encounter: legacy.encounter
+      ? { ...legacy.encounter, nodeId: oldId(legacy.encounter.nodeId) }
+      : null,
+  })
+}
+
+export function someoneSave(run: AdventureRun): string {
+  return JSON.stringify({
+    ...run,
+    version: 4,
+    maxHearts: Math.max(3, run.maxHearts),
+    map: run.map.map((node) => ({
+      ...node,
+      kind: node.row === 3 || node.row === 11 ? 'rest' : node.kind,
+    })),
+    encounter: run.encounter ? { ...run.encounter, goal: undefined } : null,
   })
 }
 
@@ -120,12 +137,19 @@ export function legacySave(run: AdventureRun): string {
   return JSON.stringify({
     ...run,
     version: 3,
+    maxHearts: Math.max(3, run.maxHearts),
     seenWho: undefined,
     seenPortraits: undefined,
     map: run.map.map((node) => ({
       ...node,
-      kind: node.kind === 'who' || node.kind === 'identify' ? oldKinds[node.row] : node.kind,
+      kind:
+        node.row === 3 || node.row === 11
+          ? 'rest'
+          : node.kind === 'who' || node.kind === 'identify'
+            ? oldKinds[node.row]
+            : node.kind,
     })),
+    encounter: run.encounter ? { ...run.encounter, goal: undefined } : null,
   })
 }
 export function previewSave(run: AdventureRun): string {

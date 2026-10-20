@@ -1,4 +1,4 @@
-import { countries, type GameMode } from './countries'
+import type { GameMode } from './countries'
 import { addGuess, hasWon, newRound, parseRound, revealAnswer, type Round } from './game'
 import { shortestBorderRoute } from './journey'
 import { mysteries } from '../data/mysteries'
@@ -74,8 +74,20 @@ export const ITEMS = {
 export type ItemId = keyof typeof ITEMS
 export const ITEM_IDS = Object.keys(ITEMS) as ItemId[]
 export const SHOP_ITEM_IDS = ITEM_IDS.filter((id): id is Exclude<ItemId, 'star'> => id !== 'star')
-export const LUCKY_STAR_DROP_CHANCE = 0.1
-export const COIN_REWARDS = { normal: 6, elite: 10, boss: 15 } as const
+export const LUCKY_STAR_DROP_CHANCE = 0.05
+export const COIN_REWARDS = { normal: 4, elite: 7, boss: 12 } as const
+export const ADVENTURE_BALANCE = {
+  hearts: 2,
+  coins: 8,
+  geographyGuesses: 5,
+  mysteryGuesses: 3,
+  freeMysteryClues: 3,
+  journeySpareCrossings: 1,
+  triviaTarget: 3,
+  eliteStreak: 3,
+  bossStreak: 4,
+  discoveryCoins: 5,
+} as const
 export const NODE_LABELS: Record<NodeKind, string> = {
   trivia: 'General Trivia',
   mystery: 'What am I',
@@ -121,8 +133,11 @@ const newTrials = new Map<number, [NodeKind, NodeKind]>([
   [8, ['mystery', 'who']],
   [9, ['trivia', 'identify']],
 ])
-const rows = previousRows.map((kinds, row) =>
+const someoneRows = previousRows.map((kinds, row) =>
   kinds.map((kind) => (kind === newTrials.get(row)?.[0] ? newTrials.get(row)![1] : kind)),
+)
+const rows = someoneRows.map((kinds, row): NodeKind[] =>
+  row === 3 ? ['trivia'] : row === 11 ? ['elite'] : kinds,
 )
 export const ADVENTURE_STOPS = rows.length
 export interface AdventureNode {
@@ -149,6 +164,7 @@ export interface Encounter {
   mystery: MysteryRound | null
   trivia: TriviaTrial | null
   limit: number
+  goal: number
   hintUsed: boolean
   extraUsed: boolean
   purchases: ItemId[]
@@ -156,7 +172,7 @@ export interface Encounter {
   method: 'played' | 'item' | 'carried'
 }
 export interface AdventureRun {
-  version: 4
+  version: 5
   id: string
   map: AdventureNode[]
   path: string[]
@@ -183,7 +199,10 @@ const fail = (run: AdventureRun, error: string): AdventureResult => ({ run, erro
 export const isGeography = (kind: NodeKind): kind is GameMode =>
   ['countries', 'capitals', 'flags', 'shapes', 'journey'].includes(kind)
 export const isTrivia = (kind: NodeKind) => kind === 'trivia' || kind === 'elite' || kind === 'boss'
+const oldTriviaGoal = (kind: NodeKind) => (kind === 'boss' ? 3 : isTrivia(kind) ? 2 : 0)
 export const isMystery = (kind: NodeKind) => ['mystery', 'who', 'identify'].includes(kind)
+export const adventureClueLimit = (kind: NodeKind) =>
+  kind === 'identify' ? 2 : ADVENTURE_BALANCE.freeMysteryClues
 export const isCombat = (kind: NodeKind) => isTrivia(kind) || isGeography(kind) || isMystery(kind)
 const whatGame = createMysteryGame(mysteries)
 const whoGame = createMysteryGame(people)
@@ -212,9 +231,9 @@ function pickUnseen(ids: string[], seen: string[], previous?: string): string {
 }
 export function starterKit(): Record<ItemId, number> {
   return {
-    potion: 1,
+    potion: 0,
     container: 0,
-    fifty: 1,
+    fifty: 0,
     star: 0,
     shield: 0,
     hint: 1,
@@ -225,7 +244,7 @@ export function starterKit(): Record<ItemId, number> {
 }
 export function newAdventure(): AdventureRun {
   return {
-    version: 4,
+    version: 5,
     id: crypto.randomUUID(),
     map: rows.flatMap((kinds, row) =>
       shuffle(kinds).map((kind, index) => ({
@@ -239,9 +258,9 @@ export function newAdventure(): AdventureRun {
     outcomes: {},
     encounter: null,
     status: 'playing',
-    hearts: 3,
-    maxHearts: 3,
-    coins: 25,
+    hearts: ADVENTURE_BALANCE.hearts,
+    maxHearts: ADVENTURE_BALANCE.hearts,
+    coins: ADVENTURE_BALANCE.coins,
     inventory: starterKit(),
     shield: false,
     seenTrivia: [],
@@ -295,21 +314,18 @@ function enter(run: AdventureRun, node: AdventureNode): AdventureRun {
   let limit = 0
   if (isGeography(node.kind)) {
     geography = newRound(undefined, node.kind)
-    // Familiar targets keep early mystery encounters approachable.
-    if (node.kind !== 'journey') {
-      const pool = countries.filter((c) => c.area >= 30_000 && c.area <= 4_000_000)
-      geography = { ...geography, answer: shuffle(pool)[0].id }
-    }
     limit =
       node.kind === 'journey'
-        ? shortestBorderRoute(geography.start!, geography.answer)!.length + 3
-        : 8
+        ? shortestBorderRoute(geography.start!, geography.answer)!.length -
+          1 +
+          ADVENTURE_BALANCE.journeySpareCrossings
+        : ADVENTURE_BALANCE.geographyGuesses
   } else if (isMystery(node.kind)) {
     const key = seenKey(node.kind)
     const id = pickUnseen([...adventureMysteryGame(node.kind).byId.keys()], run[key])
     mystery = { version: 1, id, cluesShown: 1, guesses: [], revealed: false }
     run = { ...run, [key]: [...new Set([...run[key], id])] }
-    limit = 5
+    limit = ADVENTURE_BALANCE.mysteryGuesses
   } else if (isTrivia(node.kind)) {
     const next = nextQuestion(run)
     run = next.run
@@ -327,6 +343,14 @@ function enter(run: AdventureRun, node: AdventureNode): AdventureRun {
       mystery,
       trivia,
       limit,
+      goal:
+        node.kind === 'boss'
+          ? ADVENTURE_BALANCE.bossStreak
+          : node.kind === 'elite'
+            ? ADVENTURE_BALANCE.eliteStreak
+            : node.kind === 'trivia'
+              ? ADVENTURE_BALANCE.triviaTarget
+              : 0,
       hintUsed: false,
       extraUsed: false,
       purchases: [],
@@ -453,7 +477,7 @@ export function answerAdventureTrivia(run: AdventureRun, choice: number): Advent
   }
   let next: AdventureRun = { ...run, message: '', encounter: { ...scene, trivia: nextTrial } }
   if (scene.kind === 'trivia') {
-    if (nextTrial.answered === 3) next = finish(next, nextTrial.score >= 2)
+    if (nextTrial.answered === 3) next = finish(next, nextTrial.score >= scene.goal)
   } else {
     if (!correct) next = damage(next)
     if (next.status === 'lost')
@@ -462,7 +486,7 @@ export function answerAdventureTrivia(run: AdventureRun, choice: number): Advent
         encounter: { ...next.encounter!, result: 'failed' },
         outcomes: { ...next.outcomes, [scene.nodeId]: 'failed' },
       }
-    else if (nextTrial.streak >= (scene.kind === 'boss' ? 3 : 2)) next = finish(next, true)
+    else if (nextTrial.streak >= scene.goal) next = finish(next, true)
   }
   return ok(next)
 }
@@ -523,8 +547,8 @@ export function revealAdventureClue(run: AdventureRun): AdventureResult {
   if (run.status !== 'playing' || !scene?.mystery || scene.result !== 'active')
     return fail(run, 'Clues are available during a mystery.')
   const game = adventureMysteryGame(scene.kind)
-  if (scene.mystery.cluesShown >= game.byId.get(scene.mystery.id)!.clues.length)
-    return fail(run, 'All clues are already visible.')
+  if (scene.mystery.cluesShown >= adventureClueLimit(scene.kind))
+    return fail(run, 'All free clues are already visible. A Trail compass can help further.')
   return ok({ ...run, encounter: { ...scene, mystery: game.nextClue(scene.mystery) } })
 }
 export function abandonEncounter(run: AdventureRun): AdventureResult {
@@ -598,7 +622,7 @@ export function resolveEvent(run: AdventureRun, choice: 'supplies' | 'heal'): Ad
       ? { ...run, hearts: Math.min(run.maxHearts, run.hearts + 1) }
       : {
           ...run,
-          coins: Math.min(999, run.coins + 10),
+          coins: Math.min(999, run.coins + ADVENTURE_BALANCE.discoveryCoins),
           inventory: {
             ...run.inventory,
             [scene.eventItem!]: Math.min(99, run.inventory[scene.eventItem!] + 1),
@@ -609,7 +633,7 @@ export function resolveEvent(run: AdventureRun, choice: 'supplies' | 'heal'): Ad
     message:
       choice === 'heal'
         ? 'The hidden spring restored one heart.'
-        : `Found ${ITEMS[scene.eventItem!].name} and 10 coins.`,
+        : `Found ${ITEMS[scene.eventItem!].name} and ${ADVENTURE_BALANCE.discoveryCoins} coins.`,
   })
 }
 export function itemUnavailable(run: AdventureRun, item: ItemId): string | null {
@@ -726,11 +750,11 @@ export function parseAdventure(value: string | null): AdventureRun | null {
     const raw: unknown = JSON.parse(value)
     if (
       !record(raw) ||
-      ![1, 2, 3, 4].includes(raw.version as number) ||
+      ![1, 2, 3, 4, 5].includes(raw.version as number) ||
       typeof raw.id !== 'string' ||
       raw.id.length > 80 ||
       !['playing', 'won', 'lost'].includes(String(raw.status)) ||
-      !integer(raw.maxHearts, 3, 5) ||
+      !integer(raw.maxHearts, raw.version === 5 ? 2 : 3, 5) ||
       !integer(raw.hearts, 0, raw.maxHearts) ||
       !integer(raw.coins, 0, 999) ||
       typeof raw.shield !== 'boolean' ||
@@ -749,7 +773,11 @@ export function parseAdventure(value: string | null): AdventureRun | null {
         nodes.length !== layout[row].length ||
         nodes.some((node) => !integer(node.lane, 0, 2) || node.id !== `${row}-${node.lane}`) ||
         new Set(nodes.map((node) => node.lane)).size !== nodes.length ||
-        ![layout[row], ...(raw.version === 4 ? [rows[row]] : [])].some(
+        ![
+          layout[row],
+          ...(Number(raw.version) >= 4 ? [someoneRows[row]] : []),
+          ...(raw.version === 5 ? [rows[row]] : []),
+        ].some(
           (kinds) =>
             nodes
               .map((node) => node.kind)
@@ -771,7 +799,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
     )
       return null
     if (
-      raw.version === 4 &&
+      Number(raw.version) >= 4 &&
       (!unique(
         raw.seenWho,
         people.map((p) => p.id),
@@ -828,6 +856,16 @@ export function parseAdventure(value: string | null): AdventureRun | null {
         typeof e.extraUsed !== 'boolean' ||
         !unique(e.purchases, ITEM_IDS, ITEM_IDS.length) ||
         (e.kind === 'event' ? !ITEM_IDS.includes(e.eventItem as ItemId) : e.eventItem !== null)
+      )
+        return null
+      const goal = raw.version === 5 ? e.goal : oldTriviaGoal(e.kind as NodeKind)
+      if (
+        !integer(goal, 0, 4) ||
+        (e.kind === 'boss'
+          ? ![3, 4].includes(goal) || (e.result === 'active' && raw.version === 5 && goal !== 4)
+          : isTrivia(e.kind as NodeKind)
+            ? ![2, 3].includes(goal)
+            : goal !== 0)
       )
         return null
       if (isGeography(e.kind as NodeKind)) {
@@ -898,9 +936,7 @@ export function parseAdventure(value: string | null): AdventureRun | null {
         if (
           e.result === 'cleared' &&
           e.method === 'played' &&
-          (e.kind === 'trivia'
-            ? t.answered !== 3 || t.score < 2
-            : t.streak < (e.kind === 'boss' ? 3 : 2))
+          (e.kind === 'trivia' ? t.answered !== 3 || t.score < goal : t.streak < goal)
         )
           return null
       } else if (e.trivia !== null) return null
@@ -1036,6 +1072,32 @@ export function parseAdventure(value: string | null): AdventureRun | null {
                 ? newTrials.get(node.row)![1]
                 : node.kind,
           })),
+        }),
+      )
+    }
+    if (raw.version === 4) {
+      const lastRow = path.at(-1)?.row ?? -1
+      const scene = raw.encounter as Encounter | null
+      return parseAdventure(
+        JSON.stringify({
+          ...raw,
+          version: 5,
+          map: map.map((node) => ({
+            ...node,
+            kind:
+              node.row > lastRow && node.kind === 'rest' && (node.row === 3 || node.row === 11)
+                ? rows[node.row][0]
+                : node.kind,
+          })),
+          encounter: scene
+            ? {
+                ...scene,
+                goal:
+                  scene.kind === 'boss' && scene.result === 'active'
+                    ? ADVENTURE_BALANCE.bossStreak
+                    : oldTriviaGoal(scene.kind),
+              }
+            : null,
         }),
       )
     }

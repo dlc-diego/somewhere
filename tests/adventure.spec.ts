@@ -5,7 +5,7 @@ import { questionById, mysteryById } from '../src/lib/something'
 import { countryById, locationFor } from '../src/lib/countries'
 import { shortestBorderRoute } from '../src/lib/journey'
 
-import { at, closeStop, previewSave, previousSave } from './helpers/adventure'
+import { at, closeStop, previewSave, previousSave, someoneSave } from './helpers/adventure'
 async function seed(page: Page, run?: unknown, experience = 'somehow') {
   await page.addInitScript(
     ({ run, key, experience }) => {
@@ -65,15 +65,15 @@ test('Somehow opens publicly with normal supplies, no developer controls, and pe
   await expect(
     page.getByText(/Dev option:|Developer options|Developer preview|Unlock preview/),
   ).toHaveCount(0)
-  await expect(page.getByRole('status', { name: '3 of 3 hearts', exact: true })).toBeVisible()
+  await expect(page.getByRole('status', { name: '2 of 2 hearts', exact: true })).toBeVisible()
   await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
   await expect(page.locator('.somex-route-node')).toHaveCount(31)
   const original = await stored(page)
-  expect(original.coins).toBe(25)
+  expect(original.coins).toBe(8)
   expect(original.inventory).toEqual({
-    potion: 1,
+    potion: 0,
     container: 0,
-    fifty: 1,
+    fifty: 0,
     star: 0,
     shield: 0,
     hint: 1,
@@ -83,8 +83,8 @@ test('Somehow opens publicly with normal supplies, no developer controls, and pe
   })
   expect(worlds).toEqual([])
   await page.getByRole('button', { name: /^Satchel/ }).click()
-  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(3)
-  await expect(page.getByRole('button', { name: /^Use Heart tonic,/ })).toBeDisabled()
+  await expect(page.locator('.somex-inventory-dialog .somex-item')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: /^Use Heart tonic,/ })).toHaveCount(0)
   await page.getByRole('button', { name: 'Close dialog' }).click()
   await page.reload()
   await expect(
@@ -121,20 +121,109 @@ test('all three route sections have three-by-three choices and older boss progre
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
-  await expect.poll(async () => (await stored(page)).version).toBe(4)
+  await expect.poll(async () => (await stored(page)).version).toBe(5)
   expect((await stored(page)).inventory).toEqual(boss.inventory)
   expect((await stored(page)).path).toHaveLength(13)
   await triviaAnswer(page)
-  await expect(page.locator('.somex-on-fire')).toContainText('1/3')
+  await expect(page.locator('.somex-on-fire')).toContainText('1/4')
   await page.evaluate(({ key, saved }) => localStorage.setItem(key, saved), {
     key: ADVENTURE_KEY,
     saved: previousSave(boss),
   })
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Final boss', exact: true })).toBeVisible()
-  await expect.poll(async () => (await stored(page)).version).toBe(4)
+  await expect.poll(async () => (await stored(page)).version).toBe(5)
   expect((await stored(page)).path).toHaveLength(13)
 })
+
+test('a fresh run has one rest, needs perfect trivia and ends after two unprotected failed trials', async ({
+  page,
+}) => {
+  await seed(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('status', { name: '2 of 2 hearts', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Rest stop, stop / })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: /^Rest stop, stop 8/ })).toHaveCount(1)
+  await page.getByRole('button', { name: 'General Trivia, stop 1, available', exact: true }).click()
+  await expect(page.locator('.somex-rules').first()).toContainText('Get 3 of 3')
+  for (let i = 0; i < 3; i++) {
+    await triviaAnswer(page, i > 0)
+    if (i < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click()
+  }
+  expect((await stored(page)).encounter!.trivia!.score).toBe(2)
+  expect((await stored(page)).encounter!.result).toBe('failed')
+  await expect(page.getByRole('status', { name: '1 of 2 hearts', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Return to the route', exact: true }).click()
+  await page.locator('.somex-route-node.reachable').first().click()
+  await page
+    .getByRole('button', { name: 'Give up and reveal answer · risk 1 heart', exact: true })
+    .click()
+  await expect(
+    page.getByRole('heading', { name: 'Every ending is another beginning.', exact: true }),
+  ).toBeVisible()
+  expect((await stored(page)).hearts).toBe(0)
+  expect((await stored(page)).status).toBe('lost')
+})
+
+test('a version-4 round keeps its saved coins, supplies, guesses and previously revealed clues', async ({
+  page,
+}) => {
+  const fixture = JSON.parse(someoneSave(at('who')))
+  fixture.coins = 19
+  fixture.encounter.limit = 5
+  fixture.encounter.mystery.cluesShown = 4
+  fixture.encounter.mystery.guesses = ['wrong one', 'wrong two', 'wrong three']
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Who am I', exact: true })).toBeVisible()
+  await expect(page.locator('.somex-stop')).toContainText('3/5 guesses used')
+  await expect(
+    page.getByRole('list', { name: 'Adventure mystery clues' }).locator('li'),
+  ).toHaveCount(4)
+  await expect(
+    page.getByRole('button', { name: 'All free clues revealed', exact: true }),
+  ).toBeDisabled()
+  const restored = await stored(page)
+  expect(restored.version).toBe(5)
+  expect(restored.id).toBe(fixture.id)
+  expect(restored.coins).toBe(19)
+  expect(restored.inventory).toEqual(fixture.inventory)
+  expect(restored.encounter!.mystery).toEqual(fixture.encounter.mystery)
+  expect(restored.map.filter((node) => node.kind === 'rest').map((node) => node.row)).toEqual([7])
+})
+
+for (const kind of ['mystery', 'who'] as const)
+  test(`${kind} limits free clues and reveals the answer after three failed guesses`, async ({
+    page,
+  }) => {
+    const fixture = at(kind)
+    await seed(page, fixture)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    for (let i = 0; i < 2; i++)
+      await page.getByRole('button', { name: 'Reveal another clue', exact: true }).click()
+    await expect(
+      page.getByRole('list', { name: 'Adventure mystery clues' }).locator('li'),
+    ).toHaveCount(3)
+    await expect(
+      page.getByRole('button', { name: 'All free clues revealed', exact: true }),
+    ).toBeDisabled()
+    await page.getByRole('button', { name: /^Use Trail compass/ }).click()
+    await expect(
+      page.getByRole('list', { name: 'Adventure mystery clues' }).locator('li'),
+    ).toHaveCount(4)
+    for (let i = 0; i < 3; i++) {
+      await page.getByRole('textbox', { name: 'Your answer', exact: true }).fill(`Wrong name ${i}`)
+      await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    }
+    await expect(
+      page.getByRole('list', { name: 'Adventure mystery clues' }).locator('li'),
+    ).toHaveCount(5)
+    expect((await stored(page)).encounter!.result).toBe('failed')
+    expect((await stored(page)).hearts).toBe(fixture.hearts - 1)
+  })
 
 test('trial-specific item buttons, saved choices, normal trials and healing work through the interface', async ({
   page,
@@ -160,7 +249,7 @@ test('trial-specific item buttons, saved choices, normal trials and healing work
   expect((await stored(page)).encounter!.trivia!.id).not.toBe(id)
   await expect(page.locator('.somex-eliminated')).toHaveCount(0)
   for (let index = 0; index < 3; index++) {
-    await triviaAnswer(page, index !== 1)
+    await triviaAnswer(page)
     if (index < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click()
   }
   await expect(page.getByRole('button', { name: 'Return to the route', exact: true })).toBeVisible()
@@ -204,8 +293,8 @@ test('shops, rest stops and discoveries resolve once and return to connected cho
     run: event,
   })
   await page.reload()
-  await page.getByRole('button', { name: /^Take .* \+ 10 coins$/ }).click()
-  expect((await stored(page)).coins).toBe(event.coins + 10)
+  await page.getByRole('button', { name: /^Take .* \+ 5 coins$/ }).click()
+  expect((await stored(page)).coins).toBe(event.coins + 5)
   expect((await stored(page)).encounter!.result).toBe('cleared')
 })
 
@@ -234,7 +323,7 @@ test('the satchel shows only owned items and an empty state after the last item 
   await expect(page.getByRole('dialog')).toContainText('Your satchel is empty.')
 })
 
-test('a natural win pays six coins and can drop a Lucky star, and discoveries can grant one', async ({
+test('a natural win pays four coins and can drop a Lucky star, and discoveries can grant one', async ({
   page,
 }) => {
   const fixture = at('flags')
@@ -264,10 +353,10 @@ test('a natural win pays six coins and can drop a Lucky star, and discoveries ca
     })
   })
   await guess(page, 'France')
-  await expect(page.locator('.somex-notice')).toContainText('+6 coins')
+  await expect(page.locator('.somex-notice')).toContainText('+4 coins')
   await expect(page.locator('.somex-notice')).toContainText('found a Lucky star')
   expect((await stored(page)).inventory.star).toBe(1)
-  expect((await stored(page)).coins).toBe(fixture.coins + 6)
+  expect((await stored(page)).coins).toBe(fixture.coins + 4)
   await page.reload()
   expect((await stored(page)).inventory.star).toBe(1)
   const discovery = at('event')
@@ -278,7 +367,7 @@ test('a natural win pays six coins and can drop a Lucky star, and discoveries ca
     run: discovery,
   })
   await page.reload()
-  await page.getByRole('button', { name: 'Take Lucky star + 10 coins', exact: true }).click()
+  await page.getByRole('button', { name: 'Take Lucky star + 5 coins', exact: true }).click()
   await expect(page.locator('.somex-notice')).toContainText('Found Lucky star')
   expect((await stored(page)).inventory.star).toBe(1)
   await page.getByRole('button', { name: /^Satchel/ }).click()
@@ -308,7 +397,7 @@ test('Lucky stars are hidden from boss trial actions and disabled with an explan
   await triviaAnswer(page)
   expect((await stored(page)).status).toBe('playing')
   expect((await stored(page)).inventory.star).toBe(fixture.inventory.star)
-  await expect(page.locator('.somex-on-fire')).toContainText('1/3')
+  await expect(page.locator('.somex-on-fire')).toContainText('1/4')
 })
 
 for (const mode of ['countries', 'capitals', 'flags', 'shapes', 'journey'] as const)
@@ -439,7 +528,7 @@ for (const kind of ['who', 'identify'] as const) {
     expect(loaded.encounter!.mystery!.id).toBe(person.id)
     expect(loaded.encounter!.mystery!.cluesShown).toBe(kind === 'who' ? 3 : 2)
     expect(loaded.encounter!.mystery!.guesses).toEqual(['Wrong person'])
-    expect(loaded.encounter!.limit).toBe(7)
+    expect(loaded.encounter!.limit).toBe(5)
     await expect(page.locator('.somex-hint')).toBeVisible()
     await page
       .getByRole('textbox', { name: 'Your answer', exact: true })
@@ -447,7 +536,7 @@ for (const kind of ['who', 'identify'] as const) {
     await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
     await expect(page.locator('.somex-stop-result')).toContainText(person.answer)
     expect((await stored(page)).encounter!.result).toBe('cleared')
-    expect((await stored(page)).coins).toBe(fixture.coins + 6)
+    expect((await stored(page)).coins).toBe(fixture.coins + 4)
     expect((await stored(page)).hearts).toBe(fixture.hearts)
     if (kind === 'identify')
       await expect(
@@ -513,8 +602,8 @@ test('New run confirmation preserves progress on cancel or Escape and resets onl
   expect(fresh.id).not.toBe(fixture.id)
   expect(fresh.path).toEqual([])
   expect(fresh.encounter).toBeNull()
-  expect(fresh.hearts).toBe(3)
-  expect(fresh.coins).toBe(25)
+  expect(fresh.hearts).toBe(2)
+  expect(fresh.coins).toBe(8)
   expect(fresh.inventory.star).toBe(0)
   await expect(page.locator('.somex-route-node')).toHaveCount(31)
   await expect(page.getByRole('button', { name: /^Who am I, stop / })).toHaveCount(2)
@@ -581,9 +670,14 @@ test('boss victory queues fire and trophy effects and they survive immediate res
   await expect(page.locator('.somex-stop .trivia-choice')).toHaveCount(4)
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     await triviaAnswer(page)
-    if (i < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click()
+    if (i === 2) {
+      await expect(page.locator('.somex-on-fire')).toContainText('3/4')
+      expect((await stored(page)).status).toBe('playing')
+      await expect(page.locator('.victory-celebration')).toHaveCount(0)
+    }
+    if (i < 3) await page.getByRole('button', { name: 'Next question', exact: true }).click()
   }
   await expect(
     page.getByRole('heading', { name: 'The long way led you home.', exact: true }),
@@ -622,7 +716,7 @@ test('defeat and corrupt saves remain recoverable without developer shortcuts', 
   expect((await stored(page)).status).toBe('lost')
   await page.getByRole('button', { name: 'Start a new adventure', exact: true }).click()
   await page.getByRole('button', { name: 'Start new run', exact: true }).click()
-  expect((await stored(page)).coins).toBe(25)
+  expect((await stored(page)).coins).toBe(8)
   await page.evaluate(() => localStorage.setItem('somex.run.v1', '{'))
   await page.reload()
   await expect(

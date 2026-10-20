@@ -28,7 +28,9 @@ import {
 import {
   ADVENTURE_KEY,
   ADVENTURE_STOPS,
+  ADVENTURE_BALANCE,
   adventureMysteryGame,
+  adventureClueLimit,
   ITEMS,
   ITEM_IDS,
   SHOP_ITEM_IDS,
@@ -352,8 +354,8 @@ export default function Adventure({
             <>
               <p className="somex-rules">
                 {scene.kind === 'trivia'
-                  ? 'Get at least 2 of 3 questions right. A failed trial costs one heart.'
-                  : `Get ${scene.kind === 'boss' ? 3 : 2} right in a row. Each wrong answer costs one heart and resets your streak.`}
+                  ? `Get ${scene.goal} of 3 questions right. A failed trial costs one heart.`
+                  : `Get ${scene.goal} right in a row. Each wrong answer costs one heart and resets your streak.`}
               </p>
               <div className="somex-trial-progress">
                 {scene.kind === 'trivia' ? (
@@ -362,8 +364,7 @@ export default function Adventure({
                   </span>
                 ) : (
                   <span className={trial.streak ? 'somex-on-fire' : ''}>
-                    {'🔥'.repeat(trial.streak)} {trial.streak}/{scene.kind === 'boss' ? 3 : 2} in a
-                    row
+                    {'🔥'.repeat(trial.streak)} {trial.streak}/{scene.goal} in a row
                   </span>
                 )}
               </div>
@@ -412,8 +413,8 @@ export default function Adventure({
               <p className="somex-rules">
                 {scene.kind === 'identify' ? 'Identify the person' : 'Solve the mystery'} within{' '}
                 {scene.limit} guesses.{' '}
-                {scene.kind === 'identify' ? 'One clue is free' : 'Clues are free'}; a failed
-                mystery costs one heart.
+                {scene.kind === 'identify' ? 'One clue is free' : 'Up to three clues are free'}; a
+                failed mystery costs one heart.
               </p>
               {scene.kind === 'identify' ? (
                 <>
@@ -452,13 +453,13 @@ export default function Adventure({
                   {(scene.kind !== 'identify' || scene.mystery.cluesShown < 2) && (
                     <button
                       className="text-button"
-                      disabled={scene.mystery.cluesShown >= mystery.clues.length}
+                      disabled={scene.mystery.cluesShown >= adventureClueLimit(scene.kind)}
                       onClick={() => apply(revealAdventureClue(current.current))}
                     >
                       {scene.kind === 'identify'
                         ? 'Reveal a clue'
-                        : scene.mystery.cluesShown >= mystery.clues.length
-                          ? 'All clues revealed'
+                        : scene.mystery.cluesShown >= adventureClueLimit(scene.kind)
+                          ? 'All free clues revealed'
                           : 'Reveal another clue'}
                     </button>
                   )}
@@ -645,7 +646,7 @@ export default function Adventure({
                   className="secondary"
                   onClick={() => apply(resolveEvent(current.current, 'supplies'))}
                 >
-                  Take {ITEMS[scene.eventItem!].name} + 10 coins
+                  Take {ITEMS[scene.eventItem!].name} + {ADVENTURE_BALANCE.discoveryCoins} coins
                 </button>
                 <button
                   className="secondary"
@@ -706,8 +707,8 @@ export default function Adventure({
               <Compass size={23} />
             </div>
             <p className="somex-rules">
-              Choose a highlighted stop. Connected paths lead to new choices; a rest stop waits
-              before the final boss.
+              Choose a highlighted stop. A single rest stop waits halfway through the journey; the
+              final stretch ends with an elite trial and the boss.
             </p>
             <AdventureMap run={run} onChoose={selectNode} />
           </div>
