@@ -9,7 +9,6 @@ import {
   LogOut,
   Check,
   RefreshCw,
-  UserRound,
 } from 'lucide-react'
 import { usePlayer } from '../lib/PlayerProvider'
 import { statistics, STAT_LABELS } from '../lib/playerData'
@@ -187,13 +186,6 @@ export default function AccountNav({
                 <>
                   <p className="eyebrow">Make yourself at home</p>
                   <h2>Menu</h2>
-                  <div className="menu-account">
-                    <UserRound size={20} aria-hidden="true" />
-                    <div>
-                      <strong>{player.user?.displayName || 'A little explorer'}</strong>
-                      <small>{player.user?.email || 'Playing on this device'}</small>
-                    </div>
-                  </div>
                   <div className="menu-actions">
                     <button
                       className="menu-action theme-toggle"

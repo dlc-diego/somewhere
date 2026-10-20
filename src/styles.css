@@ -3447,28 +3447,6 @@ h1 {
     transform: translate(-50%, -7px);
   }
 }
-.menu-account {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 22px 0 15px;
-  padding: 14px;
-  background: var(--surface-muted);
-  border-radius: 10px;
-}
-.menu-account strong,
-.menu-account small {
-  display: block;
-  overflow-wrap: anywhere;
-}
-.menu-account strong {
-  font-size: 13px;
-}
-.menu-account small {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
 .menu-actions {
   display: grid;
   gap: 4px;
