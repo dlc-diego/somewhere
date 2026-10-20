@@ -114,22 +114,32 @@ export default function AppUpdate({
   return (
     <div className="app-update">
       {render(
-        <button
-          className={`menu-action update-button${availableVersion ? ' update-available' : ''}`}
-          onClick={() => void check(true)}
-          aria-label={label}
-          title={label}
-          disabled={busy}
-        >
-          {status === 'checking' || status === 'updating' ? (
-            <LoaderCircle className="update-spinner" size={16} aria-hidden="true" />
-          ) : status === 'current' ? (
-            <Check size={16} aria-hidden="true" />
-          ) : (
-            <Download size={16} aria-hidden="true" />
-          )}
-          <span>{label}</span>
-        </button>,
+        <>
+          <button
+            className={`menu-action update-button${availableVersion ? ' update-available' : ''}`}
+            onClick={() => void check(true)}
+            aria-label={label}
+            title={label}
+            disabled={busy}
+          >
+            {status === 'checking' || status === 'updating' ? (
+              <LoaderCircle className="update-spinner" size={16} aria-hidden="true" />
+            ) : status === 'current' ? (
+              <Check size={16} aria-hidden="true" />
+            ) : (
+              <Download size={16} aria-hidden="true" />
+            )}
+            <span>{label}</span>
+          </button>
+          <span
+            className={status === 'current' ? 'menu-update-feedback' : 'sr-only'}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {status === 'current' ? message : ''}
+          </span>
+        </>,
         Boolean(availableVersion),
       )}
       <span
@@ -138,7 +148,7 @@ export default function AppUpdate({
         aria-live="polite"
         aria-atomic="true"
       >
-        {message}
+        {status === 'current' ? '' : message}
       </span>
     </div>
   )

@@ -74,7 +74,12 @@ test('menu action checks the matching build without reloading or touching saved 
     if (frame === page.mainFrame()) navigations++
   })
   await checkButton(page).click()
-  await expect(page.getByRole('status').filter({ hasText: 'You’re up to date.' })).toBeVisible()
+  const confirmation = page
+    .getByRole('complementary', { name: 'App menu', exact: true })
+    .getByRole('status')
+    .filter({ hasText: 'You’re up to date.' })
+  await expect(confirmation).toBeVisible()
+  await expect(page.locator('.app-update > [role="status"]')).toBeEmpty()
   expect(checks).toHaveLength(2)
   expect(checks[0]).not.toBe(checks[1])
   expect(await savedState(page)).toEqual(before)

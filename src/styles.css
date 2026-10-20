@@ -3477,6 +3477,12 @@ h1 {
   color: var(--heat-found-text);
   background: var(--surface-muted);
 }
+.menu-update-feedback {
+  margin: -2px 12px 6px;
+  color: var(--heat-found-text);
+  font-size: 12px;
+  line-height: 1.5;
+}
 .menu-note {
   font-size: 11px;
   line-height: 1.8;
