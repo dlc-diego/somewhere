@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { IDENTIFY_KEY } from '../src/lib/identify'
@@ -209,7 +210,7 @@ test('portrait game and credits remain accessible at 320px in both themes', asyn
   await page.goto('/')
   await expect(answer(page)).toBeVisible()
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     await page.getByRole('button', { name: 'Image credits', exact: true }).click()
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())

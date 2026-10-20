@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -77,7 +78,7 @@ test('border journey validates crossings, backtracks, saves, switches modes and 
   await expect(page.getByRole('region', { name: 'Your journey' })).toContainText('0 guesses')
   await mode(page).selectOption('journey')
   await expect(history(page).locator('li')).toHaveCount(4)
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+  await changeTheme(page, 'dark')
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
       .violations,

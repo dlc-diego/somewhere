@@ -1,3 +1,5 @@
+import { usePlayer } from '../lib/PlayerProvider'
+import { trackRound } from '../lib/playerData'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { ArrowRight, Check, Lightbulb } from 'lucide-react'
 import type { CelebrationRequest } from '../lib/celebrations'
@@ -18,6 +20,7 @@ export default function WhoAmI({
 }: {
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
+  const { recordGame } = usePlayer()
   const [initial] = useState(loadSomeone)
   const [session, setSession] = useState(initial.session)
   const current = useRef(session)
@@ -45,7 +48,12 @@ export default function WhoAmI({
       setError(result.error)
       return
     }
-    const next = { ...current.current, round: result.round }
+    const tracked = trackRound(result.round)
+    const next = { ...current.current, round: tracked }
+    recordGame(tracked.trackingId, 'who', {
+      outcome: personSolved(tracked) ? 'won' : 'active',
+      guesses: tracked.guesses.length,
+    })
     current.current = next
     setSession(next)
     setQuery('')
@@ -65,7 +73,9 @@ export default function WhoAmI({
     setNotice(`Clue ${next.round.cluesShown}: ${person.clues[next.round.cluesShown - 1]}`)
   }
   function giveUp() {
-    const next = { ...current.current, round: revealPerson(current.current.round) }
+    const tracked = trackRound(revealPerson(current.current.round))
+    const next = { ...current.current, round: tracked }
+    recordGame(tracked.trackingId, 'who', { outcome: 'revealed', guesses: tracked.guesses.length })
     current.current = next
     setSession(next)
     setError('')

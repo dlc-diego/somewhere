@@ -1,3 +1,5 @@
+import { usePlayer } from '../lib/PlayerProvider'
+import { trackRound } from '../lib/playerData'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, ChevronDown, Flame, Lightbulb, Sparkles, Trophy, X } from 'lucide-react'
 import type { CelebrationRequest } from '../lib/celebrations'
@@ -32,6 +34,7 @@ export default function Something({
 }: {
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
+  const { recordGame } = usePlayer()
   const [initial] = useState(loadSomething)
   const [mode, setMode] = useState<SomethingMode>(initial.mode)
   const [trivia, setTrivia] = useState(initial.trivia)
@@ -70,8 +73,26 @@ export default function Something({
 
   function answer(choice: number) {
     const current = triviaRef.current
-    const round = answerTrivia(current.round, choice)
-    if (round === current.round) return
+    const result = answerTrivia(current.round, choice)
+    if (result === current.round) return
+    const round = trackRound(result)
+    let best = 0,
+      chain = 0
+    round.responses.forEach((_, i) => {
+      chain = isTriviaCorrect(round, i) ? chain + 1 : 0
+      best = Math.max(best, chain)
+    })
+    recordGame(round.trackingId, 'trivia', {
+      outcome:
+        round.responses.length === TRIVIA_LENGTH
+          ? isPerfectRound(round)
+            ? 'won'
+            : 'completed'
+          : 'active',
+      answered: round.responses.length,
+      correct: triviaScore(round),
+      bestStreak: best,
+    })
     const next = { ...current, round }
     triviaRef.current = next
     setTrivia(next)
@@ -111,7 +132,12 @@ export default function Something({
       setError(result.error)
       return
     }
-    const next = { ...current, round: result.round }
+    const tracked = trackRound(result.round)
+    const next = { ...current, round: tracked }
+    recordGame(tracked.trackingId, 'mystery', {
+      outcome: mysterySolved(tracked) ? 'won' : 'active',
+      guesses: tracked.guesses.length,
+    })
     mysteryRef.current = next
     setMystery(next)
     setQuery('')
@@ -132,7 +158,12 @@ export default function Something({
   }
   function giveUp() {
     const current = mysteryRef.current
-    const next = { ...current, round: revealMystery(current.round) }
+    const tracked = trackRound(revealMystery(current.round))
+    const next = { ...current, round: tracked }
+    recordGame(tracked.trackingId, 'mystery', {
+      outcome: 'revealed',
+      guesses: tracked.guesses.length,
+    })
     mysteryRef.current = next
     setMystery(next)
     setError('')

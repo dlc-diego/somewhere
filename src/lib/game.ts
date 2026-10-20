@@ -1,6 +1,7 @@
 import { canCrossBorder, randomBorderJourney, shortestBorderRoute } from './journey'
 import { areAdjacent, countries, countryById, locationFor, type GameMode } from './countries'
 import { distanceKm, temperatureFor } from './geo'
+import { validTrackingId } from './playerData'
 
 export interface Round {
   version: 2
@@ -10,6 +11,7 @@ export interface Round {
   guesses: string[]
   hintUsed?: boolean
   start?: string
+  trackingId?: string
 }
 export const STORAGE_KEY = 'somewhere.round.v1'
 export const MODE_KEY = 'somewhere.mode.v1'
@@ -127,6 +129,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
     )
       return null
     if (raw.hintUsed !== undefined && typeof raw.hintUsed !== 'boolean') return null
+    if (raw.trackingId !== undefined && !validTrackingId(raw.trackingId)) return null
     if (
       guesses.length > (mode === 'journey' ? 1000 : countries.length) ||
       guesses.some((g) => typeof g !== 'string' || !countryById.has(g))
@@ -154,6 +157,7 @@ export function parseRound(value: string | null, expectedMode?: GameMode): Round
       revealed,
       answer,
       guesses,
+      ...(raw.trackingId ? { trackingId: raw.trackingId as string } : {}),
       ...(mode === 'journey' ? { start: raw.start as string } : {}),
       ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: raw.hintUsed === true } : {}),
     }

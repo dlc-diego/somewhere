@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -83,7 +84,7 @@ test('saved Someone opens without geography or trivia modules and stays accessib
   await expect(page.locator('.skip-link')).toHaveAttribute('href', '#someone-content')
   expect(gameRequests).toEqual([])
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
@@ -130,7 +131,7 @@ test('Something games and two-tone branding remain accessible in both themes at 
   await page.goto('/')
   await switchTo(page, 'something')
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     const palette = await page.locator('.brand-word').evaluate((el) => ({
       base: getComputedStyle(el).color,
       ending: getComputedStyle(el.querySelector('.brand-ending')!).color,
@@ -142,7 +143,7 @@ test('Something games and two-tone branding remain accessible in both themes at 
       theme === 'dark' ? 'rgb(98, 233, 154)' : 'rgb(189, 74, 46)',
     )
     const selectBox = (await selector(page).boundingBox())!
-    const toggleBox = (await page.locator('.theme-toggle').boundingBox())!
+    const toggleBox = (await page.locator('.hamburger-button').boundingBox())!
     expect(selectBox.x + selectBox.width).toBeLessThanOrEqual(toggleBox.x)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     expect(

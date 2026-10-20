@@ -1,3 +1,4 @@
+import { usePlayer } from '../lib/PlayerProvider'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import {
   ArrowRight,
@@ -98,6 +99,7 @@ export default function Adventure({
 }: {
   onCelebrate: (events: CelebrationRequest[]) => void
 }) {
+  const { recordGame } = usePlayer()
   const [initial] = useState(loadAdventure)
   const [run, setRun] = useState(initial.run)
   const current = useRef(run)
@@ -162,6 +164,11 @@ export default function Adventure({
     }
     const before = current.current
     const next = result.run
+    if (next.path.length)
+      recordGame(next.id, 'adventure', {
+        outcome: next.status === 'won' ? 'won' : next.status === 'lost' ? 'lost' : 'active',
+        stage: next.path.length,
+      })
     if (
       before.encounter?.result === 'active' &&
       next.encounter?.result === 'cleared' &&
@@ -197,6 +204,11 @@ export default function Adventure({
     if (!apply(returnToRoute(current.current))) scrollTo('map')
   }
   function restart() {
+    if (current.current.status === 'playing' && current.current.path.length)
+      recordGame(current.current.id, 'adventure', {
+        outcome: 'abandoned',
+        stage: current.current.path.length,
+      })
     const next = newAdventure()
     current.current = next
     setRun(next)

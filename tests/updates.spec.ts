@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { openMenu, changeTheme } from './helpers/menu'
 
 async function seed(page: Page, perfectRound = false) {
   await page.addInitScript((perfectRound) => {
@@ -48,7 +49,7 @@ const savedState = (page: Page) =>
     ),
   )
 
-test('header icon checks the matching build without reloading or touching saved games', async ({
+test('menu action checks the matching build without reloading or touching saved games', async ({
   page,
   request,
 }) => {
@@ -62,12 +63,11 @@ test('header icon checks the matching build without reloading or touching saved 
   await page.goto('/')
   await ready(page)
   await expect.poll(() => checks.length).toBe(1)
-  await expect(
-    page.locator('header').getByRole('button', { name: 'Check for updates', exact: true }),
-  ).toBeVisible()
+  await openMenu(page)
+  await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
   await expect(page.locator('footer .update-button')).toHaveCount(0)
-  await expect(checkButton(page)).toHaveText('')
-  await expect(checkButton(page)).toHaveCSS('color', 'rgb(155, 166, 171)')
+  await expect(checkButton(page)).toHaveText('Check for updates')
+  await expect(checkButton(page)).toHaveCSS('color', 'rgb(175, 190, 183)')
   const before = await savedState(page)
   let navigations = 0
   page.on('framenavigated', (frame) => {
@@ -80,7 +80,7 @@ test('header icon checks the matching build without reloading or touching saved 
   expect(await savedState(page)).toEqual(before)
   expect(navigations).toBe(0)
   await page.getByRole('button', { name: 'Switch to light mode' }).click()
-  await expect(checkButton(page)).toHaveCSS('color', 'rgb(116, 126, 131)')
+  await expect(checkButton(page)).toHaveCSS('color', 'rgb(94, 106, 89)')
 })
 
 test('resuming detects an update without reloading; downloading preserves every saved mode at a subpath', async ({
@@ -111,6 +111,7 @@ test('resuming detects an update without reloading; downloading preserves every 
     document.dispatchEvent(new Event('visibilitychange'))
   })
   const download = page.getByRole('button', { name: 'Download update', exact: true })
+  await openMenu(page)
   await expect(download).toBeVisible()
   await expect(page.locator('.update-feedback')).toContainText('An update is available.')
   expect(checks).toBe(2)
@@ -148,6 +149,8 @@ test('offline checks fail quietly in the background and allow a manual retry', a
   await page.goto('/')
   await ready(page)
   await expect(page.getByText(/Couldn’t check for updates/)).toHaveCount(0)
+  await openMenu(page)
+  await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
   const before = await savedState(page)
   await checkButton(page).click()
   await expect(page.getByText(/Couldn’t check for updates/)).toBeVisible()
@@ -179,6 +182,7 @@ test('an update waits for both queued perfect-round celebrations before loading'
   const navigation = page.waitForRequest(
     (req) => req.isNavigationRequest() && req.url().includes('_app_update='),
   )
+  await openMenu(page)
   await checkButton(page).click()
   await expect(
     page.getByText('Your update will open after the celebration.', { exact: true }),
@@ -199,7 +203,7 @@ test('an update waits for both queued perfect-round celebrations before loading'
   await expect(canvas).toHaveCount(0)
 })
 
-test('the icon-only header fits 320px and shows an accessible, temporary update message in both themes', async ({
+test('the compact header and menu fit 320px with an accessible update notice in both themes', async ({
   page,
 }) => {
   await seed(page)
@@ -208,48 +212,34 @@ test('the icon-only header fits 320px and shows an accessible, temporary update 
   await page.route(/\/version\.json(?:\?|$)/, (route) =>
     route.fulfill({ json: { version: 'new-build' } }),
   )
-  await page.clock.install()
   await page.goto('/')
   await ready(page)
-  const button = page.getByRole('button', { name: 'Download update', exact: true })
-  await expect(button).toBeVisible()
-  await expect(button).toHaveText('')
   await expect(page.locator('.update-feedback')).toContainText('An update is available.')
-  for (const theme of ['dark', 'light']) {
-    if (theme === 'light') await page.getByRole('button', { name: 'Switch to light mode' }).click()
-    const box = (await button.boundingBox())!
-    expect(box.width).toBeGreaterThanOrEqual(44)
-    expect(box.height).toBeGreaterThanOrEqual(44)
+  await expect(page.locator('.hamburger-button')).toHaveClass(/has-update/)
+  for (const theme of ['dark', 'light'] as const) {
+    if (theme === 'light') await changeTheme(page, theme)
+    const header = page.locator('header')
     const branding = (await page
       .getByRole('combobox', { name: 'Choose experience' })
       .boundingBox())!
-    const toggle = (await page.locator('.theme-toggle').boundingBox())!
-    expect(branding.x + branding.width).toBeLessThanOrEqual(box.x)
-    expect(box.x + box.width).toBeLessThanOrEqual(toggle.x)
-    expect(box.y + box.height / 2).toBeCloseTo(toggle.y + toggle.height / 2, 1)
+    const streak = (await page.locator('.streak-button').boundingBox())!
+    const menu = (await page.locator('.hamburger-button').boundingBox())!
+    expect(branding.x + branding.width).toBeLessThanOrEqual(streak.x)
+    expect(streak.x + streak.width).toBeLessThanOrEqual(menu.x)
+    expect(menu.x + menu.width).toBeLessThanOrEqual(320)
+    await expect(header.getByRole('button')).toHaveCount(2)
+    await openMenu(page)
+    const button = page.getByRole('button', { name: 'Download update', exact: true })
+    await expect(button).toBeEnabled()
     await expect(button).toHaveCSS(
       'color',
       theme === 'dark' ? 'rgb(135, 219, 179)' : 'rgb(40, 117, 91)',
     )
-    const notice = (await page.locator('.update-feedback').boundingBox())!
-    expect(notice.x).toBeGreaterThanOrEqual(0)
-    expect(notice.x + notice.width).toBeLessThanOrEqual(320)
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([])
+    await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
-  await page.clock.fastForward(8100)
-  await expect(page.locator('.app-update [role="status"]')).toHaveClass('sr-only')
-  await expect(button).toBeEnabled()
-  await expect(button).toHaveCSS('color', 'rgb(40, 117, 91)')
-  await page.getByRole('combobox', { name: 'Choose experience' }).selectOption('somewhere')
-  const branding = (await page.getByRole('combobox', { name: 'Choose experience' }).boundingBox())!
-  const update = (await button.boundingBox())!
-  const toggle = (await page.locator('.theme-toggle').boundingBox())!
-  expect(branding.x + branding.width).toBeLessThanOrEqual(update.x)
-  expect(update.x + update.width).toBeLessThanOrEqual(toggle.x)
-  expect(toggle.x + toggle.width).toBeLessThanOrEqual(302)
-  await page.clock.resume()
 })

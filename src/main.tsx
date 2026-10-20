@@ -1,6 +1,7 @@
 import React, { Component, type ReactNode } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
+import { PlayerProvider } from './lib/PlayerProvider'
 import './styles.css'
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -26,7 +27,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <PlayerProvider>
+        <App />
+      </PlayerProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 )

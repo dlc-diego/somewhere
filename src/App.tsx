@@ -1,15 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import {
-  ArrowRight,
-  Check,
-  Compass,
-  Globe2,
-  Heart,
-  Sun,
-  Moon,
-  Sparkles,
-  UserRound,
-} from 'lucide-react'
+import { ArrowRight, Check, Compass, Globe2, Heart, Sparkles, UserRound } from 'lucide-react'
 import ExperienceSwitcher from './components/ExperienceSwitcher'
 import ExperienceTransition from './components/ExperienceTransition'
 import { useExperience, type Experience } from './lib/useExperience'
@@ -21,7 +11,6 @@ import ValHeart from './components/ValHeart'
 import VisualChallenge from './components/VisualChallenge'
 import GuessHistory from './components/GuessHistory'
 import Dialog from './components/Dialog'
-import AppUpdate from './components/AppUpdate'
 import VictoryCelebration from './components/VictoryCelebration'
 import {
   createCelebrationPicker,
@@ -51,6 +40,9 @@ import {
 import { formatDistance, temperatures, type Temperature } from './lib/geo'
 import { prefersReducedMotion } from './lib/motion'
 import { useTheme } from './lib/useTheme'
+import { usePlayer } from './lib/PlayerProvider'
+import { trackRound } from './lib/playerData'
+import AccountNav from './components/AccountNav'
 
 const Globe = lazy(() => import('./components/Globe'))
 const Something = lazy(() => import('./components/Something'))
@@ -61,6 +53,7 @@ type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensit
 
 export default function App() {
   const { theme, toggleTheme } = useTheme()
+  const { recordGame, setCelebrating } = usePlayer()
   const { experience, transition, switchExperience } = useExperience()
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
@@ -86,6 +79,7 @@ export default function App() {
   const [pickCelebration] = useState(() => createCelebrationPicker())
   const [celebrations, setCelebrations] = useState<QueuedCelebration[]>([])
   const celebration = celebrations[0]
+  useEffect(() => setCelebrating(celebrations.length > 0), [celebrations.length, setCelebrating])
   const finishCelebration = useCallback(() => setCelebrations((queue) => queue.slice(1)), [])
   const focusSequence = useRef(0)
   const celebrationSequence = useRef(0)
@@ -176,7 +170,12 @@ export default function App() {
   function submit(country: Country) {
     const result = addGuess(round, country.id)
     if (result.error) return result.error
-    setRound(result.round)
+    const tracked = trackRound(result.round)
+    setRound(tracked)
+    recordGame(tracked.trackingId, mode, {
+      outcome: hasWon(tracked) ? 'won' : 'active',
+      guesses: tracked.guesses.length,
+    })
     const latest = guessDetails(result.round).at(-1)!
     focusCountry(country, latest.location)
     if (hasWon(result.round)) celebrate([{ effect: 'normal' }])
@@ -211,7 +210,9 @@ export default function App() {
   }
   function giveUp() {
     if (ended) return
-    setRound(revealAnswer(round))
+    const tracked = trackRound(revealAnswer(round))
+    setRound(tracked)
+    recordGame(tracked.trackingId, mode, { outcome: 'revealed', guesses: tracked.guesses.length })
     focusCountry(answerCountry, answerLocation)
     setAnnouncement(
       `Answer revealed: ${answerLocation.name}${mode === 'capitals' ? `, ${answerCountry.name}` : ''}. Round complete.`,
@@ -260,20 +261,7 @@ export default function App() {
                 ? 'Every person has a story'
                 : 'A little adventure awaits'}
         </span>
-        <nav aria-label="App controls">
-          <AppUpdate celebrating={celebrations.length > 0} />
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            <span className="theme-icons" aria-hidden="true">
-              <Sun size={18} />
-              <span className="theme-divider">/</span>
-              <Moon size={18} />
-            </span>
-          </button>
-        </nav>
+        <AccountNav theme={theme} toggleTheme={toggleTheme} celebrating={celebrations.length > 0} />
       </header>
 
       <main>

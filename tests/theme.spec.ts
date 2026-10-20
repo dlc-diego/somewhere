@@ -1,3 +1,4 @@
+import { openMenu, changeTheme } from './helpers/menu'
 import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -6,14 +7,15 @@ test('system theme, explicit choice, persistence and early paint agree', async (
   await page.goto('/')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   const header = page.locator('header')
-  await expect(header.getByRole('button')).toHaveCount(1)
+  await expect(header.getByRole('button')).toHaveCount(2)
+  await openMenu(page)
   await expect(header.getByRole('button', { name: 'Switch to light mode' })).toBeVisible()
-  await expect(header.locator('.theme-icons svg')).toHaveCount(2)
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
   await expect(page.getByRole('button', { name: 'New round' })).toHaveCount(0)
   await page.emulateMedia({ colorScheme: 'light' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /\/favicon\.svg$/)
-  await header.getByRole('button', { name: 'Switch to dark mode' }).click()
+  await changeTheme(page, 'dark')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   const favicon = page.locator('link[rel="icon"]')
   await expect(favicon).toHaveAttribute('href', /\/favicon-dark\.svg$/)
@@ -25,6 +27,7 @@ test('system theme, explicit choice, persistence and early paint agree', async (
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#101c20')
   expect(await page.evaluate(() => localStorage.getItem('somewhere.theme.v1'))).toBe('dark')
   await page.reload()
+  await openMenu(page)
   await expect(header.getByRole('button', { name: 'Switch to light mode' })).toBeVisible()
   await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(16, 28, 32)')
   // Even with the application bundle unavailable, the saved palette precedes React.
@@ -102,6 +105,7 @@ test('theme switching works with blocked storage and keyboard input', async ({ p
   })
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.goto('/')
+  await openMenu(page)
   const toggle = page.getByRole('button', { name: 'Switch to light mode' })
   await toggle.focus()
   await page.keyboard.press('Enter')
@@ -110,6 +114,7 @@ test('theme switching works with blocked storage and keyboard input', async ({ p
   await page.emulateMedia({ colorScheme: 'dark' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await expect(page.getByRole('combobox', { name: /^Search for a / })).toBeEnabled()
 })
@@ -133,8 +138,8 @@ test('switching themes preserves a running winning celebration', async ({ page }
   await page.getByRole('button', { name: 'Make a guess' }).click()
   const canvas = page.locator('.victory-celebration')
   const original = (await canvas.elementHandle())!
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click()
-  await page.getByRole('button', { name: 'Switch to light mode' }).click()
+  await changeTheme(page, 'dark')
+  await changeTheme(page, 'light')
   expect(await original.evaluate((node) => node.isConnected)).toBe(true)
   await page.clock.runFor(4100)
   expect(await original.evaluate((node) => node.isConnected)).toBe(true)

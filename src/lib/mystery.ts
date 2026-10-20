@@ -1,4 +1,5 @@
 import type { Mystery } from '../data/mysteries'
+import { validTrackingId } from './playerData'
 
 export interface MysteryRound {
   version: 1
@@ -6,6 +7,7 @@ export interface MysteryRound {
   cluesShown: number
   guesses: string[]
   revealed: boolean
+  trackingId?: string
 }
 export interface Session<R> {
   version: 1
@@ -112,6 +114,7 @@ export function createMysteryGame(items: readonly Mystery[]) {
       )
         return null
       const r = session.round
+      if (r.trackingId !== undefined && !validTrackingId(r.trackingId)) return null
       if (
         r.version !== 1 ||
         typeof r.id !== 'string' ||

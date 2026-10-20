@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function natural(n, max) { return n is int && n >= 0 && n <= max; }
+    // US Central daylight saving begins at 08:00 UTC on March's second Sunday
+    // and ends at 07:00 UTC on November's first Sunday. Noon itself is unambiguous.
+    function centralDay(at) {
+      let year = at.year();
+      let marchSunday = 1 + (7 - timestamp.date(year, 3, 1).dayOfWeek()) % 7 + 7;
+      let novemberSunday = 1 + (7 - timestamp.date(year, 11, 1).dayOfWeek()) % 7;
+      let start = timestamp.date(year, 3, marchSunday) + duration.value(8, 'h');
+      let end = timestamp.date(year, 11, novemberSunday) + duration.value(7, 'h');
+      let noonHour = at >= start && at < end ? 17 : 18;
+      return int((at.toMillis() - noonHour * 3600000) / 86400000);
+    }
+    function game(id) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt'])
+        && d.keys().hasOnly(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt'])
+        && d.version == 1 && id.matches('^[a-zA-Z0-9_-]{8,100}$') && d.id == id
+        && d.mode in ['countries','capitals','flags','shapes','journey','trivia','mystery','who','identify','adventure']
+        && d.outcome in ['active','won','revealed','lost','completed','abandoned']
+        && d.startedAt is int && d.updatedAt is int && d.startedAt >= 946684800000
+        && d.updatedAt >= d.startedAt && d.updatedAt <= request.time.toMillis() + 300000
+        && natural(d.guesses,10000) && natural(d.answered,10000)
+        && natural(d.correct,d.answered) && natural(d.bestStreak,d.correct) && natural(d.stage,13)
+        && d.recordedAt == request.time;
+    }
+    match /users/{uid}/games/{id} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && game(id);
+      allow update: if owner(uid) && game(id)
+        && request.resource.data.mode == resource.data.mode
+        && request.resource.data.startedAt <= resource.data.startedAt
+        && request.resource.data.updatedAt >= resource.data.updatedAt
+        && request.resource.data.guesses >= resource.data.guesses
+        && request.resource.data.answered >= resource.data.answered
+        && request.resource.data.correct >= resource.data.correct
+        && request.resource.data.bestStreak >= resource.data.bestStreak
+        && request.resource.data.stage >= resource.data.stage
+        && (resource.data.outcome == 'active' || request.resource.data.outcome != 'active');
+    }
+    match /users/{uid}/checkins/{id} {
+      allow read: if owner(uid);
+      allow create: if owner(uid)
+        && request.resource.data.keys().hasAll(['day','at','recordedAt'])
+        && request.resource.data.keys().hasOnly(['day','at','recordedAt'])
+        && request.resource.data.day is int && id == string(request.resource.data.day)
+        && request.resource.data.at is int && request.resource.data.at >= 946684800000
+        && request.resource.data.at <= request.time.toMillis() + 300000
+        && request.resource.data.day == centralDay(timestamp.value(request.resource.data.at))
+        && request.resource.data.day <= centralDay(request.time)
+        && request.resource.data.recordedAt == request.time;
+      // A day is immutable. Offline/guest history may be imported, but no future day may be claimed.
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

@@ -2,11 +2,11 @@
 
 A small, polished collection of games, built for Val. **Somewhere** offers countries, capitals, flags, shapes and land-connected border journeys on an interactive globe. **Something** offers General Trivia with hot streaks and perfect-round celebrations, plus the five-clue guessing game What am I. **Someone** offers Who am I, a five-clue game about 80 well-known people, and Identify Me, a portrait guessing game with the same 80 people. **Somehow** is a branching geography/trivia adventure with hearts, supplies and a final boss.
 
-**React + TypeScript + Vite, with an SVG globe powered by D3 Geo. Entirely static. No accounts, keys, backend, database, analytics, or runtime map APIs.**
+**React + TypeScript + Vite, with an SVG globe powered by D3 Geo. Statically hosted on GitHub Pages, with optional Google sign-in and Firebase statistics sync. Guest play needs no account. No analytics or runtime map APIs.**
 
 ## Run locally
 
-Use **Node 22.12+** (Node 24 is also supported) and npm.
+Use **Node 24.12+** and npm.
 
 ```sh
 npm ci
@@ -25,12 +25,46 @@ The `dist/` directory is the complete website. Keep its `assets/` and `data/` di
 
 In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm --cache /tmp/wep-app-npm ci` there. No secrets or environment variables are needed by the app.
 
+## Accounts, statistics and daily check-ins
+
+The header contains a daily flame/count and a hamburger menu. The menu includes theme selection, update checks, **Your statistics**, **Sign in with Google**, and **Sign out**. The launch update notice still appears automatically. Signing in is optional: guest statistics and check-ins are saved on the device and imported into the first account used afterward. Signed-in data is cached separately for each account; signing out returns to guest play without showing that account's statistics.
+
+Tap the flame to claim a check-in once per day. A ready flame pulses gently; claiming sends a short heart/star sparkle and **+1 day**. The check-in period runs from **noon to noon in America/Chicago**, including daylight-saving changes. Noon makes another claim available; it does not erase an unbroken streak. Missing a full period resets the current streak to zero, while the longest streak stays recorded. Opening the app or signing in alone never claims a day. Reduced-motion preferences replace movement with static feedback.
+
+Statistics begin with play after this release, on the first valid guess, answer or reveal. Stable round IDs prevent refreshes from adding duplicate plays. Views include per-mode plays, completed games, wins and average guesses on wins; trivia includes accuracy, best answer streak and perfect rounds; Somehow includes wins and furthest stop. Reveals and abandoned adventures count as completed without a win. Old completed rounds are not imported retroactively. Actual saved game progress remains device-local; **only statistics and check-ins sync**. Local pending writes survive refreshes, synchronize after reconnecting, and pause during winning celebrations. Offline check-ins are imported when possible; this is a personal trust-based app, not an anti-cheat leaderboard.
+
+### Firebase configuration
+
+The public web configuration in `src/lib/firebaseApp.ts` identifies project `web-app-53618`. It is not an administrative credential. Never add a service-account key to the repository. No Analytics SDK is initialized. The client uses Firebase Authentication (Google provider) and Cloud Firestore; there is no custom server or Cloud Function. These services have free-tier quotas; keep the project on Spark for a hard no-billing setup and monitor usage in the Firebase console.
+
+For a fresh project:
+
+1. Register a Firebase web app, update its public configuration, enable **Authentication → Google**, and add your hosting hostname (for this site, `dlc-diego.github.io`) to authorized domains.
+2. Create Cloud Firestore in production mode and publish the exact contents of [`firestore.rules`](firestore.rules) in its Rules tab. These rules allow authenticated users to access only their own records, validate fields and counters, and make daily check-ins immutable. They were published for the current project during setup. Future edits to this file **must also be published**; the GitHub Pages workflow does not deploy Firebase rules.
+3. Deploy the normal static build. No GitHub secrets, private keys, custom domain, Firebase Hosting or paid plan is required.
+4. On a real phone, sign in from the menu, allow the Google popup if prompted, claim the flame and check the statistics on another device. iPhone Home Screen and Safari storage may be separate, so sign in in each installation where you want sync. Popup blocking/cancellation or unavailable cloud access leaves local games playable.
+
+The security rules and SDK synchronization are tested against local Firebase emulators with fake users, including account isolation and duplicate-day protection. This does not establish that the real Google consent flow works on every Safari/Home Screen version; verify that flow on the devices used to play. Daily timekeeping follows the device clock; rules reject future cloud check-ins beyond a small clock-skew allowance. Cloud personal records can be removed by the project administrator; the client never deletes synced history.
+
+### Local Firebase tests
+
+Java 21+, Node 24.12+ and Firebase CLI are needed only for emulator tests. No Firebase login or production data is used. The tests use `demo-somewhere`. In this cloud environment use writable emulator/config caches:
+
+```sh
+export XDG_CONFIG_HOME=/tmp/somewhere-firebase-config
+export FIREBASE_EMULATORS_PATH=/tmp/somewhere-firebase-emulators
+npm exec --yes --package firebase-tools -- firebase emulators:exec --project demo-somewhere --only firestore "node --test tests/firestore-rules.test.mjs"
+PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium npm exec --yes --package firebase-tools -- firebase emulators:exec --project demo-somewhere --only auth,firestore "npx playwright test --config playwright.firebase.config.ts"
+```
+
+Add `--cache /tmp/wep-app-npm` to `npm exec` in the cloud workspace. The account browser suite starts its own Vite development server with `VITE_FIREBASE_EMULATORS=true`. This opt-in only works in development on localhost; production builds always use the real project. Emulator fake credentials never work against production Authentication. Keep emulator tests separate from normal production browser tests.
+
 ## How it plays
 
 - Use the **header wordmark dropdown** to switch between **somewhere.** (geography), **something.** (General Trivia and What am I), and **someone.** (Who am I and Identify Me), and **somehow.** (adventure). The word “some” uses the main text color; “where”, “thing”, “one”, and “how” use the theme accent. Someone initially opens Who am I, remembers your selected mode, preserves your saved games, and uses the same switch animation and theme controls. Its people bank is lazy-loaded; opening Someone first does not load the globe, trivia pack or What am I bank. A brief full-screen accent sweep, turning compass and content fade accompany switching. Reduced-motion preferences switch immediately; enabling that preference during a transition finishes it immediately too. Your selected experience is saved locally, with a safe fallback when browser storage is unavailable. Geography rounds, search input and globe view stay intact when switching; celebrations continue uninterrupted. Opening a saved Something page loads no globe data until you visit Somewhere. No additional service or dependency is required.
 
-- Use the header’s **sun/moon toggle** for light or dark mode. The first visit follows your device’s preference; your choice is saved in this browser and applied before the page paints on future visits. Dark mode covers search, history, dialogs, hints, errors and loading states, with readable heat labels and the same globe feedback colors. Dark-mode accents use mint green (`#62e99a`), including the logo, hearts, buttons and the softer green heart-wave background.
-- The header’s **download icon**, immediately left of the light/dark control, checks for the latest deployed app. If the current build matches, it briefly says **You’re up to date**; otherwise it opens fresh app files. The icon is grey when no update is detected and green when an update is available, in either theme. An eight-second message below the header announces an available update on launch, returning to the app, or reconnecting; the green icon remains afterward. Automatic checks never reload a game, are limited to once per minute (except reconnects), and fail quietly offline. A manual failure offers a retry; checks time out after eight seconds. An update waits for all queued winning celebrations to finish, then reloads with a fresh HTML URL and content-hashed JavaScript/CSS. Saved rounds, trivia answers, mystery clues, selected modes and theme stay in local storage; the update does not clear website data or iOS system caches. This feature becomes available to an existing Home Screen install after it first loads a release containing the update button. Each build emits its matching `version.json`; deploy that file with the rest of `dist/`. No service worker, external update API or paid service is required.
+- Open the header’s **hamburger menu** and use **Light mode / Dark mode** for light or dark mode. The first visit follows your device’s preference; your choice is saved in this browser and applied before the page paints on future visits. Dark mode covers search, history, dialogs, hints, errors and loading states, with readable heat labels and the same globe feedback colors. Dark-mode accents use mint green (`#62e99a`), including the logo, hearts, buttons and the softer green heart-wave background.
+- The hamburger menu’s **Check for updates** action checks for the latest deployed app. If the current build matches, it briefly says **You’re up to date**; otherwise it opens fresh app files. The update action is muted when no update is detected and green when an update is available, in either theme. The hamburger also shows a green notification dot. An eight-second message below the header announces an available update on launch, returning to the app, or reconnecting; the green menu indicator remains afterward. Automatic checks never reload a game, are limited to once per minute (except reconnects), and fail quietly offline. A manual failure offers a retry; checks time out after eight seconds. An update waits for all queued winning celebrations to finish, then reloads with a fresh HTML URL and content-hashed JavaScript/CSS. Saved rounds, trivia answers, mystery clues, selected modes and theme stay in local storage; the update does not clear website data or iOS system caches. This feature becomes available to an existing Home Screen install after it first loads a release containing the update button. Each build emits its matching `version.json`; deploy that file with the rest of `dist/`. No service worker, external update API or paid service is required.
 - Choose **Countries**, **Capitals**, **Flags**, **Shapes**, or **Border Journey** in the dropdown above the search field. Each mode keeps a separate saved round, so you can switch without losing any journey. A random answer is selected once per round, and new rounds exclude that mode’s immediately previous answer. Country saves from the earlier version are migrated automatically.
 - In country mode, search a name, ISO code, or alias such as `UK`, `UAE`, `Turkey`, or `Ivory Coast`. In capital mode, search a city name or spelling variant such as `Paris`, `Washington DC`, or `Kiev`; suggestions include the city’s country. Select a suggestion, then press **Make a guess**. With a keyboard, Enter selects the highlighted suggestion; a second Enter submits it.
 - In **Flags**, identify the displayed flag image by guessing a country name or alias. Suggestions hide their flag images to avoid giving away the match. The globe, distances, heat, duplicate protection, closest-first history, reveal, and green answer animation work as in Countries. **Hint: reveal continent** shows a continent without using a guess, marking the map, or ending the round. The clue remains visible through refresh and mode switches, and resets with a new flag round. Used continent hints remain visible after completion.
@@ -132,13 +166,13 @@ Cloudflare Pages serves this app as static files with HTTPS and a free `pages.de
 2. Sign in to Cloudflare and create a **Pages** project connected to that Git repository. Choose the branch containing the app (normally `main`).
 3. Configure:
 
-   | Setting                | Value                                                    |
-   | ---------------------- | -------------------------------------------------------- |
-   | Framework              | Vite (or no preset with the settings below)              |
-   | Root directory         | Repository root                                          |
-   | Build command          | `npm run build`                                          |
-   | Build output directory | `dist`                                                   |
-   | Node version           | Set `NODE_VERSION` to `22` or `24` in the build settings |
+   | Setting                | Value                                                             |
+   | ---------------------- | ----------------------------------------------------------------- |
+   | Framework              | Vite (or no preset with the settings below)                       |
+   | Root directory         | Repository root                                                   |
+   | Build command          | `npm run build`                                                   |
+   | Build output directory | `dist`                                                            |
+   | Node version           | Set `NODE_VERSION` to `24` (24.12 or newer) in the build settings |
 
 4. Deploy. The platform installs dependencies and builds the project. Open its assigned HTTPS URL on your phone and computer.
 5. Verify the globe loads, make a guess, refresh to check persistence, and start another round. Share the assigned URL with your wife.
@@ -158,7 +192,7 @@ Vite’s relative base (`./`) and relative map-data paths support both domain-ro
 
 ### Netlify alternative
 
-Import the Git repository, set build command `npm run build`, publish directory `dist`, and use Node 22 or 24. Netlify provides an HTTPS `netlify.app` address. Review its current free-plan credits and limits before choosing it. No functions or paid add-ons are required.
+Import the Git repository, set build command `npm run build`, publish directory `dist`, and use Node 24.12 or newer. Netlify provides an HTTPS `netlify.app` address. Review its current free-plan credits and limits before choosing it. No functions or paid add-ons are required.
 
 ## Verification
 

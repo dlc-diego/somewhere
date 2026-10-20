@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { ADVENTURE_KEY, adventureMysteryGame, type AdventureRun } from '../src/lib/adventure'
@@ -646,8 +647,7 @@ test('Someone trials, image credits and restart confirmation are accessible in b
   await page.goto('/')
   await expect(page.getByRole('img', { name: 'Mystery person to identify' })).toBeVisible()
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark')
-      await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     for (const action of [null, 'Image credits', 'New run']) {
       if (action) await page.getByRole('button', { name: action, exact: true }).click()
       expect(
@@ -763,8 +763,7 @@ test('public map, satchel and encounter are accessible at 320px in both themes',
       .violations,
   ).toEqual([])
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark')
-      await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     await expect(page.getByRole('heading', { name: 'General Trivia', exact: true })).toBeVisible()
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())

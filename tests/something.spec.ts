@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -286,7 +287,7 @@ test('both Something games are accessible at 320px in both themes, including fee
   await page.setViewportSize({ width: 320, height: 740 })
   await page.goto('/')
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     for (const value of ['trivia', 'mystery']) {
       await mode(page).selectOption(value)
       if (value === 'trivia' && theme === 'light') await choose(page, 0, false)

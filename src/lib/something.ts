@@ -1,6 +1,7 @@
 import { triviaQuestions, type TriviaQuestion } from '../data/trivia'
 import { mysteries } from '../data/mysteries'
 import { createMysteryGame, type Session } from './mystery'
+import { validTrackingId } from './playerData'
 export type { Session, MysteryRound } from './mystery'
 export { normalizeAnswer } from './mystery'
 import type { CelebrationRequest } from './celebrations'
@@ -12,6 +13,7 @@ export interface TriviaRound {
   orders: number[][]
   responses: number[]
   index: number
+  trackingId?: string
 }
 export const TRIVIA_LENGTH = 10
 export const SOMETHING_MODE_KEY = 'something.mode.v1'
@@ -132,6 +134,7 @@ export function parseTriviaSession(raw: string | null): Session<TriviaRound> | n
     )
       return null
     const r = session.round
+    if (r.trackingId !== undefined && !validTrackingId(r.trackingId)) return null
     if (
       r.version !== 1 ||
       !Array.isArray(r.ids) ||

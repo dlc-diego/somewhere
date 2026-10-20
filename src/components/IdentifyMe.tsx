@@ -1,3 +1,5 @@
+import { usePlayer } from '../lib/PlayerProvider'
+import { trackRound } from '../lib/playerData'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { ArrowRight, Check, Lightbulb, RefreshCw } from 'lucide-react'
 import type { CelebrationRequest } from '../lib/celebrations'
@@ -58,6 +60,7 @@ function PortraitRound({
   portraits: Portrait[]
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
+  const { recordGame } = usePlayer()
   const [game] = useState(() => identifyGame(portraits))
   const [initial] = useState(() => loadIdentify(game))
   const [session, setSession] = useState(initial.session)
@@ -87,7 +90,12 @@ function PortraitRound({
       setError(result.error)
       return
     }
-    const next = { ...current.current, round: result.round }
+    const tracked = trackRound(result.round)
+    const next = { ...current.current, round: tracked }
+    recordGame(tracked.trackingId, 'identify', {
+      outcome: game.solved(tracked) ? 'won' : 'active',
+      guesses: tracked.guesses.length,
+    })
     current.current = next
     setSession(next)
     setError('')
@@ -104,7 +112,12 @@ function PortraitRound({
     setNotice(person.clues[1])
   }
   function reveal() {
-    const next = { ...current.current, round: game.reveal(current.current.round) }
+    const tracked = trackRound(game.reveal(current.current.round))
+    const next = { ...current.current, round: tracked }
+    recordGame(tracked.trackingId, 'identify', {
+      outcome: 'revealed',
+      guesses: tracked.guesses.length,
+    })
     current.current = next
     setSession(next)
     setError('')

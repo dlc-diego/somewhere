@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { SOMEONE_KEY } from '../src/lib/someone'
@@ -170,7 +171,7 @@ test('Who am I has accessible mobile layouts in both themes including feedback, 
   await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
   await page.goto('/')
   for (const theme of ['light', 'dark']) {
-    if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+    if (theme === 'dark') await changeTheme(page, 'dark')
     await expect(answer(page)).toBeVisible()
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())

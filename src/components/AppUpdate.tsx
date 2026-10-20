@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, Download, LoaderCircle } from 'lucide-react'
 import { APP_VERSION, fetchLatestVersion, updateUrl, UPDATE_QUERY_KEY } from '../lib/updates'
 
 type Status = 'idle' | 'checking' | 'current' | 'available' | 'waiting' | 'updating' | 'error'
 
-export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
+export default function AppUpdate({
+  celebrating,
+  render,
+}: {
+  celebrating: boolean
+  render: (button: ReactNode, available: boolean) => ReactNode
+}) {
   const [status, setStatus] = useState<Status>('idle')
   const [availableVersion, setAvailableVersion] = useState<string | null>(null)
   const [pendingVersion, setPendingVersion] = useState<string | null>(null)
@@ -99,7 +105,7 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
     idle: '',
     checking: 'Checking for updates…',
     current: 'You’re up to date.',
-    available: 'An update is available. Tap the download icon to get the latest version.',
+    available: 'An update is available. Open the menu and choose Download update.',
     waiting: 'Your update will open after the celebration.',
     updating: 'Opening the latest version…',
     error: 'Couldn’t check for updates. Please try again when you’re online.',
@@ -107,21 +113,25 @@ export default function AppUpdate({ celebrating }: { celebrating: boolean }) {
 
   return (
     <div className="app-update">
-      <button
-        className={`update-button${availableVersion ? ' update-available' : ''}`}
-        onClick={() => void check(true)}
-        aria-label={label}
-        title={label}
-        disabled={busy}
-      >
-        {status === 'checking' || status === 'updating' ? (
-          <LoaderCircle className="update-spinner" size={16} aria-hidden="true" />
-        ) : status === 'current' ? (
-          <Check size={16} aria-hidden="true" />
-        ) : (
-          <Download size={16} aria-hidden="true" />
-        )}
-      </button>
+      {render(
+        <button
+          className={`menu-action update-button${availableVersion ? ' update-available' : ''}`}
+          onClick={() => void check(true)}
+          aria-label={label}
+          title={label}
+          disabled={busy}
+        >
+          {status === 'checking' || status === 'updating' ? (
+            <LoaderCircle className="update-spinner" size={16} aria-hidden="true" />
+          ) : status === 'current' ? (
+            <Check size={16} aria-hidden="true" />
+          ) : (
+            <Download size={16} aria-hidden="true" />
+          )}
+          <span>{label}</span>
+        </button>,
+        Boolean(availableVersion),
+      )}
       <span
         className={status === 'available' && !showUpdateNotice ? 'sr-only' : 'update-feedback'}
         role="status"

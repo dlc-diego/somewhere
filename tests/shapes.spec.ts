@@ -1,3 +1,4 @@
+import { changeTheme } from './helpers/menu'
 import { expect, test, type Page, type Route } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -81,7 +82,7 @@ test('shape journey: dropdown modes, neutral clue, hint, duplicates, persistence
     .getByRole('combobox', { name: 'Game mode', exact: true })
     .selectOption({ label: 'Shapes' })
   await expect(page.getByRole('region', { name: 'Your journey' })).toContainText('1 guess')
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+  await changeTheme(page, 'dark')
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
       .violations,
