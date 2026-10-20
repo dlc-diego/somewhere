@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   Menu,
   Sun,
@@ -27,10 +27,31 @@ export default function AccountNav({
   celebrating: boolean
 }) {
   const player = usePlayer()
-  const [panel, setPanel] = useState<'menu' | 'stats' | null>(null)
+  const [panel, setPanel] = useState<'menu' | 'login' | 'stats' | null>(null)
   const [now, setNow] = useState(Date.now),
     [reward, setReward] = useState(0),
     [message, setMessage] = useState('')
+  const menuButton = useRef<HTMLButtonElement>(null)
+  const menuOpen = panel === 'menu' || panel === 'login'
+  useEffect(() => {
+    if (player.user && panel === 'login') setPanel('stats')
+    if (!player.user && panel === 'stats') setPanel('login')
+  }, [player.user, panel])
+  useEffect(() => {
+    setReward(0)
+    setMessage('')
+  }, [player.user?.uid])
+  useEffect(() => {
+    if (!menuOpen) return
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setPanel(null)
+        menuButton.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', escape)
+    return () => document.removeEventListener('keydown', escape)
+  }, [menuOpen])
   const streak = streakSummary(player.data.claims, now)
   useEffect(() => {
     const refresh = () => setNow(Date.now())
@@ -60,6 +81,10 @@ export default function AccountNav({
     timeZoneName: 'short',
   }).format(streak.nextNoon)
   function claim() {
+    if (!player.user) {
+      setPanel('login')
+      return
+    }
     if (player.claim()) {
       setReward(Date.now())
       setMessage('Daily check-in claimed. A little spark for showing up!')
@@ -70,14 +95,26 @@ export default function AccountNav({
     <nav aria-label="App controls" className="account-nav">
       <div className="daily-streak">
         <button
-          className={`streak-button ${streak.claimable ? 'streak-ready' : 'streak-claimed'}`}
-          aria-label={`${streak.claimable ? 'Claim daily streak' : 'Daily streak already claimed'}. ${streak.current} ${streak.current === 1 ? 'day' : 'days'}.`}
-          title={streak.claimable ? 'Tap to check in for today' : `Next check-in: ${nextNoon}`}
+          className={`streak-button ${player.user && streak.claimable ? 'streak-ready' : 'streak-claimed'}`}
+          aria-label={
+            !player.user
+              ? 'Sign in to start your daily streak'
+              : `${streak.claimable ? 'Claim daily streak' : 'Daily streak already claimed'}. ${streak.current} ${streak.current === 1 ? 'day' : 'days'}.`
+          }
+          title={
+            !player.user
+              ? 'Sign in to start your daily streak'
+              : streak.claimable
+                ? 'Tap to check in for today'
+                : `Next check-in: ${nextNoon}`
+          }
           onClick={claim}
         >
           <Flame size={21} fill={streak.current ? 'currentColor' : 'none'} aria-hidden="true" />
           <strong>{streak.current}</strong>
-          {streak.claimable && <span className="streak-ready-dot" aria-hidden="true" />}
+          {player.user && streak.claimable && (
+            <span className="streak-ready-dot" aria-hidden="true" />
+          )}
         </button>
         {reward > 0 && (
           <div key={reward} className="streak-reward" aria-hidden="true">
@@ -101,75 +138,120 @@ export default function AccountNav({
           <>
             <button
               className={`hamburger-button${available ? ' has-update' : ''}`}
-              onClick={() => setPanel('menu')}
-              aria-label={available ? 'Open menu. Update available' : 'Open menu'}
-              aria-haspopup="dialog"
-              aria-expanded={panel === 'menu'}
+              ref={menuButton}
+              onClick={() => setPanel(menuOpen ? null : 'menu')}
+              aria-label={`${menuOpen ? 'Close menu' : 'Open menu'}${available ? '. Update available' : ''}`}
+              aria-controls="app-menu"
+              aria-expanded={menuOpen}
             >
               <Menu size={23} aria-hidden="true" />
               {available && <span className="menu-update-dot" aria-hidden="true" />}
             </button>
-            {panel === 'menu' && (
-              <Dialog title="App menu" onClose={() => setPanel(null)} className="app-menu-dialog">
-                <p className="eyebrow">Make yourself at home</p>
-                <h2>Menu</h2>
-                <div className="menu-account">
-                  <UserRound size={20} aria-hidden="true" />
-                  <div>
-                    <strong>{player.user?.displayName || 'A little explorer'}</strong>
-                    <small>{player.user?.email || 'Playing on this device'}</small>
-                  </div>
-                </div>
-                <div className="menu-actions">
+            <div
+              className="menu-scrim"
+              data-open={menuOpen}
+              aria-hidden="true"
+              onClick={() => setPanel(null)}
+            />
+            <aside
+              id="app-menu"
+              aria-label="App menu"
+              className="app-menu-drawer"
+              data-open={menuOpen}
+              inert={!menuOpen}
+              aria-hidden={!menuOpen}
+            >
+              {panel === 'login' ? (
+                <div className="menu-login">
+                  <p className="eyebrow">Your own little journey</p>
+                  <h2>Sign in</h2>
+                  <p>Sign in to view your statistics and build your daily streak.</p>
                   <button
-                    className="menu-action theme-toggle"
-                    onClick={toggleTheme}
-                    aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className="primary"
+                    disabled={!player.ready || player.busy}
+                    onClick={player.signIn}
                   >
-                    {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
-                    <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+                    <LogIn size={19} />
+                    {player.busy ? 'Signing in…' : 'Sign in with Google'}
                   </button>
-                  {updateButton}
-                  <button className="menu-action" onClick={() => setPanel('stats')}>
-                    <ChartNoAxesCombined size={19} />
-                    <span>Your statistics</span>
+                  {player.error && (
+                    <p className="input-error" role="alert">
+                      {player.error}
+                    </p>
+                  )}
+                  <button className="text-button" onClick={() => setPanel('menu')}>
+                    Back to menu
                   </button>
-                  {!player.user ? (
+                </div>
+              ) : (
+                <>
+                  <p className="eyebrow">Make yourself at home</p>
+                  <h2>Menu</h2>
+                  <div className="menu-account">
+                    <UserRound size={20} aria-hidden="true" />
+                    <div>
+                      <strong>{player.user?.displayName || 'A little explorer'}</strong>
+                      <small>{player.user?.email || 'Playing on this device'}</small>
+                    </div>
+                  </div>
+                  <div className="menu-actions">
+                    <button
+                      className="menu-action theme-toggle"
+                      onClick={toggleTheme}
+                      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    >
+                      {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+                      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+                    </button>
+                    {updateButton}
                     <button
                       className="menu-action"
-                      disabled={!player.ready || player.busy}
-                      onClick={player.signIn}
+                      onClick={() => setPanel(player.user ? 'stats' : 'login')}
                     >
-                      <LogIn size={19} />
-                      <span>{player.busy ? 'Signing in…' : 'Sign in with Google'}</span>
+                      <ChartNoAxesCombined size={19} />
+                      <span>Your statistics</span>
                     </button>
-                  ) : (
-                    <button className="menu-action" disabled={player.busy} onClick={player.signOut}>
-                      <LogOut size={19} />
-                      <span>{player.busy ? 'Signing out…' : 'Sign out'}</span>
-                    </button>
+                    {!player.user ? (
+                      <button
+                        className="menu-action"
+                        disabled={!player.ready || player.busy}
+                        onClick={player.signIn}
+                      >
+                        <LogIn size={19} />
+                        <span>{player.busy ? 'Signing in…' : 'Sign in with Google'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        className="menu-action"
+                        disabled={player.busy}
+                        onClick={player.signOut}
+                      >
+                        <LogOut size={19} />
+                        <span>{player.busy ? 'Signing out…' : 'Sign out'}</span>
+                      </button>
+                    )}
+                  </div>
+                  {player.error && (
+                    <p className="input-error" role="alert">
+                      {player.error}
+                    </p>
                   )}
-                </div>
-                {player.error && (
-                  <p className="input-error" role="alert">
-                    {player.error}
+                  <p className="menu-note">
+                    {player.user
+                      ? player.sync === 'synced'
+                        ? 'Your statistics are synced.'
+                        : player.sync === 'error'
+                          ? 'Cloud sync is unavailable. Your statistics are saved on this device.'
+                          : 'Saving your statistics…'
+                      : 'Sign in to track your statistics and daily streak.'}
                   </p>
-                )}
-                <p className="menu-note">
-                  {player.user
-                    ? player.sync === 'synced'
-                      ? 'Your statistics are synced.'
-                      : player.sync === 'error'
-                        ? 'Cloud sync is unavailable. Your statistics are saved on this device.'
-                        : 'Saving your statistics…'
-                    : 'Sign in to keep your statistics and check-ins together across devices.'}
-                </p>
-              </Dialog>
-            )}
+                </>
+              )}
+            </aside>
           </>
         )}
       />
-      {panel === 'stats' && (
+      {panel === 'stats' && player.user && (
         <StatisticsDialog onClose={() => setPanel(null)} nextNoon={nextNoon} now={now} />
       )}
     </nav>
@@ -200,7 +282,7 @@ function StatisticsDialog({
             : player.sync === 'error'
               ? 'Saved on this device. Cloud sync will resume when available.'
               : 'Syncing your statistics…'
-          : 'Saved on this device. Sign in with Google to sync across devices.'}
+          : ''}
       </p>
       {player.sync === 'error' && (
         <button className="text-button" onClick={player.retry}>
@@ -243,11 +325,7 @@ function StatisticsDialog({
           <small>Next check-in period: {nextNoon}</small>
         </p>
       </div>
-      {!played ? (
-        <p className="something-empty">
-          Your next discovery starts the story. Make a guess or answer a question to begin tracking.
-        </p>
-      ) : (
+      {played > 0 && (
         <div className="stats-games">
           {rows
             .filter((r) => r.played)
@@ -283,11 +361,6 @@ function StatisticsDialog({
             ))}
         </div>
       )}
-      <p className="menu-note">
-        Statistics begin with play after this update. Refreshing a round never counts it twice.
-        Revealed answers and abandoned adventures count as completed, without a win. Game progress
-        itself stays on each device.
-      </p>
       <button className="primary" onClick={onClose}>
         <Check size={17} /> Back to exploring
       </button>

@@ -239,7 +239,7 @@ test('the compact header and menu fit 320px with an accessible update notice in 
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([])
-    await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
+    await page.getByRole('button', { name: /^Close menu/ }).click()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
 })

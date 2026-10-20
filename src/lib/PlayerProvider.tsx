@@ -49,7 +49,7 @@ function read(uid: string | null) {
   }
 }
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState(() => read(null)),
+  const [data, setData] = useState(emptyPlayer),
     [user, setUser] = useState<PlayerUser | null>(null)
   const [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
@@ -71,6 +71,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   function commit(next: PlayerData) {
     current.current = next
     setData(next)
+    if (!identity.current) return
     try {
       localStorage.setItem(playerKey(identity.current), JSON.stringify(next))
     } catch {
@@ -82,36 +83,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true,
       unsubscribe: (() => void) | undefined
+    // Old guest statistics are no longer collected or imported into an account.
+    try {
+      localStorage.removeItem(playerKey(null))
+    } catch {
+      /* Storage may be blocked. */
+    }
     import('./firebaseClient')
       .then((sdk) => {
         if (!active) return
         client.current = sdk
         unsubscribe = sdk.watchUser((next) => {
           if (!active) return
-          const previous = identity.current,
-            uid = next?.uid || null
-          if (uid !== previous || !ready) {
-            let profile = uid === previous ? mergePlayers(read(uid), current.current) : read(uid)
-            if (uid && previous === null) {
-              const guest = current.current
-              profile = mergePlayers(profile, {
-                ...guest,
-                pendingGames: Object.keys(guest.games),
-                pendingClaims: Object.keys(guest.claims),
-              })
-              // Store the imported profile before clearing its guest source.
-              try {
-                localStorage.setItem(playerKey(uid), JSON.stringify(profile))
-                localStorage.setItem(playerKey(null), JSON.stringify(emptyPlayer()))
-              } catch {
-                setStorageWarning(
-                  'Statistics are available for this session, but browser storage could not save them.',
-                )
-              }
-            }
+          const uid = next?.uid || null
+          if (uid !== identity.current || !ready) {
+            const profile = uid
+              ? uid === identity.current
+                ? mergePlayers(read(uid), current.current)
+                : read(uid)
+              : emptyPlayer()
             identity.current = uid
             blocked.current = false
             setError('')
+            setStorageWarning('')
             setSync(uid ? 'syncing' : 'local')
             commit(profile)
           }
@@ -182,7 +176,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Do not write a storage notification back to every tab; doing so causes a ping-pong loop.
     const receive = (event: StorageEvent) => {
-      if (event.key !== playerKey(identity.current) || !event.newValue) return
+      if (!identity.current || event.key !== playerKey(identity.current) || !event.newValue) return
       const next = mergePlayers(current.current, parsePlayer(event.newValue))
       current.current = next
       setData(next)
@@ -265,7 +259,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer)
   }, [data, user?.uid, retry])
   function recordGame(id: string, mode: StatMode, progress: Progress) {
-    if (!validTrackingId(id)) return
+    if (!identity.current || !validTrackingId(id)) return
     const old = current.current.games[id],
       at = Date.now()
     const game: GameRecord = {
@@ -288,6 +282,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     })
   }
   function claim() {
+    if (!identity.current) return false
     const at = Date.now(),
       day = streakDay(at),
       id = String(day)

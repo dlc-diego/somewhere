@@ -2,36 +2,29 @@ import { expect, test } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { openMenu } from './helpers/menu'
 
-test('manual check-in persists once per noon-Central day and resets after a missed day', async ({
-  page,
-}) => {
-  await page.clock.install({ time: new Date('2026-10-20T16:59:50Z') })
+test('the same header button slides the menu in from the right and back out', async ({ page }) => {
   await page.goto('/')
-  const flame = page.locator('.streak-button')
-  await expect(flame).toHaveAttribute('aria-label', 'Claim daily streak. 0 days.')
-  await flame.click()
-  await expect(flame).toHaveAttribute('aria-label', 'Daily streak already claimed. 1 day.')
-  await expect(page.locator('.streak-reward')).toBeVisible()
-  await flame.click()
-  await expect(flame).toContainText('1')
-  await page.clock.fastForward(11_000)
-  await expect(flame).toHaveAttribute('aria-label', 'Claim daily streak. 1 day.')
-  await flame.click()
-  await expect(flame).toHaveAttribute('aria-label', 'Daily streak already claimed. 2 days.')
-  await page.reload()
-  await expect(flame).toHaveAttribute('aria-label', 'Daily streak already claimed. 2 days.')
-  await page.clock.setSystemTime(new Date('2026-10-22T17:00:01Z'))
-  await page.evaluate(() => window.dispatchEvent(new Event('pageshow')))
-  await expect(flame).toHaveAttribute('aria-label', 'Claim daily streak. 0 days.')
-  await flame.click()
-  await expect(flame).toHaveAttribute('aria-label', 'Daily streak already claimed. 1 day.')
+  const toggle = page.locator('.hamburger-button')
+  const drawer = page.getByRole('complementary', { name: 'App menu', exact: true })
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await openMenu(page)
-  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
-  await expect(page.getByRole('dialog', { name: 'Your statistics', exact: true })).toBeVisible()
-  await expect(page.locator('.stats-overview > div').nth(3)).toContainText('2')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(drawer).toBeVisible()
+  await expect(drawer).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)')
+  const box = (await drawer.boundingBox())!
+  expect(box.x + box.width).toBeCloseTo((await page.viewportSize())!.width, 0)
+  expect(box.y).toBe(0)
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('#app-menu')).toHaveAttribute('inert', '')
+  await expect(page.locator('#app-menu')).not.toBeVisible()
+  await openMenu(page)
+  await page.keyboard.press('Escape')
+  await expect(toggle).toBeFocused()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
 })
 
-test('game statistics distinguish wins and reveals and survive refresh without duplicates', async ({
+test('guest gameplay is saved but statistics and check-ins are not tracked; statistics directs to sign-in', async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -41,7 +34,6 @@ test('game statistics distinguish wins and reveals and survive refresh without d
         JSON.stringify({ version: 1, answer: 'FRA', guesses: [] }),
       )
   })
-  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await page.getByRole('combobox', { name: /^Search for a / }).fill('France')
   await page.getByRole('option', { name: /France/ }).click()
@@ -49,35 +41,47 @@ test('game statistics distinguish wins and reveals and survive refresh without d
   await expect(page.locator('.search-card')).toContainText('France')
   await page.reload()
   await openMenu(page)
+  await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
   await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
-  const stats = page.getByRole('region', { name: 'Countries statistics', exact: true })
-  await expect(stats).toContainText('1 played · 1 completed')
-  await expect(stats).toContainText('1 wins')
-  await page.getByRole('button', { name: 'Back to exploring' }).click()
-  await page.getByRole('button', { name: 'Explore another round' }).click()
-  await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
-  await openMenu(page)
-  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
-  await expect(stats).toContainText('2 played · 2 completed')
-  await expect(stats).toContainText('1 wins · 50% win rate')
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
+  await expect(page.locator('.stats-overview')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
+  expect(
+    await page.evaluate(() =>
+      Object.keys(localStorage).filter((key) => key.startsWith('somewhere.player.')),
+    ),
+  ).toEqual([])
+  await page.getByRole('button', { name: /^Close menu/ }).click()
+  await page.locator('.streak-button').click()
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
+  await expect(page.locator('.streak-reward')).toHaveCount(0)
+  await expect(page.locator('.streak-button')).toContainText('0')
+  expect(await page.evaluate(() => localStorage.getItem('somewhere.player.v1:guest'))).toBeNull()
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
       .violations,
   ).toEqual([])
 })
 
-test('check-ins sync between tabs without a second daily claim', async ({ page, context }) => {
+test('legacy guest statistics are not shown or retained', async ({ page }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'somewhere.player.v1:guest',
+      JSON.stringify({ version: 1, games: {}, claims: {}, pendingGames: [], pendingClaims: [] }),
+    ),
+  )
   await page.goto('/')
   await openMenu(page)
   await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
-  await page.getByRole('button', { name: 'Close dialog', exact: true }).click()
-  const second = await context.newPage()
-  await second.goto('/')
-  await page.locator('.streak-button').click()
-  await expect(second.locator('.streak-button')).toHaveAttribute(
-    'aria-label',
-    'Daily streak already claimed. 1 day.',
-  )
-  await second.locator('.streak-button').click()
-  await expect(page.locator('.streak-button')).toContainText('1')
+  expect(await page.evaluate(() => localStorage.getItem('somewhere.player.v1:guest'))).toBeNull()
+  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible()
+  await expect(
+    page.getByText('Saved on this device. Sign in with Google to sync across devices.', {
+      exact: true,
+    }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByText('Your next discovery starts the story.', { exact: false }),
+  ).toHaveCount(0)
 })

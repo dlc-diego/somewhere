@@ -3447,12 +3447,6 @@ h1 {
     transform: translate(-50%, -7px);
   }
 }
-.app-menu-dialog {
-  max-width: 360px;
-}
-.app-menu-dialog .dialog-inner {
-  padding: 30px 24px;
-}
 .menu-account {
   display: flex;
   align-items: center;
@@ -3606,5 +3600,67 @@ h1 {
   }
   .streak-reward > span {
     transform: translateX(-50%);
+  }
+}
+
+/* A right-side navigation drawer; the header toggle remains available above it. */
+.hamburger-button[aria-expanded='true'] {
+  z-index: 72;
+}
+.menu-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  background: rgb(10 24 22 / 22%);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 240ms ease,
+    visibility 240ms;
+}
+.menu-scrim[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+}
+.app-menu-drawer {
+  position: fixed;
+  z-index: 70;
+  inset: 0 0 0 auto;
+  width: min(360px, 100vw);
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(100px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-left: 1px solid var(--border-card);
+  box-shadow: -14px 0 50px rgb(0 0 0 / 12%);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 280ms;
+}
+.app-menu-drawer[data-open='true'] {
+  transform: translateX(0);
+  visibility: visible;
+}
+body:has(.app-menu-drawer[data-open='true']) {
+  overflow: hidden;
+}
+.menu-login > p:not(.eyebrow) {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.menu-login .primary {
+  margin: 22px 0;
+}
+.menu-login .text-button {
+  display: block;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-menu-drawer,
+  .menu-scrim {
+    transition: none;
   }
 }
