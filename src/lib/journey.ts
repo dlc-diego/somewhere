@@ -7,6 +7,7 @@ export const journeyColors = {
   destination: '#e2bc67',
   arrived: '#28755b',
 }
+export const JOURNEY_CROSSINGS = { min: 4, max: 10 } as const
 
 // One primary, connected land area per country. Political borders on overseas
 // territories, detached exclaves and other islands cannot teleport the traveler.
@@ -56,14 +57,14 @@ export function shortestBorderRoute(start: string, destination: string): string[
   return null
 }
 
-// Three to six crossings give some exploration without asking for an epic expedition.
+// Use shortest-path distance, so a qualifying journey cannot be solved with a shortcut.
 const routes = countries.flatMap((start) => {
   const distances = new Map([[start.id, 0]])
   const queue = [start.id]
   for (let index = 0; index < queue.length; index++) {
     const current = queue[index]
     const distance = distances.get(current)!
-    if (distance === 6) continue
+    if (distance === JOURNEY_CROSSINGS.max) continue
     for (const next of neighbors.get(current)!) {
       if (distances.has(next)) continue
       distances.set(next, distance + 1)
@@ -71,12 +72,12 @@ const routes = countries.flatMap((start) => {
     }
   }
   return [...distances]
-    .filter(([, distance]) => distance >= 3)
+    .filter(([, distance]) => distance >= JOURNEY_CROSSINGS.min)
     .map(([destination]) => ({ start: start.id, destination }))
 })
 
 // Balance the two mainland networks before sampling a route. Sampling all pairs
-// together would give Africa–Eurasia about 97% of rounds simply due to its size.
+// together would heavily favor Africa–Eurasia simply due to its size.
 const routePools = ['Americas', 'Africa–Eurasia'].map((connection) =>
   routes.filter((route) => landConnectionFor(route.start) === connection),
 )
