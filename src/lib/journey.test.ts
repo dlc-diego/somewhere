@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { areAdjacent, countries, countryById, locationFor } from './countries'
 import {
   addGuess,
@@ -14,7 +14,12 @@ import {
   type Round,
 } from './game'
 import exclusions from '../data/journey-border-exclusions.json'
-import { canCrossBorder, landConnectionFor, shortestBorderRoute } from './journey'
+import {
+  canCrossBorder,
+  landConnectionFor,
+  randomBorderJourney,
+  shortestBorderRoute,
+} from './journey'
 
 const journey = (): Round => ({
   version: 2,
@@ -107,6 +112,38 @@ describe('border journeys', () => {
       for (let step = 1; step < route.length; step++)
         expect(canCrossBorder(route[step - 1], route[step])).toBe(true)
       expect(landConnectionFor(round.start!)).toBe(landConnectionFor(round.answer))
+    }
+  })
+  it('gives both land networks half of region selections regardless of route-pool size', () => {
+    const random = vi.spyOn(crypto, 'getRandomValues')
+    try {
+      // Include equally many even and odd region draws from both halves of the Uint32 range.
+      // A pooled-route sampler fails this check because Americas pairs are rare.
+      const counts = { Americas: 0, 'Africa–Eurasia': 0 }
+      for (let index = 0; index < 100; index++) {
+        const regionDraw = index + (index % 2 ? 2 ** 31 : 0)
+        random
+          .mockImplementationOnce((values) => {
+            ;(values as Uint32Array)[0] = regionDraw
+            return values
+          })
+          .mockImplementationOnce((values) => {
+            ;(values as Uint32Array)[0] = index
+            return values
+          })
+        const route = randomBorderJourney(index % 2 ? 'FRA' : 'BRA')
+        const connection = landConnectionFor(route.start) as keyof typeof counts
+        counts[connection]++
+        expect(landConnectionFor(route.destination)).toBe(connection)
+        expect(route.destination).not.toBe(index % 2 ? 'FRA' : 'BRA')
+        const path = shortestBorderRoute(route.start, route.destination)!
+        expect(path.length).toBeGreaterThanOrEqual(4)
+        expect(path.length).toBeLessThanOrEqual(7)
+      }
+      expect(counts).toEqual({ Americas: 50, 'Africa–Eurasia': 50 })
+      expect(random).toHaveBeenCalledTimes(200)
+    } finally {
+      random.mockRestore()
     }
   })
   it('rejects invalid crossings, permits backtracking and wins only on arrival', () => {

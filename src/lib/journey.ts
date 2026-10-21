@@ -75,12 +75,25 @@ const routes = countries.flatMap((start) => {
     .map(([destination]) => ({ start: start.id, destination }))
 })
 
-export function randomBorderJourney(previousDestination?: string) {
-  const pool = routes.filter((route) => route.destination !== previousDestination)
+// Balance the two mainland networks before sampling a route. Sampling all pairs
+// together would give Africa–Eurasia about 97% of rounds simply due to its size.
+const routePools = ['Americas', 'Africa–Eurasia'].map((connection) =>
+  routes.filter((route) => landConnectionFor(route.start) === connection),
+)
+
+function randomIndex(length: number) {
   const sample = new Uint32Array(1)
-  const ceiling = Math.floor(2 ** 32 / pool.length) * pool.length
+  const ceiling = Math.floor(2 ** 32 / length) * length
   do {
     crypto.getRandomValues(sample)
   } while (sample[0] >= ceiling)
-  return pool[sample[0] % pool.length]
+  return sample[0] % length
+}
+
+export function randomBorderJourney(previousDestination?: string) {
+  const regions = routePools
+    .map((pool) => pool.filter((route) => route.destination !== previousDestination))
+    .filter((pool) => pool.length > 0)
+  const pool = regions[randomIndex(regions.length)]
+  return pool[randomIndex(pool.length)]
 }
