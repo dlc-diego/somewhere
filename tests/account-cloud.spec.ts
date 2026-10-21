@@ -313,3 +313,204 @@ test('Google profile pictures sit left of the streak, fit mobile, persist and fa
     'N',
   )
 })
+
+async function provisionAdmin(page: Page, enabled = true) {
+  const uid = await page.evaluate(async () => {
+    const module = '/node_modules/.vite/deps/firebase_auth.js'
+    const { getAuth } = (await import(module)) as typeof import('firebase/auth')
+    return getAuth().currentUser!.uid
+  })
+  const response = await page.request.patch(
+    `http://127.0.0.1:8080/v1/projects/demo-somewhere/databases/(default)/documents/admins/${uid}`,
+    {
+      headers: { Authorization: 'Bearer owner' },
+      data: { fields: { enabled: { booleanValue: enabled } } },
+    },
+  )
+  expect(response.ok()).toBe(true)
+  return uid
+}
+
+test('admin lookup, confirmed audited streak credit, cross-device sync and mobile layout', async ({
+  page,
+  browser,
+}) => {
+  const valContext = await browser.newContext()
+  const val = await valContext.newPage()
+  await val.goto('/')
+  await login(val, 'val-admin-test')
+  await expect(val.getByRole('button', { name: 'Admin panel', exact: true })).toHaveCount(0)
+  await val.getByRole('button', { name: /^Close menu/ }).click()
+  await val.locator('.streak-button').click()
+  await val.getByRole('button', { name: 'Give up and reveal answer' }).click()
+  await openMenu(val)
+  await expect(val.getByText('Your statistics are synced.', { exact: true })).toBeVisible({
+    timeout: 20000,
+  })
+  await val.getByRole('button', { name: /^Close menu/ }).click()
+  await page.goto('/')
+  await login(page, 'owner-admin-test')
+  await provisionAdmin(page)
+  await expect(page.getByRole('button', { name: 'Admin panel', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Admin panel', exact: true }).click()
+  const panel = page.getByRole('dialog', { name: 'Admin panel', exact: true })
+  await expect(panel.getByRole('button', { name: /val-admin-test/ })).toBeVisible()
+  await panel.getByRole('searchbox', { name: 'Find a player' }).fill('VAL-ADMIN-TEST@example.com')
+  await panel.getByRole('button', { name: 'Find', exact: true }).click()
+  await expect(panel.getByRole('button', { name: /val-admin-test/ })).toBeEnabled()
+  await panel.getByRole('button', { name: /val-admin-test/ }).click()
+  const selected = panel.getByRole('region', { name: 'Selected player', exact: true })
+  await expect(selected.getByRole('group', { name: 'Current streak', exact: true })).toContainText(
+    '1',
+  )
+  await expect(selected.getByRole('group', { name: 'Games played', exact: true })).toContainText(
+    '1',
+  )
+  await panel.getByRole('spinbutton', { name: 'Desired current streak' }).fill('6')
+  await panel
+    .getByRole('textbox', { name: 'Reason', exact: true })
+    .fill('Credit days played before sign-in')
+  await panel.getByRole('button', { name: 'Preview adjustment', exact: true }).click()
+  const confirm = panel.getByRole('group', { name: 'Confirm streak adjustment', exact: true })
+  await expect(confirm).toContainText('1 → 6 days')
+  await expect(confirm).toContainText('5 missing days')
+  await confirm.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(val.locator('.streak-button')).toContainText('1')
+  await expect(panel.getByRole('region', { name: 'Admin activity history' })).toContainText(
+    'No adjustments yet.',
+  )
+  await panel.getByRole('button', { name: 'Preview adjustment', exact: true }).click()
+  await confirm.getByRole('button', { name: 'Confirm streak credit', exact: true }).click()
+  await expect(panel.getByText('Streak credited.', { exact: false })).toBeVisible({
+    timeout: 20000,
+  })
+  await expect(selected.getByRole('group', { name: 'Current streak', exact: true })).toContainText(
+    '6',
+  )
+  await expect(selected.getByRole('group', { name: 'Games played', exact: true })).toContainText(
+    '1',
+  )
+  await expect(val.locator('.streak-button')).toHaveAttribute(
+    'aria-label',
+    'Daily streak already claimed. 6 days.',
+  )
+  const history = panel.getByRole('region', { name: 'Admin activity history', exact: true })
+  await expect(history.locator('li')).toHaveCount(1)
+  await expect(history).toContainText('Credit days played before sign-in')
+  await panel.getByRole('spinbutton', { name: 'Desired current streak' }).fill('7')
+  await panel
+    .getByRole('textbox', { name: 'Reason', exact: true })
+    .fill('Offline test does not apply')
+  await panel.getByRole('button', { name: 'Preview adjustment', exact: true }).click()
+  await page.context().setOffline(true)
+  await confirm.getByRole('button', { name: 'Confirm streak credit', exact: true }).click()
+  await expect(panel.getByRole('alert')).toContainText('Connect to the internet')
+  await expect(history.locator('li')).toHaveCount(1)
+  await expect(val.locator('.streak-button')).toContainText('6')
+  await page.context().setOffline(false)
+  await page.setViewportSize({ width: 320, height: 740 })
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate((theme) => (document.documentElement.dataset.theme = theme), theme)
+    expect((await new AxeBuilder({ page }).include('.admin-panel').analyze()).violations).toEqual(
+      [],
+    )
+    expect(await panel.evaluate((node) => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
+  }
+  await page.screenshot({ path: '/tmp/somewhere-admin-mobile.png' })
+  await panel.getByRole('button', { name: 'Close dialog' }).click()
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
+  await expect(page.getByRole('group', { name: 'Daily streak', exact: true })).toContainText('0')
+  await page.getByRole('button', { name: 'Back to exploring' }).click()
+  await val.reload()
+  await openMenu(val)
+  await expect(val.getByText('Your statistics are synced.', { exact: true })).toBeVisible({
+    timeout: 20000,
+  })
+  await expect(val.locator('.streak-button')).toContainText('6')
+  await page.reload()
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Admin panel', exact: true }).click()
+  await expect(
+    page.getByRole('region', { name: 'Admin activity history' }).locator('li'),
+  ).toHaveCount(1)
+  await provisionAdmin(page, false)
+  await expect(page.getByRole('dialog', { name: 'Admin panel', exact: true })).toHaveCount(0)
+  await openMenu(page)
+  await expect(page.getByRole('button', { name: 'Admin panel', exact: true })).toHaveCount(0)
+  await valContext.close()
+})
+
+test('credits preserve an unclaimed daily flame and reject a preview changed by a live check-in', async ({
+  page,
+  browser,
+}) => {
+  const playerContext = await browser.newContext()
+  const target = await playerContext.newPage()
+  await target.goto('/')
+  await login(target, 'unclaimed-admin-test')
+  await target.getByRole('button', { name: /^Close menu/ }).click()
+  await page.goto('/')
+  await login(page, 'second-admin-test')
+  await provisionAdmin(page)
+  await page.getByRole('button', { name: 'Admin panel', exact: true }).click()
+  const panel = page.getByRole('dialog', { name: 'Admin panel', exact: true })
+  await panel.getByRole('button', { name: /unclaimed-admin-test/ }).click()
+  const selected = panel.getByRole('region', { name: 'Selected player', exact: true })
+  await expect(selected.getByRole('group', { name: 'Current streak', exact: true })).toContainText(
+    '0',
+  )
+  await panel.getByRole('spinbutton', { name: 'Desired current streak' }).fill('6')
+  await panel
+    .getByRole('textbox', { name: 'Reason', exact: true })
+    .fill('Credit historical play without consuming today')
+  await panel.getByRole('button', { name: 'Preview adjustment', exact: true }).click()
+  await panel
+    .getByRole('group', { name: 'Confirm streak adjustment' })
+    .getByRole('button', { name: 'Confirm streak credit', exact: true })
+    .click()
+  await expect(target.locator('.streak-button')).toHaveAttribute(
+    'aria-label',
+    'Claim daily streak. 6 days.',
+  )
+  await expect(selected.getByRole('group', { name: 'Current streak', exact: true })).toContainText(
+    '6',
+  )
+  await panel.getByRole('spinbutton', { name: 'Desired current streak' }).fill('8')
+  await panel
+    .getByRole('textbox', { name: 'Reason', exact: true })
+    .fill('Stale preview should never apply')
+  await panel.getByRole('button', { name: 'Preview adjustment', exact: true }).click()
+  await target.locator('.streak-button').click()
+  await openMenu(target)
+  // Check-ins intentionally use a short outbox delay. Wait for the actual
+  // acknowledgement, not a status label from the previous completed sync.
+  await expect
+    .poll(() =>
+      target.evaluate(() => {
+        const key = Object.keys(localStorage).find((key) => key.startsWith('somewhere.player.v1:'))
+        return key ? JSON.parse(localStorage.getItem(key) || '{}').pendingClaims?.length : -1
+      }),
+    )
+    .toBe(0)
+  await panel
+    .getByRole('group', { name: 'Confirm streak adjustment' })
+    .getByRole('button', { name: 'Confirm streak credit', exact: true })
+    .click()
+  await expect(panel.getByRole('alert')).toContainText('Check-ins changed.')
+  await expect(
+    panel.getByRole('region', { name: 'Admin activity history' }).locator('li'),
+  ).toHaveCount(1)
+  await expect(target.locator('.streak-button')).toHaveAttribute(
+    'aria-label',
+    'Daily streak already claimed. 7 days.',
+  )
+  await panel.getByRole('button', { name: 'Reload player', exact: true }).click()
+  await expect(selected.getByRole('group', { name: 'Current streak', exact: true })).toContainText(
+    '7',
+  )
+  await expect(selected.getByRole('group', { name: 'Games played', exact: true })).toContainText(
+    '0',
+  )
+  await playerContext.close()
+})

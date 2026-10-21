@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   Menu,
   Sun,
@@ -9,6 +9,7 @@ import {
   LogOut,
   Check,
   RefreshCw,
+  ShieldCheck,
 } from 'lucide-react'
 import { usePlayer } from '../lib/PlayerProvider'
 import { statistics, totalStatistics, STAT_LABELS } from '../lib/playerData'
@@ -16,6 +17,7 @@ import { streakSummary } from '../lib/streak'
 import AppUpdate from './AppUpdate'
 import Dialog from './Dialog'
 import ProfileAvatar from './ProfileAvatar'
+const AdminPanel = lazy(() => import('./AdminPanel'))
 
 export default function AccountNav({
   theme,
@@ -27,7 +29,30 @@ export default function AccountNav({
   celebrating: boolean
 }) {
   const player = usePlayer()
-  const [panel, setPanel] = useState<'menu' | 'login' | 'stats' | null>(null)
+  const [panel, setPanel] = useState<'menu' | 'login' | 'stats' | 'admin' | null>(null)
+  const [adminUid, setAdminUid] = useState<string | null>(null)
+  const isAdmin = !!player.user && adminUid === player.user.uid
+  useEffect(() => {
+    const user = player.user
+    setAdminUid(null)
+    if (!user) return
+    let active = true,
+      stop: (() => void) | undefined
+    void import('../lib/firebaseClient')
+      .then((sdk) => {
+        if (!active) return
+        stop = sdk.watchAdmin(user.uid, (enabled) => {
+          if (active) setAdminUid(enabled ? user.uid : null)
+        })
+        // A denied directory write on an older rules release must not interrupt gameplay or sync.
+        void sdk.saveProfile(user).catch(() => {})
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+      stop?.()
+    }
+  }, [player.user?.uid, player.user?.displayName, player.user?.email])
   const [now, setNow] = useState(Date.now),
     [reward, setReward] = useState(0),
     [message, setMessage] = useState('')
@@ -210,6 +235,12 @@ export default function AccountNav({
                       <ChartNoAxesCombined size={19} />
                       <span>Your statistics</span>
                     </button>
+                    {isAdmin && (
+                      <button className="menu-action" onClick={() => setPanel('admin')}>
+                        <ShieldCheck size={19} />
+                        <span>Admin panel</span>
+                      </button>
+                    )}
                     {!player.user ? (
                       <button
                         className="menu-action"
@@ -252,6 +283,17 @@ export default function AccountNav({
       />
       {panel === 'stats' && player.user && (
         <StatisticsDialog onClose={() => setPanel(null)} nextNoon={nextNoon} now={now} />
+      )}
+      {panel === 'admin' && isAdmin && (
+        <Suspense
+          fallback={
+            <Dialog title="Admin panel" onClose={() => setPanel(null)}>
+              <p role="status">Loading admin panel…</p>
+            </Dialog>
+          }
+        >
+          <AdminPanel key={player.user!.uid} onClose={() => setPanel(null)} />
+        </Suspense>
       )}
     </nav>
   )

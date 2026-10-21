@@ -117,3 +117,152 @@ test('future claims and claims without authentication are rejected', async () =>
     }),
   )
 })
+
+async function seedAdmin(uid, enabled = true) {
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'admins', uid), { enabled })
+  })
+}
+function centralDayNow() {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      hourCycle: 'h23',
+    })
+      .formatToParts(Date.now())
+      .map((p) => [p.type, p.value]),
+  )
+  return Date.UTC(+parts.year, +parts.month - 1, +parts.day) / 86400000 - (+parts.hour < 12 ? 1 : 0)
+}
+const auditRecord = (actorUid, targetUid, days) => ({
+  version: 1,
+  actorUid,
+  targetUid,
+  previousCurrent: 0,
+  requestedCurrent: days.length,
+  anchorDay: centralDayNow() - 1,
+  creditedDays: days,
+  reason: 'Credit prior play',
+  createdAt: serverTimestamp(),
+})
+test('only console-provisioned admins can see the player directory and private records', async () => {
+  await seedAdmin('administrator')
+  await seedAdmin('disabled-admin', false)
+  const admin = env.authenticatedContext('administrator').firestore()
+  const player = env
+    .authenticatedContext('directory-player', { email: 'Val@example.com', email_verified: true })
+    .firestore()
+  const profile = {
+    uid: 'directory-player',
+    displayName: 'Val',
+    email: 'Val@example.com',
+    emailLower: 'val@example.com',
+    updatedAt: serverTimestamp(),
+  }
+  await assertSucceeds(setDoc(doc(player, 'players/directory-player'), profile))
+  await assertSucceeds(getDoc(doc(admin, 'players/directory-player')))
+  const { query, limit } = await import('firebase/firestore')
+  await assertSucceeds(getDocs(query(collection(admin, 'players'), limit(20))))
+  await assertFails(getDocs(collection(admin, 'players')))
+  await assertSucceeds(getDocs(collection(admin, 'users/alice/games')))
+  await assertSucceeds(getDocs(collection(admin, 'users/history/checkins')))
+  for (const db of [
+    player,
+    env.authenticatedContext('disabled-admin').firestore(),
+    env.unauthenticatedContext().firestore(),
+  ]) {
+    await assertFails(getDocs(query(collection(db, 'players'), limit(20))))
+    await assertFails(getDocs(collection(db, 'users/alice/games')))
+    await assertFails(getDocs(query(collection(db, 'adminAudit'), limit(25))))
+    await assertFails(setDoc(doc(db, 'admins/directory-player'), { enabled: true }))
+  }
+  await assertSucceeds(getDoc(doc(player, 'admins/directory-player')))
+  await assertFails(getDoc(doc(player, 'admins/administrator')))
+  await assertFails(setDoc(doc(admin, 'admins/administrator'), { enabled: false }))
+  await assertFails(
+    setDoc(doc(admin, 'users/alice/games/admin-change'), { ...record(), id: 'admin-change' }),
+  )
+  await assertFails(
+    setDoc(doc(player, 'players/directory-player'), { ...profile, email: 'other@example.com' }),
+  )
+  await assertFails(
+    setDoc(doc(player, 'players/directory-player'), {
+      ...profile,
+      emailLower: 'other@example.com',
+    }),
+  )
+  await assertFails(setDoc(doc(player, 'players/directory-player'), { ...profile, admin: true }))
+  await assertFails(setDoc(doc(player, 'players/other'), { ...profile, uid: 'other' }))
+})
+test('streak credits require an immutable matching audit in the same atomic write', async () => {
+  await seedAdmin('credit-admin')
+  const db = env.authenticatedContext('credit-admin').firestore()
+  const { writeBatch, query, limit } = await import('firebase/firestore')
+  const day = centralDayNow() - 1
+  const creditId = doc(collection(db, 'adminAudit')).id
+  const credit = { day, at: day * 86400000 + 19 * 3600000, recordedAt: serverTimestamp(), creditId }
+  const ref = doc(db, `users/credit-player/checkins/${day}`)
+  await assertFails(setDoc(ref, credit))
+  const batch = writeBatch(db)
+  batch.set(ref, credit)
+  batch.set(doc(db, 'adminAudit', creditId), auditRecord('credit-admin', 'credit-player', [day]))
+  await assertSucceeds(batch.commit())
+  await assertSucceeds(getDocs(query(collection(db, 'adminAudit'), limit(25))))
+  await assertFails(updateDoc(ref, { at: credit.at + 1 }))
+  await assertFails(deleteDoc(ref))
+  await assertFails(updateDoc(doc(db, 'adminAudit', creditId), { reason: 'Rewritten reason' }))
+  await assertFails(deleteDoc(doc(db, 'adminAudit', creditId)))
+  const later = writeBatch(db)
+  later.set(doc(db, `users/different-player/checkins/${day}`), credit)
+  await assertFails(later.commit())
+  for (const patch of [
+    { actorUid: 'someone-else' },
+    { reason: '' },
+    { requestedCurrent: 0 },
+    { requestedCurrent: 366 },
+    { creditedDays: [day, day] },
+  ]) {
+    await assertFails(
+      setDoc(doc(collection(db, 'adminAudit')), {
+        ...auditRecord('credit-admin', 'credit-player', [day]),
+        ...patch,
+      }),
+    )
+  }
+})
+test('ordinary users cannot credit another player or write an admin audit', async () => {
+  const db = env.authenticatedContext('ordinary-player').firestore()
+  const { writeBatch } = await import('firebase/firestore')
+  const day = centralDayNow() - 1
+  const id = doc(collection(db, 'adminAudit')).id
+  const batch = writeBatch(db)
+  batch.set(doc(db, 'adminAudit', id), auditRecord('ordinary-player', 'someone-else', [day]))
+  batch.set(doc(db, `users/someone-else/checkins/${day}`), {
+    day,
+    at: day * 86400000 + 19 * 3600000,
+    recordedAt: serverTimestamp(),
+    creditId: id,
+  })
+  await assertFails(batch.commit())
+})
+test('the maximum 365-day credit and its audit fit Firestore atomic/rules limits', async () => {
+  await seedAdmin('max-credit-admin')
+  const db = env.authenticatedContext('max-credit-admin').firestore()
+  const { writeBatch } = await import('firebase/firestore')
+  const days = Array.from({ length: 365 }, (_, i) => centralDayNow() - 365 + i)
+  const audit = doc(collection(db, 'adminAudit'))
+  const batch = writeBatch(db)
+  batch.set(audit, auditRecord('max-credit-admin', 'max-credit-player', days))
+  for (const day of days)
+    batch.set(doc(db, `users/max-credit-player/checkins/${day}`), {
+      day,
+      at: day * 86400000 + 19 * 3600000,
+      recordedAt: serverTimestamp(),
+      creditId: audit.id,
+    })
+  await assertSucceeds(batch.commit())
+})

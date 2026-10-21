@@ -2,6 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    // Membership is provisioned in Firebase Console, never by the web app.
+    function admin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.enabled == true;
+    }
     function natural(n, max) { return n is int && n >= 0 && n <= max; }
     // US Central daylight saving begins at 08:00 UTC on March's second Sunday
     // and ends at 07:00 UTC on November's first Sunday. Noon itself is unambiguous.
@@ -28,7 +34,7 @@ service cloud.firestore {
         && d.recordedAt == request.time;
     }
     match /users/{uid}/games/{id} {
-      allow read: if owner(uid);
+      allow read: if owner(uid) || admin();
       allow create: if owner(uid) && game(id);
       allow update: if owner(uid) && game(id)
         && request.resource.data.mode == resource.data.mode
@@ -42,7 +48,7 @@ service cloud.firestore {
         && (resource.data.outcome == 'active' || request.resource.data.outcome != 'active');
     }
     match /users/{uid}/checkins/{id} {
-      allow read: if owner(uid);
+      allow read: if owner(uid) || admin();
       allow create: if owner(uid)
         && request.resource.data.keys().hasAll(['day','at','recordedAt'])
         && request.resource.data.keys().hasOnly(['day','at','recordedAt'])
@@ -52,7 +58,64 @@ service cloud.firestore {
         && request.resource.data.day == centralDay(timestamp.value(request.resource.data.at))
         && request.resource.data.day <= centralDay(request.time)
         && request.resource.data.recordedAt == request.time;
+      allow create: if admin() && creditedCheckIn(uid, id);
       // A day is immutable. Offline/guest history may be imported, but no future day may be claimed.
+    }
+    function creditedCheckIn(uid, id) {
+      let d = request.resource.data;
+      let path = /databases/$(database)/documents/adminAudit/$(d.creditId);
+      let entry = getAfter(path).data;
+      return d.keys().hasAll(['day','at','recordedAt','creditId'])
+        && d.keys().hasOnly(['day','at','recordedAt','creditId'])
+        && d.creditId is string && d.creditId.size() == 20
+        && d.day is int && id == string(d.day)
+        && d.at is int && d.at >= 946684800000
+        && d.at <= request.time.toMillis() + 300000
+        && d.day == centralDay(timestamp.value(d.at))
+        && d.day <= centralDay(request.time) && d.recordedAt == request.time
+        && !exists(path)
+        && entry.actorUid == request.auth.uid && entry.targetUid == uid
+        && d.day <= entry.anchorDay && d.day >= entry.anchorDay - entry.requestedCurrent + 1
+        && entry.createdAt == request.time && d.day in entry.creditedDays;
+    }
+    match /admins/{uid} {
+      allow get: if owner(uid);
+      // No client, including an admin, may grant or modify admin access.
+    }
+    match /players/{uid} {
+      allow get: if owner(uid) || admin();
+      allow list: if admin() && request.query.limit != null && request.query.limit <= 20;
+      allow create, update: if owner(uid)
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasAll(['uid','displayName','email','emailLower','updatedAt'])
+        && request.resource.data.keys().hasOnly(['uid','displayName','email','emailLower','updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 100
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.emailLower == request.auth.token.email.lower()
+        && request.resource.data.updatedAt == request.time;
+    }
+    match /adminAudit/{id} {
+      allow get: if admin();
+      allow list: if admin() && request.query.limit != null && request.query.limit <= 25;
+      allow create: if admin()
+        && id.size() == 20
+        && request.resource.data.keys().hasAll(['version','actorUid','targetUid','previousCurrent','requestedCurrent','anchorDay','creditedDays','reason','createdAt'])
+        && request.resource.data.keys().hasOnly(['version','actorUid','targetUid','previousCurrent','requestedCurrent','anchorDay','creditedDays','reason','createdAt'])
+        && request.resource.data.version == 1 && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.targetUid is string && request.resource.data.targetUid.size() > 0 && request.resource.data.targetUid.size() <= 128
+        && natural(request.resource.data.previousCurrent,364)
+        && natural(request.resource.data.requestedCurrent,365)
+        && request.resource.data.requestedCurrent > request.resource.data.previousCurrent
+        && request.resource.data.anchorDay is int
+        && request.resource.data.anchorDay >= centralDay(request.time) - 1
+        && request.resource.data.anchorDay <= centralDay(request.time)
+        && request.resource.data.creditedDays is list
+        && request.resource.data.creditedDays.size() > 0 && request.resource.data.creditedDays.size() <= 365
+        && request.resource.data.creditedDays.toSet().size() == request.resource.data.creditedDays.size()
+        && request.resource.data.reason is string && request.resource.data.reason.size() >= 3 && request.resource.data.reason.size() <= 240
+        && request.resource.data.createdAt == request.time;
+      // Audit entries cannot be edited or deleted, including by admins.
     }
     match /{document=**} { allow read, write: if false; }
   }

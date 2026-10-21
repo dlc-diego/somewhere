@@ -6,12 +6,31 @@ import {
   runTransaction,
   serverTimestamp,
   connectFirestoreEmulator,
+  setDoc,
 } from 'firebase/firestore'
 import { app, localEmulators } from './firebaseApp'
 import { mergeGame, parseGame, type GameRecord } from './playerData'
 import { validCheckIn, type CheckIn } from './streak'
-const db = getFirestore(app)
+import type { PlayerUser } from './firebaseClient'
+export const db = getFirestore(app)
 if (localEmulators) connectFirestoreEmulator(db, '127.0.0.1', 8080)
+export function watchAdmin(uid: string, onAccess: (enabled: boolean) => void) {
+  return onSnapshot(
+    doc(db, 'admins', uid),
+    (snapshot) => onAccess(snapshot.data()?.enabled === true),
+    () => onAccess(false),
+  )
+}
+export async function saveProfile(user: PlayerUser) {
+  if (!user.email) return
+  await setDoc(doc(db, 'players', user.uid), {
+    uid: user.uid,
+    displayName: (user.displayName || '').slice(0, 100),
+    email: user.email,
+    emailLower: user.email.toLowerCase(),
+    updatedAt: serverTimestamp(),
+  })
+}
 export function watchPlayer(
   uid: string,
   onGames: (games: GameRecord[]) => void,

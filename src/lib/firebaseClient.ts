@@ -45,3 +45,21 @@ export async function saveGame(uid: string, game: GameRecord) {
 export async function saveClaim(uid: string, claim: CheckIn) {
   return (await import('./firestoreSync')).saveClaim(uid, claim)
 }
+export function watchAdmin(uid: string, listener: (enabled: boolean) => void) {
+  let active = true,
+    stop: (() => void) | undefined
+  void import('./firestoreSync')
+    .then((sdk) => {
+      if (active) stop = sdk.watchAdmin(uid, listener)
+    })
+    .catch(() => {
+      if (active) listener(false)
+    })
+  return () => {
+    active = false
+    stop?.()
+  }
+}
+export async function saveProfile(user: PlayerUser) {
+  return (await import('./firestoreSync')).saveProfile(user)
+}
