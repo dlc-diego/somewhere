@@ -24,6 +24,15 @@ export const STAT_LABELS: Record<StatMode, string> = {
   identify: 'Identify Me',
   adventure: 'Somehow',
 }
+const GUESS_MODES: readonly StatMode[] = [
+  'countries',
+  'capitals',
+  'flags',
+  'shapes',
+  'mystery',
+  'who',
+  'identify',
+]
 export type Outcome = 'active' | 'won' | 'revealed' | 'lost' | 'completed' | 'abandoned'
 export interface GameRecord {
   version: 1
@@ -171,12 +180,16 @@ export function statistics(data: PlayerData) {
   return STAT_MODES.map((mode) => {
     const games = Object.values(data.games).filter((g) => g.mode === mode),
       won = games.filter((g) => g.outcome === 'won')
+    const winningGuesses = won.reduce((n, g) => n + g.guesses, 0)
     return {
       mode,
       played: games.length,
       completed: games.filter((g) => g.outcome !== 'active').length,
       wins: won.length,
-      guesses: won.reduce((n, g) => n + g.guesses, 0),
+      guesses: winningGuesses,
+      totalGuesses: games.reduce((n, g) => n + g.guesses, 0),
+      averageGuesses: GUESS_MODES.includes(mode) && won.length ? winningGuesses / won.length : null,
+      averageCrossings: mode === 'journey' && won.length ? winningGuesses / won.length : null,
       answered: games.reduce((n, g) => n + g.answered, 0),
       correct: games.reduce((n, g) => n + g.correct, 0),
       bestStreak: Math.max(0, ...games.map((g) => g.bestStreak)),
@@ -185,4 +198,23 @@ export function statistics(data: PlayerData) {
         .length,
     }
   })
+}
+
+export function totalStatistics(rows: ReturnType<typeof statistics>) {
+  const guessing = rows.filter((r) => GUESS_MODES.includes(r.mode))
+  const solved = guessing.reduce((n, r) => n + r.wins, 0)
+  const trivia = rows.find((r) => r.mode === 'trivia')
+  const answered = trivia?.answered || 0
+  const correct = trivia?.correct || 0
+  return {
+    played: rows.reduce((n, r) => n + r.played, 0),
+    completed: rows.reduce((n, r) => n + r.completed, 0),
+    wins: rows.reduce((n, r) => n + r.wins, 0),
+    totalGuesses: guessing.reduce((n, r) => n + r.totalGuesses, 0),
+    averageGuesses: solved ? guessing.reduce((n, r) => n + r.guesses, 0) / solved : null,
+    answered,
+    correct,
+    accuracy: answered ? correct / answered : null,
+    perfect: rows.reduce((n, r) => n + r.perfect, 0),
+  }
 }

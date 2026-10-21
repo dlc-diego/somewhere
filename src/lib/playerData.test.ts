@@ -7,6 +7,7 @@ import {
   parseGame,
   parsePlayer,
   statistics,
+  totalStatistics,
   trackRound,
   type GameRecord,
 } from './playerData'
@@ -134,6 +135,82 @@ describe('private per-round statistics', () => {
       wins: 0,
       furthest: 12,
     })
+  })
+  it('weights overall guess averages by solved rounds, keeping trivia, crossings and adventures separate', () => {
+    const data = emptyPlayer()
+    const games = [
+      game({ id: 'country-win-1', outcome: 'won', guesses: 2 }),
+      game({ id: 'country-win-2', outcome: 'won', guesses: 4 }),
+      game({ id: 'flag-win-123', mode: 'flags', outcome: 'won', guesses: 9 }),
+      game({ id: 'country-reveal', outcome: 'revealed', guesses: 10 }),
+      game({ id: 'active-mystery', mode: 'mystery', guesses: 7 }),
+      game({ id: 'journey-win-123', mode: 'journey', outcome: 'won', guesses: 20 }),
+      game({
+        id: 'perfect-trivia',
+        mode: 'trivia',
+        outcome: 'won',
+        guesses: 0,
+        answered: 10,
+        correct: 10,
+        bestStreak: 10,
+      }),
+      game({
+        id: 'finished-trivia',
+        mode: 'trivia',
+        outcome: 'completed',
+        guesses: 0,
+        answered: 10,
+        correct: 5,
+        bestStreak: 3,
+      }),
+      game({ id: 'adventure-win', mode: 'adventure', outcome: 'won', guesses: 0, stage: 13 }),
+    ]
+    data.games = Object.fromEntries(games.map((g) => [g.id, g]))
+    const rows = statistics(data)
+    expect(totalStatistics(rows)).toEqual({
+      played: 9,
+      completed: 8,
+      wins: 6,
+      totalGuesses: 32,
+      averageGuesses: 5,
+      answered: 20,
+      correct: 15,
+      accuracy: 0.75,
+      perfect: 1,
+    })
+    expect(rows.find((r) => r.mode === 'countries')).toMatchObject({
+      totalGuesses: 16,
+      averageGuesses: 3,
+    })
+    expect(rows.find((r) => r.mode === 'flags')).toMatchObject({ averageGuesses: 9 })
+    expect(rows.find((r) => r.mode === 'journey')).toMatchObject({
+      averageGuesses: null,
+      averageCrossings: 20,
+      totalGuesses: 20,
+    })
+    expect(totalStatistics(statistics(mergePlayers(data, data)))).toEqual(totalStatistics(rows))
+  })
+  it('leaves averages unavailable until an eligible solve, without treating active or revealed rounds as wins', () => {
+    expect(totalStatistics(statistics(emptyPlayer()))).toMatchObject({
+      played: 0,
+      completed: 0,
+      wins: 0,
+      totalGuesses: 0,
+      averageGuesses: null,
+      accuracy: null,
+    })
+    const data = emptyPlayer()
+    const active = game({ id: 'active-round-123', guesses: 5 })
+    const revealed = game({ id: 'revealed-round-123', guesses: 1, outcome: 'revealed' })
+    data.games = { [active.id]: active, [revealed.id]: revealed }
+    expect(totalStatistics(statistics(data))).toMatchObject({
+      played: 2,
+      completed: 1,
+      wins: 0,
+      totalGuesses: 6,
+      averageGuesses: null,
+    })
+    expect(statistics(data).find((r) => r.mode === 'countries')?.averageGuesses).toBeNull()
   })
   it('validates stored and remote data and keeps account records distinct', () => {
     expect(parsePlayer('{')).toEqual(emptyPlayer())

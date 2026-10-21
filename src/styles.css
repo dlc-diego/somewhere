@@ -3503,6 +3503,17 @@ h1 {
   gap: 8px;
   margin: 22px 0;
 }
+.stats-total > h3,
+.stats-games > h3 {
+  margin: 22px 0 0;
+  font-size: 15px;
+}
+.stats-average-note {
+  margin: -8px 0 20px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
 .stats-overview > div {
   border: 1px solid var(--border-card);
   border-radius: 10px;
@@ -3549,7 +3560,7 @@ h1 {
   border: 1px solid var(--border-card);
   border-radius: 10px;
 }
-.stats-mode h3 {
+.stats-mode h4 {
   margin: 0;
   font-size: 14px;
 }

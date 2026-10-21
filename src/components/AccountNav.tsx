@@ -11,7 +11,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { usePlayer } from '../lib/PlayerProvider'
-import { statistics, STAT_LABELS } from '../lib/playerData'
+import { statistics, totalStatistics, STAT_LABELS } from '../lib/playerData'
 import { streakSummary } from '../lib/streak'
 import AppUpdate from './AppUpdate'
 import Dialog from './Dialog'
@@ -260,9 +260,21 @@ function StatisticsDialog({
 }) {
   const player = usePlayer(),
     rows = statistics(player.data),
+    totals = totalStatistics(rows),
     streak = streakSummary(player.data.claims, now)
-  const played = rows.reduce((n, r) => n + r.played, 0),
-    completed = rows.reduce((n, r) => n + r.completed, 0)
+  const overview = [
+    { label: 'Games played', value: totals.played },
+    { label: 'Completed', value: totals.completed },
+    { label: 'Games won', value: totals.wins },
+    { label: 'Avg guesses per solve', value: formatAverage(totals.averageGuesses) },
+    { label: 'Total guesses', value: totals.totalGuesses },
+    {
+      label: 'Trivia accuracy',
+      value: totals.accuracy === null ? '—' : `${Math.round(totals.accuracy * 100)}%`,
+    },
+    { label: 'Daily streak', value: streak.current },
+    { label: 'Longest streak', value: streak.longest },
+  ]
   return (
     <Dialog title="Your statistics" onClose={onClose} className="statistics-dialog">
       <p className="eyebrow">Every little discovery counts</p>
@@ -286,24 +298,20 @@ function StatisticsDialog({
           {player.storageWarning}
         </p>
       )}
-      <div className="stats-overview">
-        <div>
-          <strong>{played}</strong>
-          <span>Games played</span>
+      <section aria-label="Overall statistics" className="stats-total">
+        <h3>Overall</h3>
+        <div className="stats-overview">
+          {overview.map((stat) => (
+            <div key={stat.label} role="group" aria-label={stat.label}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
         </div>
-        <div>
-          <strong>{completed}</strong>
-          <span>Completed</span>
-        </div>
-        <div>
-          <strong>{streak.current}</strong>
-          <span>Daily streak</span>
-        </div>
-        <div>
-          <strong>{streak.longest}</strong>
-          <span>Longest streak</span>
-        </div>
-      </div>
+        <p className="stats-average-note">
+          Guess averages use solved guessing rounds. Trivia wins are perfect rounds.
+        </p>
+      </section>
       <div className="stats-streak-note">
         <Flame size={23} />
         <p>
@@ -317,8 +325,9 @@ function StatisticsDialog({
           <small>Next check-in period: {nextNoon}</small>
         </p>
       </div>
-      {played > 0 && (
+      {totals.played > 0 && (
         <div className="stats-games">
+          <h3>By game</h3>
           {rows
             .filter((r) => r.played)
             .map((r) => (
@@ -327,7 +336,7 @@ function StatisticsDialog({
                 className="stats-mode"
                 aria-label={`${STAT_LABELS[r.mode]} statistics`}
               >
-                <h3>{STAT_LABELS[r.mode]}</h3>
+                <h4>{STAT_LABELS[r.mode]}</h4>
                 <p>
                   {r.played} played · {r.completed} completed
                 </p>
@@ -342,11 +351,19 @@ function StatisticsDialog({
                   <p>
                     {r.wins} wins
                     {r.completed ? ` · ${Math.round((100 * r.wins) / r.completed)}% win rate` : ''}
-                    {r.mode === 'adventure'
-                      ? ` · furthest stop: ${r.furthest}/13`
-                      : r.wins
-                        ? ` · ${Number((r.guesses / r.wins).toFixed(1))} average guesses on wins`
-                        : ''}
+                    {r.mode === 'adventure' ? ` · furthest stop: ${r.furthest}/13` : ''}
+                    {r.mode !== 'adventure' && (
+                      <>
+                        <br />
+                        {r.totalGuesses}{' '}
+                        {r.mode === 'journey' ? 'border crossings' : 'total guesses'}
+                        {' · '}
+                        {formatAverage(
+                          r.mode === 'journey' ? r.averageCrossings : r.averageGuesses,
+                        )}{' '}
+                        average {r.mode === 'journey' ? 'crossings' : 'guesses'} on wins
+                      </>
+                    )}
                   </p>
                 )}
               </section>
@@ -358,4 +375,10 @@ function StatisticsDialog({
       </button>
     </Dialog>
   )
+}
+
+function formatAverage(value: number | null) {
+  return value === null
+    ? '—'
+    : new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value)
 }

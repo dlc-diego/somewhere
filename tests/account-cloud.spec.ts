@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { openMenu } from './helpers/menu'
+import { openMenu, changeTheme } from './helpers/menu'
+import AxeBuilder from '@axe-core/playwright'
 
 // Fake Google credentials are accepted ONLY by the Firebase Auth emulator.
 // This tests the real Auth/Firestore SDK and published rules, without Google accounts.
@@ -86,8 +87,8 @@ test('signed-in tracking, account isolation, cross-device check-ins, refresh and
   )
   await login(page, 'explorer-two')
   await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
-  await expect(page.locator('.stats-overview > div').first()).toContainText('0')
-  await expect(page.locator('.stats-overview > div').nth(2)).toContainText('0')
+  await expect(page.getByRole('group', { name: 'Games played', exact: true })).toContainText('0')
+  await expect(page.getByRole('group', { name: 'Daily streak', exact: true })).toContainText('0')
   await page.getByRole('button', { name: 'Back to exploring' }).click()
   await page.context().setOffline(true)
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
@@ -106,7 +107,9 @@ test('signed-in tracking, account isolation, cross-device check-ins, refresh and
 test('only authenticated play contributes to statistics, with wins, reveals and refresh deduplication', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 320, height: 740 })
   await page.addInitScript(() => {
+    localStorage.setItem('somewhere.theme.v1', 'dark')
     if (!localStorage.getItem('somewhere.round.v1'))
       localStorage.setItem(
         'somewhere.round.v1',
@@ -131,8 +134,8 @@ test('only authenticated play contributes to statistics, with wins, reveals and 
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
   await login(page, 'explorer-three')
   await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
-  await expect(page.locator('.stats-overview > div').first()).toContainText('0')
-  await expect(page.locator('.stats-overview > div').nth(2)).toContainText('0')
+  await expect(page.getByRole('group', { name: 'Games played', exact: true })).toContainText('0')
+  await expect(page.getByRole('group', { name: 'Daily streak', exact: true })).toContainText('0')
   await page.getByRole('button', { name: 'Back to exploring' }).click()
   // Begin a known fresh round on reload, leaving the account and statistics intact.
   await page.evaluate(() =>
@@ -154,6 +157,13 @@ test('only authenticated play contributes to statistics, with wins, reveals and 
   const stats = page.getByRole('region', { name: 'Countries statistics', exact: true })
   await expect(stats).toContainText('1 played · 1 completed')
   await expect(stats).toContainText('1 wins')
+  await expect(stats).toContainText('1 average guesses on wins')
+  await expect(
+    page
+      .getByRole('region', { name: 'Overall statistics', exact: true })
+      .getByRole('group', { name: 'Avg guesses per solve', exact: true })
+      .locator('strong'),
+  ).toHaveText('1')
   await page.getByRole('button', { name: 'Back to exploring' }).click()
   await openMenu(page)
   await page.getByRole('button', { name: 'Sign out', exact: true }).click()
@@ -171,6 +181,38 @@ test('only authenticated play contributes to statistics, with wins, reveals and 
   await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
   await expect(stats).toContainText('2 played · 2 completed')
   await expect(stats).toContainText('1 wins · 50% win rate')
+  const overall = page.getByRole('region', { name: 'Overall statistics', exact: true })
+  await expect(
+    overall.getByRole('group', { name: 'Games played', exact: true }).locator('strong'),
+  ).toHaveText('2')
+  await expect(
+    overall.getByRole('group', { name: 'Completed', exact: true }).locator('strong'),
+  ).toHaveText('2')
+  await expect(
+    overall.getByRole('group', { name: 'Games won', exact: true }).locator('strong'),
+  ).toHaveText('1')
+  await expect(
+    overall.getByRole('group', { name: 'Total guesses', exact: true }).locator('strong'),
+  ).toHaveText('1')
+  await expect(
+    overall.getByRole('group', { name: 'Avg guesses per solve', exact: true }).locator('strong'),
+  ).toHaveText('1')
+  await expect(
+    overall.getByRole('group', { name: 'Trivia accuracy', exact: true }).locator('strong'),
+  ).toHaveText('—')
+  for (const theme of ['dark', 'light'] as const) {
+    if (theme === 'light') {
+      await page.getByRole('button', { name: 'Back to exploring' }).click()
+      await changeTheme(page, theme)
+      await openMenu(page)
+      await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+        .violations,
+    ).toEqual([])
+  }
   await expect(
     page.getByText('Your next discovery starts the story.', { exact: false }),
   ).toHaveCount(0)
