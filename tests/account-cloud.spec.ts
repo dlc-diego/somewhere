@@ -4,35 +4,39 @@ import AxeBuilder from '@axe-core/playwright'
 
 // Fake Google credentials are accepted ONLY by the Firebase Auth emulator.
 // This tests the real Auth/Firestore SDK and published rules, without Google accounts.
-async function login(page: Page, name: string) {
+async function login(page: Page, name: string, photoURL?: string) {
   await openMenu(page)
   await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled()
-  await signInEmulator(page, name)
+  await signInEmulator(page, name, photoURL)
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible()
   await expect(page.getByText('Your statistics are synced.', { exact: true })).toBeVisible({
     timeout: 20_000,
   })
 }
 
-async function signInEmulator(page: Page, name: string) {
-  await page.evaluate(async (name) => {
-    // Vite serves this module only in the local development test server.
-    const authModule = '/node_modules/.vite/deps/firebase_auth.js'
-    const { getAuth, signInWithCredential, GoogleAuthProvider } = (await import(
-      authModule
-    )) as typeof import('firebase/auth')
-    const token = JSON.stringify({
-      sub: name,
-      email: `${name}@example.com`,
-      name,
-      email_verified: true,
-      iss: 'https://accounts.google.com',
-      aud: 'demo-somewhere',
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3600,
-    })
-    await signInWithCredential(getAuth(), GoogleAuthProvider.credential(token))
-  }, name)
+async function signInEmulator(page: Page, name: string, photoURL?: string) {
+  await page.evaluate(
+    async ({ name, photoURL }) => {
+      // Vite serves this module only in the local development test server.
+      const authModule = '/node_modules/.vite/deps/firebase_auth.js'
+      const { getAuth, signInWithCredential, GoogleAuthProvider } = (await import(
+        authModule
+      )) as typeof import('firebase/auth')
+      const token = JSON.stringify({
+        sub: name,
+        email: `${name}@example.com`,
+        name,
+        picture: photoURL,
+        email_verified: true,
+        iss: 'https://accounts.google.com',
+        aud: 'demo-somewhere',
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      })
+      await signInWithCredential(getAuth(), GoogleAuthProvider.credential(token))
+    },
+    { name, photoURL },
+  )
 }
 
 test.beforeEach(async ({ request }) => {
@@ -246,5 +250,66 @@ test('the sign-in view leads to account statistics and signed-in check-ins persi
   await expect(page.locator('.streak-button')).toHaveAttribute(
     'aria-label',
     'Daily streak already claimed. 1 day.',
+  )
+})
+
+test('Google profile pictures sit left of the streak, fit mobile, persist and fall back safely', async ({
+  page,
+}) => {
+  await page.route('https://lh3.googleusercontent.com/test-avatar*', (route) => {
+    expect(route.request().headers()['referer']).toBeUndefined()
+    return route.fulfill({
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><rect width="34" height="34" fill="#62e99a"/></svg>',
+    })
+  })
+  await page.goto('/')
+  await expect(page.locator('.profile-avatar')).toHaveCount(0)
+  await login(page, 'Val', 'https://lh3.googleusercontent.com/test-avatar.png')
+  await page.getByRole('button', { name: /^Close menu/ }).click()
+  const avatar = page.getByRole('img', { name: 'Val profile picture', exact: true })
+  await expect(avatar).toBeVisible()
+  await expect(avatar.locator('img')).toHaveAttribute(
+    'src',
+    'https://lh3.googleusercontent.com/test-avatar.png',
+  )
+  await expect
+    .poll(() =>
+      avatar
+        .locator('img')
+        .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+    )
+    .toBe(true)
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    const branding = (await page
+      .getByRole('combobox', { name: 'Choose experience' })
+      .boundingBox())!
+    const photo = (await avatar.boundingBox())!
+    const streak = (await page.locator('.streak-button').boundingBox())!
+    const menu = (await page.locator('.hamburger-button').boundingBox())!
+    expect(branding.x + branding.width).toBeLessThanOrEqual(photo.x)
+    expect(photo.x + photo.width).toBeLessThanOrEqual(streak.x)
+    expect(streak.x + streak.width).toBeLessThanOrEqual(menu.x)
+    expect(menu.x + menu.width).toBeLessThanOrEqual(width)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await page.reload()
+  await expect(avatar).toBeVisible()
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+  await expect(avatar).toHaveCount(0)
+  await page.route('https://lh3.googleusercontent.com/broken-avatar.png', (route) => route.abort())
+  await login(page, 'Diego', 'https://lh3.googleusercontent.com/broken-avatar.png')
+  await page.getByRole('button', { name: /^Close menu/ }).click()
+  const fallback = page.getByRole('img', { name: 'Diego profile picture', exact: true })
+  await expect(fallback).toHaveText('D')
+  await expect(fallback.locator('img')).toHaveCount(0)
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+  await login(page, 'NoPhoto')
+  await page.getByRole('button', { name: /^Close menu/ }).click()
+  await expect(page.getByRole('img', { name: 'NoPhoto profile picture', exact: true })).toHaveText(
+    'N',
   )
 })

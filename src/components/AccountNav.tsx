@@ -15,6 +15,7 @@ import { statistics, totalStatistics, STAT_LABELS } from '../lib/playerData'
 import { streakSummary } from '../lib/streak'
 import AppUpdate from './AppUpdate'
 import Dialog from './Dialog'
+import ProfileAvatar from './ProfileAvatar'
 
 export default function AccountNav({
   theme,
@@ -92,6 +93,12 @@ export default function AccountNav({
   }
   return (
     <nav aria-label="App controls" className="account-nav">
+      {player.user && (
+        <ProfileAvatar
+          key={`${player.user.uid}:${player.user.photoURL || ''}`}
+          user={player.user}
+        />
+      )}
       <div className="daily-streak">
         <button
           className={`streak-button ${player.user && streak.claimable ? 'streak-ready' : 'streak-claimed'}`}

@@ -18,6 +18,7 @@ export interface PlayerUser {
   uid: string
   displayName: string | null
   email: string | null
+  photoURL: string | null
 }
 export const watchUser = (listener: (user: PlayerUser | null) => void) =>
   onAuthStateChanged(auth, listener)
