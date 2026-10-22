@@ -517,17 +517,16 @@ export default function App() {
                   suggestion, then make your guess. Each mode keeps its own saved round. In Border
                   Journey, travel from the starting country to the displayed destination by choosing
                   countries that share a continuous mainland border with your current stop. Routes
-                  stay within the connected Americas or Africa–Eurasia; overseas territories and
-                  disconnected parts cannot link routes. Click the destination above your journey
-                  list to find it on the globe without making a crossing. Invalid crossings do not
-                  count. You can revisit countries to retrace your steps; the route stays in travel
-                  order. Reach the destination to win. Giving up reveals one shortest route from
-                  your last stop. New routes start {JOURNEY_CROSSINGS.min} to{' '}
-                  {JOURNEY_CROSSINGS.max} crossings apart; the destination is visible from the
-                  start. The globe is for exploring; tapping it never selects a guess. Pinch to zoom
-                  up to 32×. With the globe focused, keyboard users can use +/− to zoom and Home to
-                  reset the view. Each guess or reveal automatically zooms to suit the country’s
-                  size.
+                  stay within connected Africa–Eurasia; overseas territories and disconnected parts
+                  cannot link routes. Click the destination above your journey list to find it on
+                  the globe without making a crossing. Invalid crossings do not count. You can
+                  revisit countries to retrace your steps; the route stays in travel order. Reach
+                  the destination to win. Giving up reveals one shortest route from your last stop.
+                  New routes start at least {JOURNEY_CROSSINGS.min} crossings apart, with no upper
+                  difficulty limit; the destination is visible from the start. The globe is for
+                  exploring; tapping it never selects a guess. Pinch to zoom up to 32×. With the
+                  globe focused, keyboard users can use +/− to zoom and Home to reset the view. Each
+                  guess or reveal automatically zooms to suit the country’s size.
                 </p>
               </div>
             </li>

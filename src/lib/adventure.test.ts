@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { countries } from './countries'
-import { shortestBorderRoute } from './journey'
+import { landConnectionFor, shortestBorderRoute } from './journey'
 import { mysteryById, questionById } from './something'
 import {
   ADVENTURE_KEY,
@@ -460,6 +460,9 @@ describe('familiar geography and mystery encounters', () => {
     expect(guessAdventureCountry(run, geo.answer).error).toMatch(/mainland border/)
     run = useItem(run, 'hint').run
     const route = shortestBorderRoute(geo.start!, geo.answer)!
+    expect(landConnectionFor(geo.start!)).toBe('Africa–Eurasia')
+    expect(landConnectionFor(geo.answer)).toBe('Africa–Eurasia')
+    expect(route.length - 1).toBeGreaterThanOrEqual(5)
     expect(run.encounter!.limit).toBe(route.length)
     for (const id of route.slice(1)) run = guessAdventureCountry(run, id).run
     expect(run.encounter!.result).toBe('cleared')

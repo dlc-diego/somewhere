@@ -104,8 +104,8 @@ describe('border journeys', () => {
     for (let index = 0; index < 100; index++) {
       const round = newRound('ITA', 'journey')
       const route = shortestBorderRoute(round.start!, round.answer)!
-      expect(route.length).toBeGreaterThanOrEqual(5)
-      expect(route.length).toBeLessThanOrEqual(11)
+      expect(route.length).toBeGreaterThanOrEqual(6)
+      expect(landConnectionFor(round.start!)).toBe('Africa–Eurasia')
       expect(round.answer).not.toBe('ITA')
       expect(round.guesses).toEqual([])
       expect(parseRound(JSON.stringify(round), 'journey')).toEqual(round)
@@ -114,63 +114,40 @@ describe('border journeys', () => {
       expect(landConnectionFor(round.start!)).toBe(landConnectionFor(round.answer))
     }
   })
-  it('gives both land networks half of region selections regardless of route-pool size', () => {
-    const random = vi.spyOn(crypto, 'getRandomValues')
-    try {
-      // Include equally many even and odd region draws from both halves of the Uint32 range.
-      // A pooled-route sampler fails this check because Americas pairs are rare.
-      const counts = { Americas: 0, 'Africa–Eurasia': 0 }
-      for (let index = 0; index < 100; index++) {
-        const regionDraw = index + (index % 2 ? 2 ** 31 : 0)
-        random
-          .mockImplementationOnce((values) => {
-            ;(values as Uint32Array)[0] = regionDraw
-            return values
-          })
-          .mockImplementationOnce((values) => {
-            ;(values as Uint32Array)[0] = index
-            return values
-          })
-        const route = randomBorderJourney(index % 2 ? 'FRA' : 'BRA')
-        const connection = landConnectionFor(route.start) as keyof typeof counts
-        counts[connection]++
-        expect(landConnectionFor(route.destination)).toBe(connection)
-        expect(route.destination).not.toBe(index % 2 ? 'FRA' : 'BRA')
-        const path = shortestBorderRoute(route.start, route.destination)!
-        expect(path.length).toBeGreaterThanOrEqual(5)
-        expect(path.length).toBeLessThanOrEqual(11)
+  it('can select every eligible Africa–Eurasia route, including all lengths beyond the former cap', () => {
+    const mainland = countries.filter(
+      (country) => landConnectionFor(country.id) === 'Africa–Eurasia',
+    )
+    const expected = new Map<string, number>()
+    for (const start of mainland)
+      for (const destination of mainland) {
+        const route = shortestBorderRoute(start.id, destination.id)
+        if (route && route.length - 1 >= 5)
+          expected.set(`${start.id}:${destination.id}`, route.length - 1)
       }
-      expect(counts).toEqual({ Americas: 50, 'Africa–Eurasia': 50 })
-      expect(random).toHaveBeenCalledTimes(200)
-    } finally {
-      random.mockRestore()
-    }
-  })
-  it('can generate every difficulty from four to ten shortest crossings in both networks', () => {
     const random = vi.spyOn(crypto, 'getRandomValues')
+    const seen = new Map<string, number>()
     try {
-      for (const region of [0, 1]) {
-        const lengths = new Set<number>()
-        // Sample distinct route indices deterministically, without probabilistic assertions.
-        for (let index = 0; index < 250 && lengths.size < 7; index++) {
-          random
-            .mockImplementationOnce((values) => {
-              ;(values as Uint32Array)[0] = region
-              return values
-            })
-            .mockImplementationOnce((values) => {
-              ;(values as Uint32Array)[0] = index
-              return values
-            })
-          const route = randomBorderJourney()
-          expect(landConnectionFor(route.start)).toBe(region === 0 ? 'Americas' : 'Africa–Eurasia')
-          const path = shortestBorderRoute(route.start, route.destination)!
-          lengths.add(path.length - 1)
-          for (let step = 1; step < path.length; step++)
-            expect(canCrossBorder(path[step - 1], path[step])).toBe(true)
-        }
-        expect([...lengths].sort((a, b) => a - b)).toEqual([4, 5, 6, 7, 8, 9, 10])
+      // Each possible pool index is exercised deterministically; this catches a
+      // regional leak, a missing long route, or an unintended difficulty cap.
+      for (let index = 0; index < expected.size; index++) {
+        random.mockImplementationOnce((values) => {
+          ;(values as Uint32Array)[0] = index
+          return values
+        })
+        const route = randomBorderJourney()
+        expect(landConnectionFor(route.start)).toBe('Africa–Eurasia')
+        expect(landConnectionFor(route.destination)).toBe('Africa–Eurasia')
+        const key = `${route.start}:${route.destination}`
+        expect(expected.has(key)).toBe(true)
+        seen.set(key, expected.get(key)!)
       }
+      expect(seen).toEqual(expected)
+      const lengths = [...new Set(seen.values())].sort((a, b) => a - b)
+      expect(lengths[0]).toBe(5)
+      expect(lengths.at(-1)).toBeGreaterThan(10)
+      expect(lengths).toEqual(Array.from({ length: lengths.at(-1)! - 4 }, (_, i) => i + 5))
+      expect(random).toHaveBeenCalledTimes(expected.size)
     } finally {
       random.mockRestore()
     }
@@ -249,5 +226,12 @@ describe('border journeys', () => {
     } finally {
       Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: original })
     }
+  })
+  it('preserves valid saved Americas journeys while applying the new rules to their next round', () => {
+    const saved: Round = { ...journey(), start: 'USA', answer: 'BRA', guesses: ['MEX'] }
+    expect(parseRound(JSON.stringify(saved), 'journey')).toEqual(saved)
+    const next = newRound(saved.answer, 'journey')
+    expect(landConnectionFor(next.start!)).toBe('Africa–Eurasia')
+    expect(shortestBorderRoute(next.start!, next.answer)!.length - 1).toBeGreaterThanOrEqual(5)
   })
 })

@@ -7,7 +7,7 @@ export const journeyColors = {
   destination: '#e2bc67',
   arrived: '#28755b',
 }
-export const JOURNEY_CROSSINGS = { min: 4, max: 10 } as const
+export const JOURNEY_CROSSINGS = { min: 5 } as const
 
 // One primary, connected land area per country. Political borders on overseas
 // territories, detached exclaves and other islands cannot teleport the traveler.
@@ -58,29 +58,24 @@ export function shortestBorderRoute(start: string, destination: string): string[
 }
 
 // Use shortest-path distance, so a qualifying journey cannot be solved with a shortcut.
-const routes = countries.flatMap((start) => {
-  const distances = new Map([[start.id, 0]])
-  const queue = [start.id]
-  for (let index = 0; index < queue.length; index++) {
-    const current = queue[index]
-    const distance = distances.get(current)!
-    if (distance === JOURNEY_CROSSINGS.max) continue
-    for (const next of neighbors.get(current)!) {
-      if (distances.has(next)) continue
-      distances.set(next, distance + 1)
-      queue.push(next)
+const routes = countries
+  .filter((start) => landConnectionFor(start.id) === 'Africa–Eurasia')
+  .flatMap((start) => {
+    const distances = new Map([[start.id, 0]])
+    const queue = [start.id]
+    for (let index = 0; index < queue.length; index++) {
+      const current = queue[index]
+      const distance = distances.get(current)!
+      for (const next of neighbors.get(current)!) {
+        if (distances.has(next)) continue
+        distances.set(next, distance + 1)
+        queue.push(next)
+      }
     }
-  }
-  return [...distances]
-    .filter(([, distance]) => distance >= JOURNEY_CROSSINGS.min)
-    .map(([destination]) => ({ start: start.id, destination }))
-})
-
-// Balance the two mainland networks before sampling a route. Sampling all pairs
-// together would heavily favor Africa–Eurasia simply due to its size.
-const routePools = ['Americas', 'Africa–Eurasia'].map((connection) =>
-  routes.filter((route) => landConnectionFor(route.start) === connection),
-)
+    return [...distances]
+      .filter(([, distance]) => distance >= JOURNEY_CROSSINGS.min)
+      .map(([destination]) => ({ start: start.id, destination }))
+  })
 
 function randomIndex(length: number) {
   const sample = new Uint32Array(1)
@@ -92,9 +87,8 @@ function randomIndex(length: number) {
 }
 
 export function randomBorderJourney(previousDestination?: string) {
-  const regions = routePools
-    .map((pool) => pool.filter((route) => route.destination !== previousDestination))
-    .filter((pool) => pool.length > 0)
-  const pool = regions[randomIndex(regions.length)]
+  const pool = previousDestination
+    ? routes.filter((route) => route.destination !== previousDestination)
+    : routes
   return pool[randomIndex(pool.length)]
 }

@@ -1,6 +1,7 @@
 import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { landConnectionFor, shortestBorderRoute } from '../src/lib/journey'
 
 const mode = (page: Page) => page.getByRole('combobox', { name: 'Game mode', exact: true })
 const search = (page: Page) =>
@@ -102,6 +103,9 @@ test('border journey validates crossings, backtracks, saves, switches modes and 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('somewhere.journey.v1')!))
   expect(saved.answer).not.toBe('ITA')
   expect(saved.guesses).toEqual([])
+  expect(landConnectionFor(saved.start)).toBe('Africa–Eurasia')
+  expect(landConnectionFor(saved.answer)).toBe('Africa–Eurasia')
+  expect(shortestBorderRoute(saved.start, saved.answer)!.length - 1).toBeGreaterThanOrEqual(5)
   await expect(history(page).locator('li')).toHaveCount(1)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
