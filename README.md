@@ -25,6 +25,14 @@ The `dist/` directory is the complete website. Keep its `assets/` and `data/` di
 
 In the Codex cloud machine, npm’s default home cache is unavailable. Use `npm --cache /tmp/wep-app-npm ci` there. No secrets or environment variables are needed by the app.
 
+## Home Screen icon
+
+iPhone **Add to Home Screen** uses the bundled 180×180 `apple-touch-icon.png`. It preserves the existing dark compass favicon: mint green (`#62e99a`) with dark ink (`#14242a`). The icon stays in this palette regardless of the in-app theme. Opaque square PNGs let iOS apply its own rounded corners. A relative-path `site.webmanifest` also supplies 192×192 and 512×512 icons, a standalone launch mode, and the dark launch background, including when hosted under `/somewhere/`.
+
+For an existing iPhone installation, check for the app update first. iOS may keep its old cached icon; if so, add the updated site to the Home Screen again from Safari. Reinstallation may require signing in again, and unfinished rounds stored only in the old installation may not carry over. Account statistics/check-ins already synced to Firebase remain available after sign-in.
+
+To regenerate the PNGs after changing `public/favicon-dark.svg`, use `node scripts/generate-app-icons.mjs` with Playwright Chromium installed. In this cloud environment, run `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/usr/bin/chromium node scripts/generate-app-icons.mjs`. Ordinary builds use the committed images and require no browser or external image service.
+
 ## Accounts, statistics and daily check-ins
 
 The header shows the signed-in Google profile picture to the left of the daily flame/count, plus a hamburger menu that slides out from the right. The circular picture comes from Firebase Authentication’s existing Google profile; no extra permissions or API are required. Missing or failed images show initials, and signing out removes the avatar. Press the same header button, tap outside the drawer or press Escape to close it. The menu includes theme selection, update checks, **Your statistics**, **Sign in with Google**, and **Sign out**. The launch update notice still appears automatically. Playing needs no account, but statistics and daily check-ins require Google sign-in. Selecting statistics or the flame while signed out opens the sign-in view. Guest statistics are never recorded or imported; old guest statistics caches are removed. Signed-in data is cached separately for each account; signing out returns to untracked guest play without showing that account's statistics.
