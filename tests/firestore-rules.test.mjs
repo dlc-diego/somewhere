@@ -266,3 +266,52 @@ test('the maximum 365-day credit and its audit fit Firestore atomic/rules limits
     })
   await assertSucceeds(batch.commit())
 })
+
+test('optional gameplay details accept old records and enforce mode, bounds and monotonic merges', async () => {
+  const db = env.authenticatedContext('insights').firestore()
+  const cases = [
+    ['who', { cluesShown: 2 }],
+    ['identify', { cluesShown: 1 }],
+    ['flags', { hintUsed: false }],
+    ['shapes', { hintUsed: true }],
+    ['journey', { shortestCrossings: 5, guesses: 7, outcome: 'won' }],
+  ]
+  for (const [mode, patch] of cases) {
+    const id = 'details-' + mode
+    const ref = doc(db, 'users/insights/games', id)
+    await assertSucceeds(setDoc(ref, { ...record(), id, mode, ...patch }))
+    if (patch.cluesShown !== undefined) {
+      await assertSucceeds(
+        updateDoc(ref, { cluesShown: patch.cluesShown + 1, recordedAt: serverTimestamp() }),
+      )
+      await assertFails(
+        updateDoc(ref, { cluesShown: patch.cluesShown, recordedAt: serverTimestamp() }),
+      )
+    }
+    if (patch.hintUsed !== undefined) {
+      await assertSucceeds(updateDoc(ref, { hintUsed: true, recordedAt: serverTimestamp() }))
+      await assertFails(updateDoc(ref, { hintUsed: false, recordedAt: serverTimestamp() }))
+    }
+    if (patch.shortestCrossings !== undefined)
+      await assertFails(updateDoc(ref, { shortestCrossings: 4, recordedAt: serverTimestamp() }))
+  }
+  for (const patch of [
+    { mode: 'who', cluesShown: 0 },
+    { mode: 'who', cluesShown: 6 },
+    { mode: 'identify', cluesShown: 3 },
+    { mode: 'countries', cluesShown: 1 },
+    { mode: 'who', hintUsed: true },
+    { mode: 'shapes', hintUsed: 1 },
+    { mode: 'countries', shortestCrossings: 5 },
+    { mode: 'journey', shortestCrossings: 0 },
+    { mode: 'journey', shortestCrossings: 195 },
+    { mode: 'journey', shortestCrossings: 5, guesses: 4, outcome: 'won' },
+  ])
+    await assertFails(
+      setDoc(doc(db, 'users/insights/games/invalid-details'), {
+        ...record(),
+        id: 'invalid-details',
+        ...patch,
+      }),
+    )
+})

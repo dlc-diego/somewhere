@@ -6,8 +6,14 @@ export type { Session, MysteryRound } from './mystery'
 export { normalizeAnswer } from './mystery'
 import type { CelebrationRequest } from './celebrations'
 
+export type TriviaPool = 'standard' | 'hard'
+export type TriviaSession = Session<TriviaRound> & {
+  cycles?: Partial<Record<TriviaPool, string[]>>
+}
+export const TRIVIA_DIFFICULTY_KEY = 'something.difficulty.v1'
 export type SomethingMode = 'trivia' | 'mystery'
 export interface TriviaRound {
+  difficulty?: TriviaPool
   version: 1
   ids: string[]
   orders: number[][]
@@ -44,29 +50,45 @@ function shuffle<T>(items: readonly T[]): T[] {
   }
   return result
 }
-function choose(ids: string[], seen: string[], previous: string[], count: number) {
-  const candidates = ids.filter((id) => !previous.includes(id))
-  return [
-    ...shuffle(candidates.filter((id) => !seen.includes(id))),
-    ...shuffle(candidates.filter((id) => seen.includes(id))),
-  ].slice(0, count)
-}
-export function newTriviaSession(previous?: Session<TriviaRound>): Session<TriviaRound> {
-  const seen = [...new Set([...(previous?.seen || []), ...(previous?.round.ids || [])])].filter(
-    (id) => questionById.has(id),
-  )
+export function newTriviaSession(
+  previous?: TriviaSession,
+  difficulty: TriviaPool = previous?.round.difficulty || 'standard',
+): TriviaSession {
+  const previousPool = previous?.round.difficulty || 'standard'
+  const cycles = { ...previous?.cycles }
+  if (previous)
+    cycles[previousPool] = [
+      ...new Set([...(cycles[previousPool] || []), ...previous.seen, ...previous.round.ids]),
+    ].filter((id) => questionById.has(id))
+  let seen = [...(cycles[difficulty] || [])]
+  const questions = triviaQuestions.filter((q) => difficulty !== 'hard' || q.difficulty === 'hard')
+  const ids = [...new Set(questions.map((q) => q.category))].map((category) => {
+    const pool = questions.filter((q) => q.category === category).map((q) => q.id)
+    let fresh = pool.filter((id) => !seen.includes(id))
+    if (!fresh.length) {
+      // Each category begins a fresh bag only after its eligible pool is exhausted.
+      seen = seen.filter((id) => !pool.includes(id))
+      fresh = pool
+    }
+    const withoutPrevious = fresh.filter((id) => !previous?.round.ids.includes(id))
+    return shuffle(withoutPrevious.length ? withoutPrevious : fresh)[0]
+  })
+  cycles[difficulty] = seen
   return {
     version: 1,
     seen,
+    cycles,
     round: {
       version: 1,
-      ids: choose([...questionById.keys()], seen, previous?.round.ids || [], TRIVIA_LENGTH),
+      difficulty,
+      ids: shuffle(ids),
       orders: Array.from({ length: TRIVIA_LENGTH }, () => shuffle([0, 1, 2, 3])),
       responses: [],
       index: 0,
     },
   }
 }
+
 export function presentedChoices(round: TriviaRound, index = round.index): string[] {
   return round.orders[index].map((i) => questionById.get(round.ids[index])!.choices[i])
 }
@@ -123,7 +145,7 @@ function validSeen(value: unknown, pool: Map<string, TriviaQuestion>): value is 
     new Set(value).size === value.length
   )
 }
-export function parseTriviaSession(raw: string | null): Session<TriviaRound> | null {
+export function parseTriviaSession(raw: string | null): TriviaSession | null {
   try {
     const session: unknown = JSON.parse(raw || 'null')
     if (
@@ -134,6 +156,26 @@ export function parseTriviaSession(raw: string | null): Session<TriviaRound> | n
     )
       return null
     const r = session.round
+    if (session.cycles !== undefined) {
+      if (
+        !record(session.cycles) ||
+        Object.keys(session.cycles).some((key) => key !== 'standard' && key !== 'hard')
+      )
+        return null
+      for (const [pool, seen] of Object.entries(session.cycles))
+        if (
+          !validSeen(seen, questionById) ||
+          (pool === 'hard' && seen.some((id) => questionById.get(id)!.difficulty !== 'hard'))
+        )
+          return null
+    }
+    if (r.difficulty !== undefined && r.difficulty !== 'standard' && r.difficulty !== 'hard')
+      return null
+    if (
+      r.difficulty === 'hard' &&
+      session.seen.some((id: string) => questionById.get(id)!.difficulty !== 'hard')
+    )
+      return null
     if (r.trackingId !== undefined && !validTrackingId(r.trackingId)) return null
     if (
       r.version !== 1 ||
@@ -159,7 +201,12 @@ export function parseTriviaSession(raw: string | null): Session<TriviaRound> | n
       (r.responses.length !== r.index && r.responses.length !== (r.index as number) + 1)
     )
       return null
-    return session as unknown as Session<TriviaRound>
+    if (
+      r.difficulty === 'hard' &&
+      (r.ids as string[]).some((id) => questionById.get(id)!.difficulty !== 'hard')
+    )
+      return null
+    return session as unknown as TriviaSession
   } catch {
     return null
   }
@@ -169,12 +216,15 @@ export function loadSomething() {
     const rawTrivia = localStorage.getItem(TRIVIA_KEY)
     const rawMystery = localStorage.getItem(MYSTERY_KEY)
     const trivia = parseTriviaSession(rawTrivia)
+    const difficulty: TriviaPool =
+      localStorage.getItem(TRIVIA_DIFFICULTY_KEY) === 'hard' ? 'hard' : 'standard'
     const mystery = parseMysterySession(rawMystery)
     return {
       mode: (localStorage.getItem(SOMETHING_MODE_KEY) === 'mystery'
         ? 'mystery'
         : 'trivia') as SomethingMode,
-      trivia: trivia || newTriviaSession(),
+      difficulty,
+      trivia: trivia || newTriviaSession(undefined, difficulty),
       mystery: mystery || newMysterySession(),
       warning:
         (rawTrivia && !trivia) || (rawMystery && !mystery)
@@ -184,6 +234,7 @@ export function loadSomething() {
   } catch {
     return {
       mode: 'trivia' as SomethingMode,
+      difficulty: 'standard' as TriviaPool,
       trivia: newTriviaSession(),
       mystery: newMysterySession(),
       warning: 'Browser storage is unavailable. These rounds may not survive a refresh.',

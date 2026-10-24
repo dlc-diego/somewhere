@@ -23,7 +23,7 @@ service cloud.firestore {
     function game(id) {
       let d = request.resource.data;
       return d.keys().hasAll(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt'])
-        && d.keys().hasOnly(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt'])
+        && d.keys().hasOnly(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt','cluesShown','hintUsed','shortestCrossings'])
         && d.version == 1 && id.matches('^[a-zA-Z0-9_-]{8,100}$') && d.id == id
         && d.mode in ['countries','capitals','flags','shapes','journey','trivia','mystery','who','identify','adventure']
         && d.outcome in ['active','won','revealed','lost','completed','abandoned']
@@ -31,6 +31,9 @@ service cloud.firestore {
         && d.updatedAt >= d.startedAt && d.updatedAt <= request.time.toMillis() + 300000
         && natural(d.guesses,10000) && natural(d.answered,10000)
         && natural(d.correct,d.answered) && natural(d.bestStreak,d.correct) && natural(d.stage,13)
+        && (!('cluesShown' in d) || (d.mode in ['mystery','who','identify'] && natural(d.cluesShown,d.mode == 'identify' ? 2 : 5) && d.cluesShown >= 1))
+        && (!('hintUsed' in d) || (d.mode in ['flags','shapes'] && d.hintUsed is bool))
+        && (!('shortestCrossings' in d) || (d.mode == 'journey' && natural(d.shortestCrossings,194) && d.shortestCrossings >= 1 && (d.outcome != 'won' || d.guesses >= d.shortestCrossings)))
         && d.recordedAt == request.time;
     }
     match /users/{uid}/games/{id} {
@@ -45,6 +48,9 @@ service cloud.firestore {
         && request.resource.data.correct >= resource.data.correct
         && request.resource.data.bestStreak >= resource.data.bestStreak
         && request.resource.data.stage >= resource.data.stage
+        && (!('cluesShown' in resource.data) || ('cluesShown' in request.resource.data && request.resource.data.cluesShown >= resource.data.cluesShown))
+        && (!('hintUsed' in resource.data) || ('hintUsed' in request.resource.data && (!resource.data.hintUsed || request.resource.data.hintUsed)))
+        && (!('shortestCrossings' in resource.data) || ('shortestCrossings' in request.resource.data && request.resource.data.shortestCrossings == resource.data.shortestCrossings))
         && (resource.data.outcome == 'active' || request.resource.data.outcome != 'active');
     }
     match /users/{uid}/checkins/{id} {

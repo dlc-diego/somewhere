@@ -26,6 +26,8 @@ import {
   TRIVIA_KEY,
   MYSTERY_KEY,
   SOMETHING_MODE_KEY,
+  TRIVIA_DIFFICULTY_KEY,
+  type TriviaPool,
   type SomethingMode,
 } from '../lib/something'
 
@@ -34,8 +36,9 @@ export default function Something({
 }: {
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
-  const { recordGame } = usePlayer()
+  const { recordGame, data } = usePlayer()
   const [initial] = useState(loadSomething)
+  const [difficulty, setDifficulty] = useState<TriviaPool>(initial.difficulty)
   const [mode, setMode] = useState<SomethingMode>(initial.mode)
   const [trivia, setTrivia] = useState(initial.trivia)
   const [mystery, setMystery] = useState(initial.mystery)
@@ -66,10 +69,11 @@ export default function Something({
       localStorage.setItem(TRIVIA_KEY, JSON.stringify(trivia))
       localStorage.setItem(MYSTERY_KEY, JSON.stringify(mystery))
       localStorage.setItem(SOMETHING_MODE_KEY, mode)
+      localStorage.setItem(TRIVIA_DIFFICULTY_KEY, difficulty)
     } catch {
       setWarning('Browser storage is unavailable. These rounds may not survive a refresh.')
     }
-  }, [trivia, mystery, mode])
+  }, [trivia, mystery, mode, difficulty])
 
   function answer(choice: number) {
     const current = triviaRef.current
@@ -118,7 +122,7 @@ export default function Something({
     requestAnimationFrame(() => questionHeading.current?.focus({ preventScroll: true }))
   }
   function restartTrivia() {
-    const next = newTriviaSession(triviaRef.current)
+    const next = newTriviaSession(triviaRef.current, difficulty)
     triviaRef.current = next
     setTrivia(next)
     setNotice('A fresh General Trivia round is ready. Ten questions, no timer.')
@@ -137,6 +141,7 @@ export default function Something({
     recordGame(tracked.trackingId, 'mystery', {
       outcome: mysterySolved(tracked) ? 'won' : 'active',
       guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
     })
     mysteryRef.current = next
     setMystery(next)
@@ -154,6 +159,12 @@ export default function Something({
     const next = { ...current, round: nextMysteryClue(current.round) }
     mysteryRef.current = next
     setMystery(next)
+    if (next.round.trackingId && data.games[next.round.trackingId])
+      recordGame(next.round.trackingId, 'mystery', {
+        outcome: 'active',
+        guesses: next.round.guesses.length,
+        cluesShown: next.round.cluesShown,
+      })
     setNotice(`Clue ${next.round.cluesShown}: ${clue.clues[next.round.cluesShown - 1]}`)
   }
   function giveUp() {
@@ -163,6 +174,7 @@ export default function Something({
     recordGame(tracked.trackingId, 'mystery', {
       outcome: 'revealed',
       guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
     })
     mysteryRef.current = next
     setMystery(next)
@@ -206,6 +218,39 @@ export default function Something({
           <ChevronDown size={17} aria-hidden="true" />
         </div>
       </div>
+      {mode === 'trivia' && (
+        <div className="trivia-options">
+          <div>
+            <label htmlFor="trivia-difficulty">Round difficulty</label>
+            <select
+              id="trivia-difficulty"
+              value={difficulty}
+              onChange={(event) => {
+                const next = event.target.value as TriviaPool
+                setDifficulty(next)
+                if (!triviaRef.current.round.responses.length) {
+                  const session = newTriviaSession(triviaRef.current, next)
+                  triviaRef.current = session
+                  setTrivia(session)
+                  setNotice(
+                    'A balanced ' + (next === 'hard' ? 'harder' : 'standard') + ' round is ready.',
+                  )
+                } else
+                  setNotice('Difficulty saved for your next round. This round stays unchanged.')
+              }}
+            >
+              <option value="standard">Standard mix</option>
+              <option value="hard">Harder questions</option>
+            </select>
+          </div>
+          <p>
+            {t.responses.length > 0 && difficulty !== (t.difficulty || 'standard')
+              ? 'Your next round will use ' +
+                (difficulty === 'hard' ? 'harder questions.' : 'the standard mix.')
+              : 'New rounds include one question from each of 10 categories.'}
+          </p>
+        </div>
+      )}
       {warning && (
         <p className="storage-warning" role="status">
           {warning}
@@ -269,7 +314,12 @@ export default function Something({
                 </div>
               ) : (
                 <>
-                  <p className="eyebrow question-category">{item.category}</p>
+                  <p className="eyebrow question-category">
+                    {item.category}{' '}
+                    <span className="difficulty-chip">
+                      {item.difficulty === 'hard' ? 'Hard' : 'Standard'}
+                    </span>
+                  </p>
                   <h3
                     className="trivia-question"
                     id="trivia-question"

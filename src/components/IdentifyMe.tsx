@@ -60,7 +60,7 @@ function PortraitRound({
   portraits: Portrait[]
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
-  const { recordGame } = usePlayer()
+  const { recordGame, data } = usePlayer()
   const [game] = useState(() => identifyGame(portraits))
   const [initial] = useState(() => loadIdentify(game))
   const [session, setSession] = useState(initial.session)
@@ -95,6 +95,7 @@ function PortraitRound({
     recordGame(tracked.trackingId, 'identify', {
       outcome: game.solved(tracked) ? 'won' : 'active',
       guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
     })
     current.current = next
     setSession(next)
@@ -109,6 +110,12 @@ function PortraitRound({
     const next = { ...current.current, round: game.nextClue(current.current.round) }
     current.current = next
     setSession(next)
+    if (next.round.trackingId && data.games[next.round.trackingId])
+      recordGame(next.round.trackingId, 'identify', {
+        outcome: 'active',
+        guesses: next.round.guesses.length,
+        cluesShown: next.round.cluesShown,
+      })
     setNotice(person.clues[1])
   }
   function reveal() {
@@ -117,6 +124,7 @@ function PortraitRound({
     recordGame(tracked.trackingId, 'identify', {
       outcome: 'revealed',
       guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
     })
     current.current = next
     setSession(next)

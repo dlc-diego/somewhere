@@ -46,6 +46,9 @@ export interface GameRecord {
   answered: number
   bestStreak: number
   stage: number
+  cluesShown?: number
+  hintUsed?: boolean
+  shortestCrossings?: number
 }
 export interface PlayerData {
   version: 1
@@ -94,6 +97,28 @@ export function parseGame(value: unknown): GameRecord | null {
     g.stage > 13
   )
     return null
+  if (
+    g.cluesShown !== undefined &&
+    (!['mystery', 'who', 'identify'].includes(g.mode) ||
+      !Number.isInteger(g.cluesShown) ||
+      g.cluesShown < 1 ||
+      g.cluesShown > (g.mode === 'identify' ? 2 : 5))
+  )
+    return null
+  if (
+    g.hintUsed !== undefined &&
+    (!['flags', 'shapes'].includes(g.mode) || typeof g.hintUsed !== 'boolean')
+  )
+    return null
+  if (
+    g.shortestCrossings !== undefined &&
+    (g.mode !== 'journey' ||
+      !Number.isInteger(g.shortestCrossings) ||
+      g.shortestCrossings < 1 ||
+      g.shortestCrossings > 194 ||
+      (g.outcome === 'won' && g.guesses < g.shortestCrossings))
+  )
+    return null
   return {
     version: 1,
     id: g.id,
@@ -106,6 +131,9 @@ export function parseGame(value: unknown): GameRecord | null {
     answered: g.answered,
     bestStreak: g.bestStreak,
     stage: g.stage,
+    ...(g.cluesShown !== undefined ? { cluesShown: g.cluesShown } : {}),
+    ...(g.hintUsed !== undefined ? { hintUsed: g.hintUsed } : {}),
+    ...(g.shortestCrossings !== undefined ? { shortestCrossings: g.shortestCrossings } : {}),
   }
 }
 export function mergeGame(a: GameRecord | undefined, b: GameRecord): GameRecord {
@@ -136,6 +164,15 @@ export function mergeGame(a: GameRecord | undefined, b: GameRecord): GameRecord 
     answered: Math.max(a.answered, b.answered),
     bestStreak: Math.max(a.bestStreak, b.bestStreak),
     stage: Math.max(a.stage, b.stage),
+    ...(a.cluesShown !== undefined || b.cluesShown !== undefined
+      ? { cluesShown: Math.max(a.cluesShown || 0, b.cluesShown || 0) }
+      : {}),
+    ...(a.hintUsed !== undefined || b.hintUsed !== undefined
+      ? { hintUsed: Boolean(a.hintUsed || b.hintUsed) }
+      : {}),
+    ...(a.shortestCrossings !== undefined || b.shortestCrossings !== undefined
+      ? { shortestCrossings: a.shortestCrossings ?? b.shortestCrossings }
+      : {}),
   }
 }
 export function parsePlayer(raw: string | null): PlayerData {
@@ -181,6 +218,13 @@ export function statistics(data: PlayerData) {
     const games = Object.values(data.games).filter((g) => g.mode === mode),
       won = games.filter((g) => g.outcome === 'won')
     const winningGuesses = won.reduce((n, g) => n + g.guesses, 0)
+    const clueWins = won.filter((g) => g.cluesShown !== undefined)
+    const hintedWins = won.filter((g) => g.hintUsed !== undefined)
+    const journeyWins = won.filter((g) => g.shortestCrossings !== undefined)
+    const extraCrossings = journeyWins.reduce(
+      (sum, g) => sum + Math.max(0, g.guesses - g.shortestCrossings!),
+      0,
+    )
     return {
       mode,
       played: games.length,
@@ -196,6 +240,18 @@ export function statistics(data: PlayerData) {
       furthest: Math.max(0, ...games.map((g) => g.stage)),
       perfect: games.filter((g) => g.mode === 'trivia' && g.answered === 10 && g.correct === 10)
         .length,
+      trackedClueWins: clueWins.length,
+      averageClues: clueWins.length
+        ? clueWins.reduce((sum, g) => sum + g.cluesShown! - (mode === 'identify' ? 1 : 0), 0) /
+          clueWins.length
+        : null,
+      firstClueWins: clueWins.filter((g) => g.cluesShown === 1).length,
+      trackedHintWins: hintedWins.length,
+      noHintWins: hintedWins.filter((g) => !g.hintUsed).length,
+      trackedJourneyWins: journeyWins.length,
+      optimalJourneys: journeyWins.filter((g) => g.guesses === g.shortestCrossings).length,
+      extraCrossings,
+      averageExtraCrossings: journeyWins.length ? extraCrossings / journeyWins.length : null,
     }
   })
 }

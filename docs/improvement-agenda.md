@@ -14,14 +14,14 @@ Status: **Complete**.
 
 ## Batch 2 — Gameplay rules and statistics (high priority)
 
-Status: **Not started**.
+Status: **Complete**.
 
-- [ ] Offer balanced trivia rounds with one question per category.
-- [ ] Add difficulty tags and an optional harder selection.
-- [ ] Begin a renewed shuffled cycle after exhausting the question bank.
-- [ ] Record clues and continent hints used alongside guess statistics.
-- [ ] Offer spelling assistance for recognizable near misses without unfairly consuming Somehow attempts; keep ambiguous names distinct.
-- [ ] Track optimal Border Journey finishes and crossings beyond the shortest route. Preserve the five-crossing minimum, no artificial upper difficulty cap, and wins for all valid routes.
+- [x] Offer balanced trivia rounds with one question per category.
+- [x] Add difficulty tags and an optional harder selection.
+- [x] Begin a renewed shuffled cycle after exhausting the question bank.
+- [x] Record clues and continent hints used alongside guess statistics.
+- [x] Offer spelling assistance for recognizable near misses without unfairly consuming Somehow attempts; keep ambiguous names distinct.
+- [x] Track optimal Border Journey finishes and crossings beyond the shortest route. Preserve the five-crossing minimum, no artificial upper difficulty cap, and wins for all valid routes.
 
 ## Batch 3 — Content quality and admin tools (medium priority)
 
@@ -64,4 +64,18 @@ The user removed the original account/deployment and cross-device continuity bat
 - Delivery: this batch is pushed separately to main. Site: https://dlc-diego.github.io/somewhere/
 - No Firebase rules or console configuration changes are needed.
 
-Progress: **1 of 5 batches complete**. Next: Batch 2, pending the user's instruction.
+### Batch 2 — Gameplay rules and statistics
+
+- New trivia rounds contain one question from each of ten categories. The optional harder selection uses 100 editorially tagged questions (ten per category); the standard mix retains all 400.
+- Difficulty changes before an answer replace the untouched round. After an answer, the preference applies to the next round, keeping in-progress questions, choices, score and celebrations intact.
+- Per-category shuffled cycles refill after their eligible pools are exhausted. Standard and harder selections keep independent local history, avoid the immediately preceding round, survive refresh, and preserve legacy sessions. No cross-device seen history was added.
+- Optional validated statistics record clue use, continent hints, and the starting shortest route. The user statistics and admin player view show tracked solve averages and optimal-route records. Missing details on old records remain unknown; existing wins, guesses and streaks are preserved.
+- Identify Me counts only its optional text clue (zero or one), not the initial portrait, and records portrait-only wins separately.
+- Conservative one-edit/transposition spelling prompts check the entire mode catalog, reject short/ambiguous matches, preserve the typed input, and never count as automatic wins or consume attempts/hearts/items. All text mystery engines, including Somehow, use this behavior.
+- Journey results label optimal finishes or extra crossings; detours still win, and new routes retain their existing Africa–Eurasia-only five-plus crossing policy.
+- Updated instructions and README; no added service, dependency, cloud game save, or account-tracking fix.
+- Verified: 196 unit tests; all 126 desktop/mobile gameplay browser scenarios; seven Auth/Firestore emulator browser scenarios; nine Firestore security-rule tests; narrow-screen light/dark accessibility; portrait licensing checks; formatting; production build. Final checks re-ran the affected help/difficulty/spelling screens and cloud detail statistics after text polish.
+- Firebase: the project owner confirmed publication of the exact updated rules before the app push. Existing check-in and admin rules were retained.
+- Delivery: pushed separately to main. Site: https://dlc-diego.github.io/somewhere/
+
+Progress: **2 of 5 batches complete**. Next: Batch 3 — Content quality and admin tools, pending the user's instruction.

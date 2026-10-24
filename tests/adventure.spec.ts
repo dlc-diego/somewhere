@@ -367,7 +367,9 @@ test('a natural win pays four coins and can drop a Lucky star, and discoveries c
   const discovery = at('event')
   discovery.encounter!.eventItem = 'star'
   discovery.inventory.star = 0
-  await page.evaluate(({ key, run }) => localStorage.setItem(key, JSON.stringify(run)), {
+  // Install the replacement fixture before React mounts on reload; the old
+  // component's pending persistence effect must not overwrite the new fixture.
+  await page.addInitScript(({ key, run }) => localStorage.setItem(key, JSON.stringify(run)), {
     key: ADVENTURE_KEY,
     run: discovery,
   })
@@ -890,4 +892,31 @@ test('preview and section controls fit 320px in both themes, and footer help has
     expect(rect.height).toBeGreaterThanOrEqual(44)
     expect(rect.width).toBeGreaterThanOrEqual(44)
   }
+})
+
+test('a near-miss spelling preserves attempts, hearts and supplies in a Somehow people trial', async ({
+  page,
+}) => {
+  const original = at('who')
+  const fixture = {
+    ...original,
+    seenWho: [...new Set([...original.seenWho, 'person-einstein'])],
+    encounter: {
+      ...original.encounter!,
+      mystery: { ...original.encounter!.mystery!, id: 'person-einstein' },
+    },
+  }
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const input = page.getByRole('textbox', { name: 'Your answer', exact: true })
+  await input.fill('Einsten')
+  await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('no guess was used')
+  await expect(input).toHaveValue('Einsten')
+  expect(await stored(page)).toEqual(fixture)
+  await input.fill('Einstein')
+  await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+  expect((await stored(page)).encounter?.result).toBe('cleared')
+  expect((await stored(page)).encounter?.mystery?.guesses).toEqual(['Einstein'])
 })

@@ -1,5 +1,6 @@
 import type { Mystery } from '../data/mysteries'
 import { validTrackingId } from './playerData'
+import { spellingSlip } from './spelling'
 
 export interface MysteryRound {
   version: 1
@@ -58,6 +59,14 @@ function validSeen(value: unknown, pool: Map<string, Mystery>): value is string[
 
 export function createMysteryGame(items: readonly Mystery[]) {
   const mysteryById = new Map(items.map((item) => [item.id, item]))
+  const catalog = new Map<string, Set<string>>()
+  for (const item of items)
+    for (const answer of [item.answer, ...item.aliases]) {
+      const key = normalizeAnswer(answer),
+        owners = catalog.get(key) || new Set<string>()
+      owners.add(item.id)
+      catalog.set(key, owners)
+    }
   function newMysterySession(previous?: Session<MysteryRound>): Session<MysteryRound> {
     const seen = [
       ...new Set([...(previous?.seen || []), ...(previous ? [previous.round.id] : [])]),
@@ -89,6 +98,12 @@ export function createMysteryGame(items: readonly Mystery[]) {
       return { round, error: 'Enter an answer of up to 100 characters.' }
     if (round.guesses.some((previous) => normalizeAnswer(previous) === normalizeAnswer(guess)))
       return { round, error: 'You already tried that answer. Try something new.' }
+    if (spellingSlip(normalizeAnswer(guess), catalog))
+      return {
+        round,
+        error:
+          'That looks like a possible spelling slip. Check the spelling and try again; no guess was used.',
+      }
     if (round.guesses.length >= 200)
       return {
         round,

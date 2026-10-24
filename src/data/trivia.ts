@@ -1,6 +1,9 @@
+import { difficultyFor, type TriviaDifficulty } from './triviaDifficulty'
+
 export interface TriviaQuestion {
   id: string
   category: string
+  difficulty: TriviaDifficulty
   question: string
   choices: string[]
   answer: string
@@ -14,7 +17,7 @@ const q = (
   answer: string,
   wrong: string[],
   explanation: string,
-): TriviaQuestion => ({ id, category, question, choices: [answer, ...wrong], answer, explanation })
+): TriviaQuestion => ({ id, category, difficulty: difficultyFor(id), question, choices: [answer, ...wrong], answer, explanation })
 
 // Original wording and stable, general-knowledge facts. Choice order is shuffled per round.
 export const triviaQuestions: TriviaQuestion[] = [

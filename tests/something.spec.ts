@@ -1,6 +1,7 @@
 import { changeTheme } from './helpers/menu'
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { questionById } from '../src/lib/something'
 
 const mode = (page: Page) =>
   page.getByRole('combobox', { name: 'Something game mode', exact: true })
@@ -370,4 +371,61 @@ test('Something remains playable with blocked storage and corrupt saves recover 
   await mode(page).selectOption('mystery')
   await page.getByRole('button', { name: 'Give up and reveal answer' }).click()
   await expect(page.getByRole('button', { name: 'Try another mystery' })).toBeVisible()
+})
+
+test('new rounds balance ten categories, offer harder questions, and keep a started round when changing preferences', async ({
+  page,
+}) => {
+  await page.addInitScript(() => localStorage.setItem('somewhere.experience.v1', 'something'))
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const difficulty = page.getByRole('combobox', { name: 'Round difficulty', exact: true })
+  await expect(difficulty).toHaveValue('standard')
+  const stored = () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem('something.trivia.v1')!).round)
+  const first = await stored()
+  expect(new Set(first.ids.map((id: string) => questionById.get(id)!.category)).size).toBe(10)
+  await difficulty.selectOption('hard')
+  const hard = await stored()
+  expect(new Set(hard.ids.map((id: string) => questionById.get(id)!.category)).size).toBe(10)
+  expect(hard.ids.every((id: string) => questionById.get(id)!.difficulty === 'hard')).toBe(true)
+  const question = questionById.get(hard.ids[0])!
+  const correct = hard.orders[0].findIndex(
+    (index: number) => question.choices[index] === question.answer,
+  )
+  await page.locator('.trivia-choice').nth(correct).click()
+  await difficulty.selectOption('standard')
+  expect((await stored()).ids).toEqual(hard.ids)
+  expect((await stored()).responses).toEqual([correct])
+  await expect(
+    page.getByText('Your next round will use the standard mix.', { exact: true }),
+  ).toBeVisible()
+  await page.reload()
+  expect((await stored()).ids).toEqual(hard.ids)
+  expect((await stored()).responses).toEqual([correct])
+  await expect(difficulty).toHaveValue('standard')
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((theme) => (document.documentElement.dataset.theme = theme), theme)
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+        .violations,
+    ).toEqual([])
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
+test('a likely spelling slip preserves the mystery input and guess count until corrected', async ({
+  page,
+}) => {
+  await seed(page, { mode: 'mystery' })
+  await page.goto('/')
+  await guess(page, 'frigde')
+  await expect(page.getByRole('alert')).toContainText('no guess was used')
+  await expect(page.getByRole('textbox', { name: 'Your answer', exact: true })).toHaveValue(
+    'frigde',
+  )
+  await expect(page.getByRole('list', { name: 'Mystery guesses' })).toHaveCount(0)
+  await guess(page, 'fridge')
+  await expect(page.getByText('You found it. Refrigerator!', { exact: true })).toBeVisible()
 })

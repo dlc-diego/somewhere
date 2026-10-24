@@ -20,7 +20,7 @@ export default function WhoAmI({
 }: {
   onCelebrate: (requests: CelebrationRequest[]) => void
 }) {
-  const { recordGame } = usePlayer()
+  const { recordGame, data } = usePlayer()
   const [initial] = useState(loadSomeone)
   const [session, setSession] = useState(initial.session)
   const current = useRef(session)
@@ -53,6 +53,7 @@ export default function WhoAmI({
     recordGame(tracked.trackingId, 'who', {
       outcome: personSolved(tracked) ? 'won' : 'active',
       guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
     })
     current.current = next
     setSession(next)
@@ -70,12 +71,22 @@ export default function WhoAmI({
     current.current = next
     setSession(next)
     setError('')
+    if (next.round.trackingId && data.games[next.round.trackingId])
+      recordGame(next.round.trackingId, 'who', {
+        outcome: 'active',
+        guesses: next.round.guesses.length,
+        cluesShown: next.round.cluesShown,
+      })
     setNotice(`Clue ${next.round.cluesShown}: ${person.clues[next.round.cluesShown - 1]}`)
   }
   function giveUp() {
     const tracked = trackRound(revealPerson(current.current.round))
     const next = { ...current.current, round: tracked }
-    recordGame(tracked.trackingId, 'who', { outcome: 'revealed', guesses: tracked.guesses.length })
+    recordGame(tracked.trackingId, 'who', {
+      outcome: 'revealed',
+      guesses: tracked.guesses.length,
+      cluesShown: tracked.cluesShown,
+    })
     current.current = next
     setSession(next)
     setError('')

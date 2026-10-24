@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Search, ShieldCheck, RefreshCw, Flame, ArrowRight, Check } from 'lucide-react'
 import Dialog from './Dialog'
+import StatInsights from './StatInsights'
 import {
   adminError,
   applyStreakCredit,
@@ -236,21 +237,24 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
               {rows
                 .filter((row) => row.played)
                 .map((row) => (
-                  <p key={row.mode}>
-                    <strong>{STAT_LABELS[row.mode]}</strong>
-                    <span>
-                      {row.played} played · {row.wins} wins
-                      {row.averageGuesses !== null
-                        ? ` · ${average(row.averageGuesses)} avg guesses`
-                        : ''}
-                      {row.averageCrossings !== null
-                        ? ` · ${average(row.averageCrossings)} avg crossings`
-                        : ''}
-                      {row.mode === 'trivia' && row.answered
-                        ? ` · ${Math.round((row.correct / row.answered) * 100)}% accuracy`
-                        : ''}
-                    </span>
-                  </p>
+                  <section key={row.mode}>
+                    <p>
+                      <strong>{STAT_LABELS[row.mode]}</strong>
+                      <span>
+                        {row.played} played · {row.wins} wins
+                        {row.averageGuesses !== null
+                          ? ` · ${average(row.averageGuesses)} avg guesses`
+                          : ''}
+                        {row.averageCrossings !== null
+                          ? ` · ${average(row.averageCrossings)} avg crossings`
+                          : ''}
+                        {row.mode === 'trivia' && row.answered
+                          ? ` · ${Math.round((row.correct / row.answered) * 100)}% accuracy`
+                          : ''}
+                      </span>
+                    </p>
+                    <StatInsights row={row} />
+                  </section>
                 ))}
             </div>
           )}

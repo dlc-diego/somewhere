@@ -8,6 +8,8 @@ export function JourneyChallenge({ round }: { round: Round }) {
   const start = countryById.get(round.start!)!
   const destination = countryById.get(round.answer)!
   const ended = hasEnded(round)
+  const shortest = shortestBorderRoute(start.id, destination.id)!.length - 1
+  const extra = round.guesses.length - shortest
   return (
     <div className="journey-challenge">
       <div className="journey-endpoints">
@@ -34,8 +36,14 @@ export function JourneyChallenge({ round }: { round: Round }) {
           {hasWon(round)
             ? `Destination reached in ${round.guesses.length} ${round.guesses.length === 1 ? 'crossing' : 'crossings'}!`
             : 'Your next adventure is just around the border.'}{' '}
-          The shortest starting route takes{' '}
-          {shortestBorderRoute(start.id, destination.id)!.length - 1} crossings.
+          The shortest starting route takes {shortest} crossings.
+          {hasWon(round) && (
+            <span className={'journey-efficiency' + (extra === 0 ? ' is-optimal' : '')}>
+              {extra === 0
+                ? 'Optimal route'
+                : extra + (extra === 1 ? ' extra crossing' : ' extra crossings')}
+            </span>
+          )}
         </p>
       )}
     </div>

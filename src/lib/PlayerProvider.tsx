@@ -23,7 +23,17 @@ import { streakDay, type CheckIn } from './streak'
 import type { PlayerUser } from './firebaseClient'
 type Client = typeof import('./firebaseClient')
 type Progress = Partial<
-  Pick<GameRecord, 'guesses' | 'correct' | 'answered' | 'bestStreak' | 'stage'>
+  Pick<
+    GameRecord,
+    | 'guesses'
+    | 'correct'
+    | 'answered'
+    | 'bestStreak'
+    | 'stage'
+    | 'cluesShown'
+    | 'hintUsed'
+    | 'shortestCrossings'
+  >
 > & { outcome: Outcome }
 interface PlayerContextValue {
   user: PlayerUser | null

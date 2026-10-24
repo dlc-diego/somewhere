@@ -17,6 +17,7 @@ import { streakSummary } from '../lib/streak'
 import AppUpdate from './AppUpdate'
 import Dialog from './Dialog'
 import ProfileAvatar from './ProfileAvatar'
+import StatInsights from './StatInsights'
 const AdminPanel = lazy(() => import('./AdminPanel'))
 
 export default function AccountNav({
@@ -415,6 +416,7 @@ function StatisticsDialog({
                     )}
                   </p>
                 )}
+                <StatInsights row={r} />
               </section>
             ))}
         </div>

@@ -54,7 +54,7 @@ type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensit
 
 export default function App() {
   const { theme, toggleTheme } = useTheme()
-  const { recordGame, setCelebrating } = usePlayer()
+  const { recordGame, setCelebrating, data: playerData } = usePlayer()
   const { experience, transition, switchExperience } = useExperience()
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
@@ -176,6 +176,10 @@ export default function App() {
     recordGame(tracked.trackingId, mode, {
       outcome: hasWon(tracked) ? 'won' : 'active',
       guesses: tracked.guesses.length,
+      ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: !!tracked.hintUsed } : {}),
+      ...(mode === 'journey'
+        ? { shortestCrossings: shortestBorderRoute(tracked.start!, tracked.answer)!.length - 1 }
+        : {}),
     })
     const latest = guessDetails(result.round).at(-1)!
     focusCountry(country, latest.location)
@@ -213,14 +217,32 @@ export default function App() {
     if (ended) return
     const tracked = trackRound(revealAnswer(round))
     setRound(tracked)
-    recordGame(tracked.trackingId, mode, { outcome: 'revealed', guesses: tracked.guesses.length })
+    recordGame(tracked.trackingId, mode, {
+      outcome: 'revealed',
+      guesses: tracked.guesses.length,
+      ...(mode === 'flags' || mode === 'shapes' ? { hintUsed: !!tracked.hintUsed } : {}),
+      ...(mode === 'journey'
+        ? { shortestCrossings: shortestBorderRoute(tracked.start!, tracked.answer)!.length - 1 }
+        : {}),
+    })
     focusCountry(answerCountry, answerLocation)
     setAnnouncement(
       `Answer revealed: ${answerLocation.name}${mode === 'capitals' ? `, ${answerCountry.name}` : ''}. Round complete.`,
     )
   }
   function showContinentHint() {
-    setRound(revealContinentHint(round))
+    const next = revealContinentHint(round)
+    setRound(next)
+    if (
+      next.trackingId &&
+      playerData.games[next.trackingId] &&
+      (mode === 'flags' || mode === 'shapes')
+    )
+      recordGame(next.trackingId, mode, {
+        outcome: 'active',
+        guesses: next.guesses.length,
+        hintUsed: !!next.hintUsed,
+      })
     setAnnouncement(`Continent hint: ${answerCountry.continent}. Keep guessing!`)
   }
   async function share() {
@@ -638,9 +660,13 @@ export default function App() {
               <div>
                 <strong>General Trivia</strong>
                 <p>
-                  Play ten mixed-topic questions with four choices each, no timer. Choose once, read
-                  the explanation, then continue. Review any answer in Your round. Your score,
-                  question order and progress save in this browser.
+                  New rounds cover ten categories, with one question from each and no timer. Choose
+                  Standard mix or Harder questions; a change before your first answer starts a new
+                  selection, while a change during play applies to your next round. Question tags
+                  describe editorial difficulty. Each category gets a fresh shuffled cycle after its
+                  questions are used. Choose once from four choices, read the explanation, then
+                  continue. Review any answer in Your round. Your score, question order and progress
+                  save in this browser.
                 </p>
               </div>
             </li>
@@ -667,10 +693,11 @@ export default function App() {
                 <p>
                   Identify an animal, object, structure or natural phenomenon from up to five clues.
                   Reveal another clue whenever you like without using a guess. Type your answer;
-                  common aliases, capitalization and punctuation are accepted. Wrong answers and
-                  repeated guesses never end a mystery. Give up and reveal answer shows the solution
-                  and all clues without counting as a win. After solving or revealing, try another
-                  mystery. Each game keeps its own saved round.
+                  common aliases, capitalization and punctuation are accepted. Likely spelling slips
+                  get a chance to be corrected without using a guess. Wrong answers and repeated
+                  guesses never end a mystery. Give up and reveal answer shows the solution and all
+                  clues without counting as a win. After solving or revealing, try another mystery.
+                  Each game keeps its own saved round.
                 </p>
               </div>
             </li>
@@ -709,7 +736,9 @@ export default function App() {
                 <p>
                   Type a name and make a guess. Common names, listed nicknames, accents and
                   punctuation are accepted. Wrong guesses do not end the round; repeated answers do
-                  not count twice. Correct guesses use the familiar winning animations.
+                  not count twice. Likely spelling slips can be corrected without using a guess;
+                  short or ambiguous names still need a listed answer. Correct guesses use the
+                  familiar winning animations.
                 </p>
               </div>
             </li>

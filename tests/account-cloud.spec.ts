@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 import { openMenu, changeTheme } from './helpers/menu'
 import AxeBuilder from '@axe-core/playwright'
+import { countryById } from '../src/lib/countries'
+import { shortestBorderRoute } from '../src/lib/journey'
 
 // Fake Google credentials are accepted ONLY by the Firebase Auth emulator.
 // This tests the real Auth/Firestore SDK and published rules, without Google accounts.
@@ -513,4 +515,107 @@ test('credits preserve an unclaimed daily flame and reject a preview changed by 
     '0',
   )
   await playerContext.close()
+})
+
+test('clue, hint and route records survive refresh and cloud sync without rewriting older statistics', async ({
+  page,
+}) => {
+  test.setTimeout(90000)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await login(page, 'gameplay-details-test')
+  await page.getByRole('button', { name: /^Close menu/ }).click()
+  async function install(experience: string, mode: string, key: string, value: unknown) {
+    await page.evaluate(
+      ({ experience, mode, key, value }) => {
+        localStorage.setItem('somewhere.experience.v1', experience)
+        localStorage.setItem(
+          experience === 'something' ? 'something.mode.v1' : 'somewhere.mode.v1',
+          mode,
+        )
+        localStorage.setItem(key, JSON.stringify(value))
+      },
+      { experience, mode, key, value },
+    )
+    await page.reload()
+    await expect(page.locator('.profile-avatar')).toBeVisible()
+  }
+  async function guessCountry(id: string) {
+    await page
+      .getByRole('combobox', { name: 'Search for a country', exact: true })
+      .fill(countryById.get(id)!.name)
+    await page.getByRole('listbox').getByRole('option').first().click()
+    await page.getByRole('button', { name: /^(Make a guess|Cross the border)$/ }).click()
+  }
+  async function synced() {
+    await page.reload()
+    await openMenu(page)
+    await expect(page.getByText('Your statistics are synced.', { exact: true })).toBeVisible({
+      timeout: 25000,
+    })
+    await page.getByRole('button', { name: /^Close menu/ }).click()
+  }
+  await install('somewhere', 'flags', 'somewhere.flags.v1', {
+    version: 2,
+    mode: 'flags',
+    answer: 'FRA',
+    guesses: [],
+    revealed: false,
+    hintUsed: false,
+  })
+  await page.getByRole('button', { name: 'Hint: reveal continent', exact: true }).click()
+  await guessCountry('FRA')
+  await synced()
+  await install('something', 'mystery', 'something.mystery.v1', {
+    version: 1,
+    seen: [],
+    round: { version: 1, id: 'refrigerator', guesses: [], cluesShown: 1, revealed: false },
+  })
+  const answer = page.getByRole('textbox', { name: 'Your answer', exact: true })
+  await answer.fill('oven')
+  await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+  await page.getByRole('button', { name: 'Reveal another clue', exact: true }).click()
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const key = Object.keys(localStorage).find((key) => key.startsWith('somewhere.player.v1:'))!
+        const games = Object.values(JSON.parse(localStorage.getItem(key)!).games) as {
+          mode: string
+          cluesShown?: number
+        }[]
+        return games.find((g) => g.mode === 'mystery')?.cluesShown
+      }),
+    )
+    .toBe(2)
+  await answer.fill('fridge')
+  await page.getByRole('button', { name: 'Make a guess', exact: true }).click()
+  await synced()
+  const route = shortestBorderRoute('PRT', 'CHN')!
+  for (const detour of [false, true]) {
+    await install('somewhere', 'journey', 'somewhere.journey.v1', {
+      version: 2,
+      mode: 'journey',
+      start: 'PRT',
+      answer: 'CHN',
+      guesses: [],
+      revealed: false,
+    })
+    for (const id of [...(detour ? ['ESP', 'PRT'] : []), ...route.slice(1)]) await guessCountry(id)
+    await expect(page.locator('.journey-efficiency')).toHaveText(
+      detour ? '2 extra crossings' : 'Optimal route',
+    )
+    await synced()
+  }
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Flags statistics', exact: true })).toContainText(
+    '0/1 tracked wins without a continent hint',
+  )
+  await expect(
+    page.getByRole('region', { name: 'What am I statistics', exact: true }),
+  ).toContainText('2 average clues on 1 tracked win')
+  await expect(
+    page.getByRole('region', { name: 'Border Journey statistics', exact: true }),
+  ).toContainText('1/2 optimal routes · 1 average extra crossings')
+  await expect(page.getByRole('group', { name: 'Games played', exact: true })).toContainText('4')
 })
