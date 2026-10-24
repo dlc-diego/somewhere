@@ -49,6 +49,7 @@ const Globe = lazy(() => import('./components/Globe'))
 const Something = lazy(() => import('./components/Something'))
 const Someone = lazy(() => import('./components/Someone'))
 const Somehow = lazy(() => import('./components/Somehow'))
+const DailyMix = lazy(() => import('./components/DailyMix'))
 type DialogType = 'help' | null
 type QueuedCelebration = { sequence: number; effect: CelebrationEffect; intensity?: number }
 
@@ -59,12 +60,14 @@ export default function App() {
   const [hasVisitedSomewhere, setHasVisitedSomewhere] = useState(experience === 'somewhere')
   const [hasVisitedSomething, setHasVisitedSomething] = useState(experience === 'something')
   const [hasVisitedSomeone, setHasVisitedSomeone] = useState(experience === 'someone')
+  const [hasVisitedDaily, setHasVisitedDaily] = useState(experience === 'daily')
   const [hasVisitedSomehow, setHasVisitedSomehow] = useState(experience === 'somehow')
   useEffect(() => {
     if (experience === 'somewhere') setHasVisitedSomewhere(true)
     else if (experience === 'something') setHasVisitedSomething(true)
     else if (experience === 'someone') setHasVisitedSomeone(true)
     else if (experience === 'somehow') setHasVisitedSomehow(true)
+    else if (experience === 'daily') setHasVisitedDaily(true)
   }, [experience])
   const [initial] = useState(loadRound)
   const [round, setRound] = useState(initial.round)
@@ -162,9 +165,11 @@ export default function App() {
         ? 'Something. General Trivia and What am I.'
         : next === 'someone'
           ? 'Someone. Who am I and Identify Me.'
-          : next === 'somehow'
-            ? 'Somehow. A little adventure awaits.'
-            : 'Welcome back to Somewhere. Your journey is saved.',
+          : next === 'daily'
+            ? 'Daily Mix. Five discoveries and a private daily board.'
+            : next === 'somehow'
+              ? 'Somehow. A little adventure awaits.'
+              : 'Welcome back to Somewhere. Your journey is saved.',
     )
   }
 
@@ -267,7 +272,9 @@ export default function App() {
               ? '#something-games'
               : experience === 'someone'
                 ? '#someone-content'
-                : '#somehow-content'
+                : experience === 'daily'
+                  ? '#daily-content'
+                  : '#somehow-content'
         }
         className="skip-link"
       >
@@ -282,7 +289,9 @@ export default function App() {
               ? 'A little more to discover'
               : experience === 'someone'
                 ? 'Every person has a story'
-                : 'A little adventure awaits'}
+                : experience === 'daily'
+                  ? 'A little discovery every day'
+                  : 'A little adventure awaits'}
         </span>
         <AccountNav theme={theme} toggleTheme={toggleTheme} celebrating={celebrations.length > 0} />
       </header>
@@ -490,6 +499,19 @@ export default function App() {
             </Suspense>
           )}
         </div>
+        <div className="experience-view" hidden={experience !== 'daily'}>
+          {(hasVisitedDaily || experience === 'daily') && (
+            <Suspense
+              fallback={
+                <p className="something-loading" role="status">
+                  Preparing today’s discoveries…
+                </p>
+              }
+            >
+              <DailyMix onCelebrate={celebrate} />
+            </Suspense>
+          )}
+        </div>
         <div className="experience-view" hidden={experience !== 'somehow'}>
           {(hasVisitedSomehow || experience === 'somehow') && (
             <Suspense
@@ -644,6 +666,36 @@ export default function App() {
           </div>
           <button className="primary" onClick={() => setDialog(null)}>
             Let’s explore <ArrowRight size={17} />
+          </button>
+        </Dialog>
+      )}
+      {dialog === 'help' && experience === 'daily' && (
+        <Dialog title="How to play Daily Mix" onClose={() => setDialog(null)}>
+          <p className="eyebrow">A little guide</p>
+          <h2>Five daily discoveries.</h2>
+          <p className="help-note">
+            Everyone gets the same trivia question, flag or shape, country or capital, Who am I, and
+            What am I. Trivia has one answer; geography allows five guesses, and people/mysteries
+            allow three. Optional clues and continent hints help you keep going.
+          </p>
+          <p className="help-note">
+            Solve a challenge for 100 points, minus 2 per wrong guess and 1 per hint on that solved
+            challenge. An unsolved challenge earns zero. Equal scores share a rank; there is no
+            speed bonus. A perfect 500-point mix gets the golden celebration.
+          </p>
+          <p className="help-note">
+            A new mix opens at noon America/Chicago, including daylight saving time. Your five
+            challenges stay fixed for that daily period. Progress is saved on the device where you
+            begin; the private leaderboard syncs summaries when connected. Opening this page alone
+            does not record an attempt. Your manual daily flame check-in remains separate.
+          </p>
+          <p className="help-note">
+            Only invited accounts can see the board. The administrator can add your player profile
+            through Admin panel → Private Daily Mix board. Uninvited accounts can still play
+            privately; no answers or email addresses are shared on the board.
+          </p>
+          <button className="primary" onClick={() => setDialog(null)}>
+            Let’s play <ArrowRight size={17} />
           </button>
         </Dialog>
       )}

@@ -1,6 +1,6 @@
 # Somewhere
 
-A small, polished collection of games, built for Val. **Somewhere** offers countries, capitals, flags, shapes and land-connected border journeys on an interactive globe. **Something** offers General Trivia with hot streaks and perfect-round celebrations, plus the five-clue guessing game What am I. **Someone** offers Who am I, a five-clue game about 80 well-known people, and Identify Me, a portrait guessing game with the same 80 people. **Somehow** is a branching geography/trivia adventure with hearts, supplies and a final boss.
+A small, polished collection of games, built for Val. **Somewhere** offers countries, capitals, flags, shapes and land-connected border journeys on an interactive globe. **Something** offers General Trivia with hot streaks and perfect-round celebrations, plus the five-clue guessing game What am I. **Someone** offers Who am I, a five-clue game about 80 well-known people, and Identify Me, a portrait guessing game with the same 80 people. **Somehow** is a branching geography/trivia adventure with hearts, supplies and a final boss. **Daily Mix** offers five shared daily challenges with an invitation-only leaderboard.
 
 **React + TypeScript + Vite, with an SVG globe powered by D3 Geo. Statically hosted on GitHub Pages, with optional Google sign-in and Firebase statistics sync. Guest play needs no account. No analytics or runtime map APIs.**
 
@@ -39,7 +39,7 @@ The header shows the signed-in Google profile picture to the left of the daily f
 
 Tap the flame to claim a check-in once per day. A ready flame pulses gently; claiming sends a short heart/star sparkle and **+1 day**. The check-in period runs from **noon to noon in America/Chicago**, including daylight-saving changes. Noon makes another claim available; it does not erase an unbroken streak. Missing a full period resets the current streak to zero, while the longest streak stays recorded. Opening the app or signing in alone never claims a day. Reduced-motion preferences replace movement with static feedback.
 
-Statistics are recorded only while signed in, on a valid guess, answer or reveal. Stable round IDs prevent refreshes from adding duplicate plays. The Overall view includes total plays, completions, wins, submitted guesses, trivia accuracy, daily streaks and a weighted average guesses per solve. The By game view includes individual mode plays, completions, wins and average guesses on wins; trivia includes accuracy, best answer streak and perfect rounds; Somehow includes wins and furthest stop. Guess averages include solved country/capital/flag/shape and name/clue rounds, excluding active or revealed rounds. Overall averages weight every solved round equally, rather than averaging mode averages. Border Journey shows average crossings separately; trivia and adventures never dilute guess averages. Overall wins include perfect trivia rounds. A dash means there is no eligible result yet. These totals are derived from existing synced records and need no new Firebase rules or data migration. Reveals and abandoned adventures count as completed without a win. Old completed rounds are not imported retroactively. Actual saved game progress remains device-local; **only statistics and check-ins sync**. Local pending writes survive refreshes, synchronize after reconnecting, and pause during winning celebrations. Signed-in offline check-ins sync when possible; this is a personal trust-based app, not an anti-cheat leaderboard.
+Statistics are recorded only while signed in, on a valid guess, answer or reveal. Stable round IDs prevent refreshes from adding duplicate plays. The Overall view includes total plays, completions, wins, submitted guesses, trivia accuracy, daily streaks and a weighted average guesses per solve. The By game view includes individual mode plays, completions, wins and average guesses on wins; trivia includes accuracy, best answer streak and perfect rounds; Somehow includes wins and furthest stop. Guess averages include solved country/capital/flag/shape and name/clue rounds, excluding active or revealed rounds. Overall averages weight every solved round equally, rather than averaging mode averages. Border Journey shows average crossings separately; trivia and adventures never dilute guess averages. Overall wins include perfect trivia rounds. A dash means there is no eligible result yet. These totals are derived from existing synced records and need no new Firebase rules or data migration. Reveals and abandoned adventures count as completed without a win. Old completed rounds are not imported retroactively. Actual saved game progress remains device-local; **statistics, check-ins and Daily Mix board summaries sync**. Local pending writes survive refreshes, synchronize after reconnecting, and pause during winning celebrations. Signed-in offline check-ins sync when possible; this is a personal trust-based app, not an anti-cheat leaderboard.
 
 ### Clue, hint and Border Journey records
 
@@ -180,7 +180,35 @@ Every new run starts with **two hearts**, **8 coins** and **one Trail compass**,
 
 Challenge clears share the existing six celebrations. Boss victories queue the fire effect followed by the golden trophy/star celebration. The global animation queue continues through restarts and experience switches, and updates wait for it to finish. Runs and all inventory/route/encounter state save separately under `somex.run.v1` (legacy storage key retained after the rename; current schema version 5); invalid saves recover only this adventure. Earlier save layouts upgrade automatically, keeping inventory, coins, progress and the active encounter. New route nodes already behind an active/completed boss are marked as carried-over progress so no one is sent backwards or loses a completed victory. Runs still before the boss get the additional section ahead. Older boss victories cleared using a Lucky star remain completed, while every active boss follows the new restriction. Standalone game progress is independent. No automatic celebration replays on refresh. Somehow loads its adventure/questions when first visited and its globe only for geography encounters. Duplicate SVG and history IDs are namespaced when two geography views are retained in the page.
 
-Daily challenges are deliberately deferred; replayable random rounds cover the core experience without timezone rules or additional infrastructure.
+### Daily Mix and private leaderboard
+
+Choose **Daily Mix** from the main experience dropdown. Every player gets the same five challenges for the current noon-to-noon **America/Chicago** period, including daylight-saving changes:
+
+1. One General Trivia question, with one answer allowed.
+2. One flag or country shape, with five country guesses and an optional continent hint.
+3. One country or capital, with five guesses and the existing globe/distance feedback.
+4. One Who am I person, with three guesses and up to five clues.
+5. One What am I mystery, with three guesses and up to five clues.
+
+The first clue is free. Each solved challenge earns **100 points minus 2 per wrong guess and 1 per extra clue/continent hint**. Unsolved or revealed challenges earn zero. At the attempt limit, the answer is revealed automatically and the next challenge becomes available. A 500-point day gets the golden perfect-round celebration; each correct answer keeps the existing full-duration celebrations. There is no speed bonus, and equal scores share a rank. The final result can be copied without any answers.
+
+Simply viewing Daily Mix does not create an attempt. Press **Start today’s mix** to begin. Refresh retains the same local attempt, and a new mix becomes available at noon Central. This does not claim or modify the manual daily flame. Signed-in starts/results appear as one stable Daily Mix record in personal statistics; other modes' solve averages remain separate.
+
+#### Invite the two players
+
+The project owner must publish the complete current `firestore.rules` in Firebase Console before releasing this version. The owner confirmed publication during implementation; GitHub Pages does not publish rules. Existing admin membership remains required and cannot be granted by the client.
+
+1. Sign in to the existing administrator account and open **Daily Mix** once. The administrator is added to the private roster automatically, without starting the challenge.
+2. Open **Menu → Admin panel**, find your wife's existing player by full email or Firebase UID, and select her profile.
+3. Press **Add to private Daily Mix**. Her row now appears even if she has never opened Daily Mix. **Remove from daily board** revokes access and hides that row without changing personal statistics, streaks or game saves.
+
+The board lives alongside the challenges on desktop and below them on mobile. Invited players see **Not started**, **In progress**, or **Finished**, plus final points and tied ranks. Not started means that no attempt has synced for this daily period; it is not online presence. Offline activity appears after reconnection. Guests and uninvited accounts can play locally but cannot read the private roster or other players' scores. Guests do not generate statistics.
+
+Firestore stores the invitation roster in `dailyMembers/{uid}` and bounded daily summaries in `dailyResults/{day}/entries/{uid}`. Only enabled administrators can invite or remove members; only invited players/admins can read the board; players can write only their own current-day summary. Completed results cannot be overwritten by the app. The shared summaries contain counters and timestamps, never answers, guesses, emails, Google tokens or passwords. Roster and result queries have a 20-document limit for this small private board. It uses the existing Firebase free-tier services, with no additional API, database product or dependency; reads and writes still count toward the project's quotas.
+
+Active challenge progress stays on the installation where it began, separately per signed-in account or guest. Only the board summary and personal statistics sync. Another installation displays the finished result or asks you to return to the original installation for an in-progress attempt. Do not clear browser data or reinstall midway through a daily attempt; its raw progress cannot be recovered from the summary. Offline play saves locally and retries the summary on reconnect or **Refresh board**. A result that remains offline past noon is retained locally until the next attempt replaces it, but cannot be submitted to a previous day's board.
+
+Challenge IDs come from the committed `src/data/daily-pools.v1.json`, with deterministic seeded selection and shuffled trivia choices. Adding content must not silently edit/reorder these pools or change existing question/alias/clue meanings during an active day; use a deliberately versioned future release for such changes. Geography slots use different answer countries. Current assets/content are reused under their existing licenses. As with the other static games, answer data can be inspected in browser tools, and client/device time is not authoritative; rules validate the current cloud day and summary bounds but do not verify gameplay. This is friendly private competition, not a tamper-proof ranking system.
 
 ## Deploy free: Cloudflare Pages
 
@@ -294,7 +322,7 @@ Borders along rivers and canals are still land borders; sea bridges, tunnels and
 
 ## Admin panel
 
-The hamburger menu shows **Admin panel** only for a signed-in Firebase UID with an enabled admin membership. This is a small support tool: player lookup, read-only overall/per-game statistics, recent check-ins, upward streak credits with confirmation, and the latest 25 administrative adjustments. It contains no statistics-reset feature and never changes saved game rounds.
+The hamburger menu shows **Admin panel** only for a signed-in Firebase UID with an enabled admin membership. This is a small support tool: player lookup, read-only overall/per-game statistics, private Daily Mix invitations, recent check-ins, upward streak credits with confirmation, and the latest 25 administrative adjustments. It contains no statistics-reset feature and never changes saved game rounds.
 
 ### One-time Firebase setup
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Search, ShieldCheck, RefreshCw, Flame, ArrowRight, Check } from 'lucide-react'
 import Dialog from './Dialog'
 import StatInsights from './StatInsights'
+import { setDailyMember } from '../lib/dailyCloud'
 import {
   adminError,
   applyStreakCredit,
@@ -91,6 +92,30 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
       if (token === request.current) setError(adminError(e))
     } finally {
       if (token === request.current) setBusy(false)
+    }
+  }
+  async function updateDailyMembership() {
+    if (!selected) return
+    setBusy(true)
+    setError('')
+    setNotice('')
+    const enabled = !selected.dailyMember
+    try {
+      await setDailyMember(
+        selected.profile.uid,
+        selected.profile.displayName || selected.profile.email.split('@')[0] || 'Player',
+        enabled,
+      )
+      setSelected({ ...selected, dailyMember: enabled })
+      setNotice(
+        enabled
+          ? 'Player added to your private Daily Mix board. They can now see its roster and daily scores.'
+          : 'Player removed from the private Daily Mix board.',
+      )
+    } catch (e) {
+      setError(adminError(e))
+    } finally {
+      setBusy(false)
     }
   }
   function prepare(event: FormEvent) {
@@ -219,6 +244,21 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
             </button>
           </div>
           <p className="admin-uid">UID: {selected.profile.uid}</p>
+          <div className="daily-admin-member">
+            <strong>Private Daily Mix board</strong>
+            <p className="admin-note">
+              Invited players can see each other’s names, daily participation and scores. Add only
+              the players you want to share with.
+            </p>
+            <button
+              className="secondary"
+              disabled={busy || saving}
+              onClick={() => void updateDailyMembership()}
+            >
+              {selected.dailyMember ? 'Remove from daily board' : 'Add to private Daily Mix'}
+            </button>
+          </div>
+
           <div className="stats-overview">
             {[
               ['Games played', totals.played],
@@ -241,7 +281,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                     <p>
                       <strong>{STAT_LABELS[row.mode]}</strong>
                       <span>
-                        {row.played} played · {row.wins} wins
+                        {row.played} played · {row.wins} wins{' '}
+                        {row.mode === 'daily'
+                          ? ' · ' + row.correct + '/' + row.answered + ' challenges solved'
+                          : ''}
                         {row.averageGuesses !== null
                           ? ` · ${average(row.averageGuesses)} avg guesses`
                           : ''}

@@ -10,6 +10,7 @@ export const STAT_MODES = [
   'who',
   'identify',
   'adventure',
+  'daily',
 ] as const
 export type StatMode = (typeof STAT_MODES)[number]
 export const STAT_LABELS: Record<StatMode, string> = {
@@ -23,6 +24,7 @@ export const STAT_LABELS: Record<StatMode, string> = {
   who: 'Who am I',
   identify: 'Identify Me',
   adventure: 'Somehow',
+  daily: 'Daily Mix',
 }
 const GUESS_MODES: readonly StatMode[] = [
   'countries',

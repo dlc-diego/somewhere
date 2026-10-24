@@ -3,6 +3,9 @@ import { openMenu, changeTheme } from './helpers/menu'
 import AxeBuilder from '@axe-core/playwright'
 import { countryById } from '../src/lib/countries'
 import { shortestBorderRoute } from '../src/lib/journey'
+import { dailyChoices, dailyEnded, dailyTextItem, type DailySession } from '../src/lib/daily'
+import { questionById } from '../src/lib/something'
+import { locationFor } from '../src/lib/countries'
 
 // Fake Google credentials are accepted ONLY by the Firebase Auth emulator.
 // This tests the real Auth/Firestore SDK and published rules, without Google accounts.
@@ -618,4 +621,146 @@ test('clue, hint and route records survive refresh and cloud sync without rewrit
     page.getByRole('region', { name: 'Border Journey statistics', exact: true }),
   ).toContainText('1/2 optimal routes · 1 average extra crossings')
   await expect(page.getByRole('group', { name: 'Games played', exact: true })).toContainText('4')
+})
+
+test('private Daily Mix shows invited non-starters, live progress, shared ranks, immutable completion and revoked access', async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(120000)
+  const wifeContext = await browser.newContext()
+  const wife = await wifeContext.newPage()
+  await wife.emulateMedia({ reducedMotion: 'reduce' })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await wife.goto('/')
+  await login(wife, 'daily-wife-board')
+  const wifeUid = await wife.evaluate(async () => {
+    const path = '/node_modules/.vite/deps/firebase_auth.js'
+    const { getAuth } = (await import(path)) as typeof import('firebase/auth')
+    return getAuth().currentUser!.uid
+  })
+  await wife.getByRole('button', { name: /^Close menu/ }).click()
+  await page.goto('/')
+  await login(page, 'daily-owner-board')
+  const ownerUid = await provisionAdmin(page)
+  await page.getByRole('button', { name: 'Admin panel', exact: true }).click()
+  const admin = page.getByRole('dialog', { name: 'Admin panel', exact: true })
+  await expect(admin.getByRole('button', { name: 'Find', exact: true })).toBeEnabled()
+  await admin.getByRole('searchbox', { name: 'Find a player', exact: true }).fill(wifeUid)
+  await admin.getByRole('button', { name: 'Find', exact: true }).click()
+  await admin.getByRole('button', { name: /daily-wife-board/ }).click()
+  await admin.getByRole('button', { name: 'Add to private Daily Mix', exact: true }).click()
+  await expect(admin.getByRole('status')).toContainText('Player added')
+  await admin.getByRole('button', { name: 'Close dialog', exact: true }).click()
+  const board = (p: Page) =>
+    p.getByRole('complementary', { name: 'Private daily leaderboard', exact: true })
+  for (const p of [page, wife])
+    await p.getByRole('combobox', { name: 'Choose experience', exact: true }).selectOption('daily')
+  for (const p of [page, wife]) {
+    await expect(
+      board(p).getByRole('list', { name: 'Daily players', exact: true }).locator('li'),
+    ).toHaveCount(2)
+    await expect(board(p).getByText('Not started', { exact: true })).toHaveCount(2)
+  }
+  expect(
+    await page.evaluate((uid) => localStorage.getItem('somewhere.daily.v1:' + uid), ownerUid),
+  ).toBeNull()
+  const read = (p: Page, uid: string): Promise<DailySession> =>
+    p.evaluate((uid) => JSON.parse(localStorage.getItem('somewhere.daily.v1:' + uid)!), uid)
+  async function solve(p: Page, uid: string) {
+    const session = await read(p, uid),
+      trial = session.trials[session.index]
+    if (dailyEnded(trial, session.day)) return
+    if (trial.kind === 'trivia') {
+      const at = dailyChoices(trial, session.day).indexOf(questionById.get(trial.id)!.answer)
+      await p
+        .getByRole('group', { name: questionById.get(trial.id)!.question, exact: true })
+        .getByRole('button')
+        .nth(at)
+        .click()
+    } else if (trial.kind === 'who' || trial.kind === 'mystery') {
+      await p
+        .getByRole('textbox', { name: 'Your answer', exact: true })
+        .fill(dailyTextItem(trial).answer)
+      await p.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    } else {
+      const country = countryById.get(trial.id)!
+      await p
+        .getByRole('combobox', { name: /^Search for a / })
+        .fill(locationFor(country, trial.kind).name)
+      await p.getByRole('listbox').getByRole('option').first().click()
+      await p.getByRole('button', { name: 'Make a guess', exact: true }).click()
+    }
+  }
+  await wife.getByRole('button', { name: 'Start today’s mix', exact: true }).click()
+  await expect(
+    board(page).getByRole('listitem').filter({ hasText: 'daily-wife-board' }),
+  ).toContainText('In progress · 0/5 completed')
+  await solve(wife, wifeUid)
+  await expect(
+    board(page).getByRole('listitem').filter({ hasText: 'daily-wife-board' }),
+  ).toContainText('In progress · 1/5 completed')
+  const first = await read(wife, wifeUid)
+  await wife.reload()
+  await expect(wife.getByRole('button', { name: 'Next discovery', exact: true })).toBeVisible()
+  expect((await read(wife, wifeUid)).trials[0]).toEqual(first.trials[0])
+  await page.getByRole('button', { name: 'Start today’s mix', exact: true }).click()
+  for (const [p, uid] of [
+    [wife, wifeUid],
+    [page, ownerUid],
+  ] as const) {
+    for (let i = 0; i < 5; i++) {
+      await solve(p, uid)
+      await p
+        .getByRole('button', {
+          name: i === 4 ? 'See daily results' : 'Next discovery',
+          exact: true,
+        })
+        .click()
+    }
+    await expect(
+      p.getByRole('heading', { name: 'A perfect daily mix.', exact: true }),
+    ).toBeVisible()
+  }
+  await expect(board(page).getByLabel('Rank 1', { exact: true })).toHaveCount(2)
+  await expect(board(wife).getByText('Finished · 5/5 solved', { exact: true })).toHaveCount(2)
+  await wife.setViewportSize({ width: 320, height: 740 })
+  for (const theme of ['light', 'dark'] as const) {
+    if ((await wife.locator('html').getAttribute('data-theme')) !== theme)
+      await changeTheme(wife, theme)
+    expect(
+      (await new AxeBuilder({ page: wife }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+        .violations,
+    ).toEqual([])
+    expect(await wife.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await wife.screenshot({
+    path: test.info().outputPath('private-daily-board-mobile.png'),
+    fullPage: true,
+  })
+  await page.evaluate((uid) => localStorage.removeItem('somewhere.daily.v1:' + uid), ownerUid)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'A perfect daily mix.', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Daily challenge progress' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Start today’s mix', exact: true })).toHaveCount(0)
+  await expect(board(page).getByLabel('Rank 1', { exact: true })).toHaveCount(2)
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Your statistics', exact: true }).click()
+  await expect(
+    page.getByRole('region', { name: 'Daily Mix statistics', exact: true }),
+  ).toContainText('5/5 challenges solved')
+  await expect(page.getByRole('group', { name: 'Daily streak', exact: true })).toContainText('0')
+  await page.getByRole('button', { name: 'Back to exploring', exact: true }).click()
+  await openMenu(page)
+  await page.getByRole('button', { name: 'Admin panel', exact: true }).click()
+  await expect(admin.getByRole('button', { name: 'Find', exact: true })).toBeEnabled()
+  await admin.getByRole('searchbox', { name: 'Find a player', exact: true }).fill(wifeUid)
+  await admin.getByRole('button', { name: 'Find', exact: true }).click()
+  await admin.getByRole('button', { name: /daily-wife-board/ }).click()
+  await admin.getByRole('button', { name: 'Remove from daily board', exact: true }).click()
+  await expect(board(wife)).toContainText('This board is invitation-only.')
+  await expect(board(wife).getByRole('list', { name: 'Daily players', exact: true })).toHaveCount(0)
+  await wifeContext.close()
 })

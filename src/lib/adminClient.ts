@@ -14,6 +14,7 @@ import {
 import { getAuth } from 'firebase/auth'
 import { app } from './firebaseApp'
 import { db } from './firestoreSync'
+import { getDailyMember } from './dailyCloud'
 import { emptyPlayer, parseGame, type PlayerData } from './playerData'
 import { validCheckIn } from './streak'
 import { creditCheckIn, planStreakCredit, type StreakCreditPlan } from './adminStreak'
@@ -26,6 +27,7 @@ export interface PlayerProfile {
 export interface AdminPlayer {
   profile: PlayerProfile
   data: PlayerData
+  dailyMember: boolean
 }
 export interface AuditEntry {
   id: string
@@ -84,7 +86,7 @@ export async function loadAdminPlayer(profile: PlayerProfile): Promise<AdminPlay
     if (validCheckIn(record) && String(record.day) === d.id)
       data.claims[d.id] = { day: record.day, at: record.at }
   }
-  return { profile, data }
+  return { profile, data, dailyMember: await getDailyMember(profile.uid) }
 }
 export async function loadAudit(): Promise<AuditEntry[]> {
   const snapshot = await getDocsFromServer(

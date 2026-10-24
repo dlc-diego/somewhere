@@ -1,4 +1,4 @@
-import { ChevronDown, Compass, Sparkles, UserRound, Route } from 'lucide-react'
+import { ChevronDown, Compass, Sparkles, UserRound, Route, CalendarDays } from 'lucide-react'
 import type { Experience } from '../lib/useExperience'
 
 export default function ExperienceSwitcher({
@@ -15,7 +15,9 @@ export default function ExperienceSwitcher({
         ? Sparkles
         : experience === 'someone'
           ? UserRound
-          : Route
+          : experience === 'daily'
+            ? CalendarDays
+            : Route
   return (
     <div className="brand-switcher">
       <span className="brand" aria-hidden="true">
@@ -23,9 +25,9 @@ export default function ExperienceSwitcher({
           <Icon size={23} strokeWidth={1.5} />
         </span>
         <span className="brand-word">
-          some
+          {experience === 'daily' ? 'Daily ' : 'some'}
           <span key={experience} className="brand-ending">
-            {experience.slice(4)}.
+            {experience === 'daily' ? 'Mix' : experience.slice(4) + '.'}
           </span>
         </span>
         <ChevronDown className="brand-chevron" size={14} />
@@ -40,6 +42,7 @@ export default function ExperienceSwitcher({
         <option value="something">something.</option>
         <option value="someone">someone.</option>
         <option value="somehow">somehow.</option>
+        <option value="daily">Daily Mix</option>
       </select>
     </div>
   )

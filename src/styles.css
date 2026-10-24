@@ -4056,3 +4056,230 @@ body:has(.app-menu-drawer[data-open='true']) {
   color: var(--heat-found-text);
   background: var(--surface-muted);
 }
+
+.daily-heading {
+  margin: 0 0 26px;
+}
+.daily-heading .eyebrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--accent-hover);
+}
+.daily-heading h2 {
+  font: 400 34px/1.2 var(--serif);
+  letter-spacing: -0.7px;
+  margin: 10px 0;
+}
+.daily-heading > p:not(.eyebrow),
+.daily-heading > small,
+.daily-note {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.daily-heading > small {
+  font-size: 11px;
+}
+.daily-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+}
+.daily-layout > .trivia-card {
+  min-width: 0;
+}
+.daily-challenges > div > .trivia-card-heading h3 {
+  font: 400 27px var(--serif);
+  margin: 0;
+}
+.daily-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--border-card);
+}
+.daily-progress li {
+  text-align: center;
+  min-width: 0;
+}
+.daily-progress li > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 8px;
+  border: 1px solid var(--border-mode);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.daily-progress small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.daily-progress .is-current > span {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.daily-progress .is-correct > span {
+  border-color: var(--heat-found-text);
+  color: var(--heat-found-text);
+}
+.daily-progress .is-missed > span {
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+.daily-welcome,
+.daily-finish {
+  text-align: center;
+  padding: 12px 0;
+}
+.daily-welcome > svg,
+.daily-finish > svg {
+  color: var(--accent-hover);
+}
+.daily-welcome h3,
+.daily-finish h3 {
+  font: 400 29px/1.3 var(--serif);
+}
+.daily-welcome > p,
+.daily-finish > p {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.daily-welcome .primary,
+.daily-finish .primary {
+  margin-top: 18px;
+}
+.daily-result-score {
+  display: block;
+  font: 400 54px var(--serif);
+  margin: 20px 0;
+}
+.daily-result-score small {
+  font-size: 21px;
+  color: var(--text-muted);
+}
+.daily-globe {
+  margin: 24px 0;
+}
+.daily-globe .globe-viewport {
+  min-height: 280px;
+}
+.daily-challenges > div > .give-up-button {
+  display: flex;
+  margin: 24px auto 0;
+}
+.daily-trial-result {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-card);
+}
+.daily-board-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.daily-board-heading h2 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font: 400 24px var(--serif);
+  margin: 0;
+}
+.daily-board-heading svg {
+  color: var(--accent-hover);
+  flex-shrink: 0;
+}
+.daily-board-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  display: grid;
+  gap: 10px;
+}
+.daily-board-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px;
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  min-width: 0;
+}
+.daily-board-list li.is-you {
+  background: var(--surface-muted);
+}
+.daily-rank {
+  width: 20px;
+  flex-shrink: 0;
+  font: 400 23px var(--serif);
+}
+.daily-player {
+  flex: 1;
+  min-width: 0;
+}
+.daily-player strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.daily-player strong small {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.daily-player > span {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.daily-points {
+  text-align: right;
+  font-size: 20px;
+}
+.daily-points small {
+  display: block;
+  color: var(--text-muted);
+  font: 400 9px/1.5 sans-serif;
+}
+.daily-board-footer {
+  display: grid;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.daily-board-footer .text-button {
+  min-height: 44px;
+  justify-self: start;
+}
+.daily-admin-member {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--border-card);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+.daily-admin-member .secondary {
+  min-height: 44px;
+}
+@media (max-width: 820px) {
+  .daily-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .daily-heading h2 {
+    font-size: 29px;
+  }
+}

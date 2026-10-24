@@ -25,7 +25,7 @@ service cloud.firestore {
       return d.keys().hasAll(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt'])
         && d.keys().hasOnly(['version','id','mode','startedAt','updatedAt','outcome','guesses','correct','answered','bestStreak','stage','recordedAt','cluesShown','hintUsed','shortestCrossings'])
         && d.version == 1 && id.matches('^[a-zA-Z0-9_-]{8,100}$') && d.id == id
-        && d.mode in ['countries','capitals','flags','shapes','journey','trivia','mystery','who','identify','adventure']
+        && d.mode in ['countries','capitals','flags','shapes','journey','trivia','mystery','who','identify','adventure','daily']
         && d.outcome in ['active','won','revealed','lost','completed','abandoned']
         && d.startedAt is int && d.updatedAt is int && d.startedAt >= 946684800000
         && d.updatedAt >= d.startedAt && d.updatedAt <= request.time.toMillis() + 300000
@@ -122,6 +122,47 @@ service cloud.firestore {
         && request.resource.data.reason is string && request.resource.data.reason.size() >= 3 && request.resource.data.reason.size() <= 240
         && request.resource.data.createdAt == request.time;
       // Audit entries cannot be edited or deleted, including by admins.
+    }
+    function dailyMember() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/dailyMembers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/dailyMembers/$(request.auth.uid)).data.enabled == true;
+    }
+    function dailyAccess() { return admin() || dailyMember(); }
+    match /dailyMembers/{uid} {
+      allow get: if owner(uid) || dailyAccess();
+      allow list: if dailyAccess() && request.query.limit != null && request.query.limit <= 20;
+      allow create, update: if admin()
+        && request.resource.data.keys().hasAll(['version','uid','displayName','enabled','addedBy','updatedAt'])
+        && request.resource.data.keys().hasOnly(['version','uid','displayName','enabled','addedBy','updatedAt'])
+        && request.resource.data.version == 1 && request.resource.data.uid == uid
+        && request.resource.data.displayName is string && request.resource.data.displayName.size() > 0 && request.resource.data.displayName.size() <= 80
+        && request.resource.data.enabled is bool && request.resource.data.addedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+    }
+    function dailyResult(uid, day) {
+      let d = request.resource.data;
+      return owner(uid) && dailyAccess()
+        && d.keys().hasAll(['version','uid','day','challengeVersion','status','attempted','solved','score','updatedAt','completedAt'])
+        && d.keys().hasOnly(['version','uid','day','challengeVersion','status','attempted','solved','score','updatedAt','completedAt'])
+        && d.version == 1 && d.uid == uid && d.challengeVersion == 1
+        && d.day is int && string(d.day) == day && d.day == centralDay(request.time)
+        && d.status in ['started','finished'] && natural(d.attempted,5) && natural(d.solved,d.attempted)
+        && natural(d.score,500) && d.score <= d.solved*100 && d.score >= d.solved*90
+        && ((d.status == 'finished' && d.attempted == 5 && d.completedAt == request.time)
+          || (d.status == 'started' && d.attempted < 5 && d.completedAt == null))
+        && d.updatedAt == request.time;
+    }
+    match /dailyResults/{day}/entries/{uid} {
+      allow get: if dailyAccess();
+      allow list: if dailyAccess() && request.query.limit != null && request.query.limit <= 20;
+      allow create: if dailyResult(uid,day);
+      allow update: if dailyResult(uid,day) && resource.data.status != 'finished'
+        && request.resource.data.day == resource.data.day
+        && request.resource.data.challengeVersion == resource.data.challengeVersion
+        && request.resource.data.attempted >= resource.data.attempted
+        && request.resource.data.solved >= resource.data.solved
+        && request.resource.data.score >= resource.data.score;
     }
     match /{document=**} { allow read, write: if false; }
   }

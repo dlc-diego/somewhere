@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { prefersReducedMotion } from './motion'
 
-export type Experience = 'somewhere' | 'something' | 'someone' | 'somehow'
+export type Experience = 'somewhere' | 'something' | 'someone' | 'somehow' | 'daily'
 const storageKey = 'somewhere.experience.v1'
 export const EXPERIENCE_SWITCH_MS = 800
 const CHANGE_AT_MS = 280
@@ -10,7 +10,9 @@ function savedExperience(): Experience {
   try {
     const saved = localStorage.getItem(storageKey)
     if (saved === 'somex') return 'somehow' // Keep the adventure selected after the rename.
-    return saved === 'something' || saved === 'someone' || saved === 'somehow' ? saved : 'somewhere'
+    return saved === 'something' || saved === 'someone' || saved === 'somehow' || saved === 'daily'
+      ? saved
+      : 'somewhere'
   } catch {
     return 'somewhere'
   }
@@ -77,7 +79,9 @@ export function useExperience() {
           ? 'Something — a little more to discover'
           : experience === 'someone'
             ? 'Someone — a familiar face'
-            : 'Somehow — a little adventure'
+            : experience === 'daily'
+              ? 'Daily Mix — a little discovery every day'
+              : 'Somehow — a little adventure'
   }, [experience])
 
   useEffect(() => {

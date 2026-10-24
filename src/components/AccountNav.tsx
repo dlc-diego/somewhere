@@ -390,7 +390,11 @@ function StatisticsDialog({
                 <p>
                   {r.played} played · {r.completed} completed
                 </p>
-                {r.mode === 'trivia' ? (
+                {r.mode === 'daily' ? (
+                  <p>
+                    {r.correct}/{r.answered} challenges solved · {r.wins} fully solved days
+                  </p>
+                ) : r.mode === 'trivia' ? (
                   <p>
                     {r.correct}/{r.answered} answers correct
                     {r.answered ? ` · ${Math.round((100 * r.correct) / r.answered)}% accuracy` : ''}

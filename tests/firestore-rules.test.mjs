@@ -315,3 +315,149 @@ test('optional gameplay details accept old records and enforce mode, bounds and 
       }),
     )
 })
+
+const dailyMembership = (uid, addedBy) => ({
+  version: 1,
+  uid,
+  displayName: uid,
+  enabled: true,
+  addedBy,
+  updatedAt: serverTimestamp(),
+})
+const dailyRecord = (uid, patch = {}) => ({
+  version: 1,
+  uid,
+  day: centralDayNow(),
+  challengeVersion: 1,
+  status: 'started',
+  attempted: 0,
+  solved: 0,
+  score: 0,
+  updatedAt: serverTimestamp(),
+  completedAt: null,
+  ...patch,
+})
+test('a private daily board requires admin invitations; strangers cannot see the roster or results', async () => {
+  await seedAdmin('daily-admin')
+  const admin = env.authenticatedContext('daily-admin').firestore()
+  const wife = env.authenticatedContext('daily-wife').firestore()
+  const stranger = env.authenticatedContext('daily-stranger').firestore()
+  const { query, limit } = await import('firebase/firestore')
+  for (const uid of ['daily-admin', 'daily-wife'])
+    await assertSucceeds(
+      setDoc(doc(admin, 'dailyMembers', uid), dailyMembership(uid, 'daily-admin')),
+    )
+  await assertSucceeds(getDocs(query(collection(wife, 'dailyMembers'), limit(20))))
+  await assertSucceeds(getDoc(doc(wife, 'dailyMembers/daily-admin')))
+  await assertFails(getDocs(collection(wife, 'dailyMembers')))
+  await assertFails(getDocs(collection(wife, 'users/daily-admin/games')))
+  await assertFails(
+    setDoc(
+      doc(wife, 'dailyMembers/daily-stranger'),
+      dailyMembership('daily-stranger', 'daily-wife'),
+    ),
+  )
+  await assertFails(
+    setDoc(
+      doc(stranger, 'dailyMembers/daily-stranger'),
+      dailyMembership('daily-stranger', 'daily-stranger'),
+    ),
+  )
+  await assertSucceeds(getDoc(doc(stranger, 'dailyMembers/daily-stranger')))
+  for (const db of [stranger, env.unauthenticatedContext().firestore()]) {
+    await assertFails(getDocs(query(collection(db, 'dailyMembers'), limit(20))))
+    await assertFails(getDoc(doc(db, 'dailyMembers/daily-wife')))
+    await assertFails(
+      getDocs(query(collection(db, 'dailyResults', String(centralDayNow()), 'entries'), limit(20))),
+    )
+  }
+  await assertFails(
+    setDoc(doc(admin, 'dailyMembers/new-member'), {
+      ...dailyMembership('new-member', 'daily-admin'),
+      email: 'private@example.com',
+    }),
+  )
+})
+test('daily results are owner-only, current-day, bounded summaries and finished results are immutable', async () => {
+  const admin = env.authenticatedContext('daily-admin').firestore()
+  const wife = env.authenticatedContext('daily-wife').firestore()
+  const day = centralDayNow(),
+    path = 'dailyResults/' + day + '/entries/daily-admin'
+  const { query, limit } = await import('firebase/firestore')
+  await assertSucceeds(setDoc(doc(admin, path), dailyRecord('daily-admin')))
+  await assertSucceeds(
+    getDocs(query(collection(wife, 'dailyResults', String(day), 'entries'), limit(20))),
+  )
+  await assertFails(setDoc(doc(wife, path), dailyRecord('daily-admin')))
+  await assertFails(setDoc(doc(admin, path), dailyRecord('daily-admin', { answers: ['secret'] })))
+  for (const patch of [
+    { day: day + 1 },
+    { day: day - 1 },
+    { challengeVersion: 2 },
+    { attempted: 6 },
+    { attempted: 1, solved: 2, score: 200 },
+    { attempted: 1, solved: 1, score: 89 },
+    { attempted: 1, solved: 1, score: 101 },
+    { attempted: 5, status: 'started' },
+    { status: 'finished', attempted: 4 },
+    { attempted: 1, solved: 1, score: 100, completedAt: serverTimestamp() },
+  ])
+    await assertFails(setDoc(doc(admin, path), dailyRecord('daily-admin', patch)))
+  await assertSucceeds(
+    setDoc(doc(admin, path), dailyRecord('daily-admin', { attempted: 1, solved: 1, score: 100 })),
+  )
+  await assertFails(setDoc(doc(admin, path), dailyRecord('daily-admin')))
+  await assertSucceeds(
+    setDoc(
+      doc(admin, path),
+      dailyRecord('daily-admin', {
+        status: 'finished',
+        attempted: 5,
+        solved: 5,
+        score: 500,
+        completedAt: serverTimestamp(),
+      }),
+    ),
+  )
+  await assertFails(
+    setDoc(
+      doc(admin, path),
+      dailyRecord('daily-admin', {
+        status: 'finished',
+        attempted: 5,
+        solved: 5,
+        score: 499,
+        completedAt: serverTimestamp(),
+      }),
+    ),
+  )
+  await assertFails(deleteDoc(doc(admin, path)))
+})
+test('revoking a daily invitation blocks new board reads and writes without changing personal statistics', async () => {
+  const admin = env.authenticatedContext('daily-admin').firestore()
+  const wife = env.authenticatedContext('daily-wife').firestore()
+  await assertSucceeds(
+    setDoc(doc(wife, 'users/daily-wife/games/daily-personal-123'), {
+      ...record(),
+      id: 'daily-personal-123',
+      mode: 'daily',
+    }),
+  )
+  await assertSucceeds(
+    updateDoc(doc(admin, 'dailyMembers/daily-wife'), {
+      enabled: false,
+      updatedAt: serverTimestamp(),
+    }),
+  )
+  const { query, limit } = await import('firebase/firestore')
+  await assertFails(
+    getDocs(query(collection(wife, 'dailyResults', String(centralDayNow()), 'entries'), limit(20))),
+  )
+  await assertFails(
+    setDoc(
+      doc(wife, 'dailyResults', String(centralDayNow()), 'entries/daily-wife'),
+      dailyRecord('daily-wife'),
+    ),
+  )
+  await assertSucceeds(getDocs(collection(wife, 'users/daily-wife/games')))
+})
