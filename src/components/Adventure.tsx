@@ -3,26 +3,15 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import {
   ArrowRight,
   Backpack,
-  Brain,
   Check,
   ChevronDown,
   Coins,
   Compass,
   Crown,
-  Flag,
   Gift,
-  Globe2,
   Heart,
-  MapPin,
-  Route,
-  Scan,
   Shield,
-  ShoppingBag,
   TentTree,
-  Zap,
-  CircleHelp,
-  UserRound,
-  Image as ImageIcon,
   RotateCcw,
   Lightbulb,
 } from 'lucide-react'
@@ -38,10 +27,8 @@ import {
   NODE_LABELS,
   abandonEncounter,
   answerAdventureTrivia,
-  availableNodes,
   buyItem,
   chooseNode,
-  connected,
   guessAdventureCountry,
   guessAdventureMystery,
   isCombat,
@@ -74,25 +61,10 @@ import GuessHistory from './GuessHistory'
 import { JourneyChallenge, JourneyHistory } from './BorderJourney'
 import VisualChallenge from './VisualChallenge'
 import Dialog from './Dialog'
+import AdventureMap, { nodeIcons } from './AdventureMap'
 
 const Globe = lazy(() => import('./Globe'))
 const AdventurePortrait = lazy(() => import('./AdventurePortrait'))
-const nodeIcons = {
-  trivia: Brain,
-  mystery: CircleHelp,
-  who: UserRound,
-  identify: ImageIcon,
-  countries: Globe2,
-  capitals: MapPin,
-  flags: Flag,
-  shapes: Scan,
-  journey: Route,
-  elite: Zap,
-  boss: Crown,
-  rest: TentTree,
-  shop: ShoppingBag,
-  event: Gift,
-}
 
 export default function Adventure({
   onCelebrate,
@@ -719,10 +691,11 @@ export default function Adventure({
               <Compass size={23} />
             </div>
             <p className="somex-rules">
-              Choose a highlighted stop. A single rest stop waits halfway through the journey; the
-              final stretch ends with an elite trial and the boss.
+              Preview a highlighted stop to see its budget and rewards before you begin. Your
+              current section is open; expand any other section to explore the route ahead or
+              behind.
             </p>
-            <AdventureMap run={run} onChoose={selectNode} />
+            <AdventureMap key={run.id} run={run} onChoose={selectNode} />
           </div>
         )
       )}
@@ -731,7 +704,7 @@ export default function Adventure({
           <summary>
             Your route <ChevronDown size={16} />
           </summary>
-          <AdventureMap run={run} onChoose={selectNode} />
+          <AdventureMap key={run.id} run={run} onChoose={selectNode} />
         </details>
       )}
       {confirmRestart && (
@@ -814,58 +787,6 @@ function TrialItems({ run, onUse }: { run: AdventureRun; onUse: (id: ItemId) => 
             <span aria-hidden="true">{ITEMS[id].symbol}</span>
             Use {ITEMS[id].name} <small>({run.inventory[id]})</small>
             {reason && <span className="sr-only"> · {reason}</span>}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function AdventureMap({
-  run,
-  onChoose,
-}: {
-  run: AdventureRun
-  onChoose: (node: AdventureNode) => void
-}) {
-  const available = availableNodes(run).map((node) => node.id)
-  return (
-    <div className="somex-route-map" aria-label="Branching adventure route">
-      <svg
-        viewBox={`0 0 300 ${ADVENTURE_STOPS * 96}`}
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        {run.map.flatMap((from) =>
-          run.map
-            .filter((to) => connected(from, to))
-            .map((to) => {
-              const traveled = run.path.includes(from.id) && run.path.includes(to.id)
-              return (
-                <path
-                  key={`${from.id}:${to.id}`}
-                  className={traveled ? 'traveled' : ''}
-                  d={`M${from.lane * 100 + 50},${from.row * 96 + 48} C${from.lane * 100 + 50},${from.row * 96 + 96} ${to.lane * 100 + 50},${to.row * 96} ${to.lane * 100 + 50},${to.row * 96 + 48}`}
-                />
-              )
-            }),
-        )}
-      </svg>
-      {run.map.map((node) => {
-        const Icon = nodeIcons[node.kind]
-        const result = run.outcomes[node.id]
-        return (
-          <button
-            key={node.id}
-            className={`somex-route-node ${available.includes(node.id) ? 'reachable' : ''} ${result || ''} ${run.encounter?.nodeId === node.id ? 'current' : ''}`}
-            style={{ gridRow: node.row + 1, gridColumn: node.lane + 1 }}
-            onClick={() => onChoose(node)}
-            disabled={!available.includes(node.id)}
-            aria-label={`${NODE_LABELS[node.kind]}, stop ${node.row + 1}${available.includes(node.id) ? ', available' : result ? `, ${result}` : ''}`}
-          >
-            <Icon size={21} aria-hidden="true" />
-            <span>{NODE_LABELS[node.kind]}</span>
-            {result && <small>{result === 'cleared' ? '✓' : '×'}</small>}
           </button>
         )
       })}

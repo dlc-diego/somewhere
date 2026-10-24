@@ -3864,3 +3864,135 @@ body:has(.app-menu-drawer[data-open='true']) {
 .admin-success svg {
   flex-shrink: 0;
 }
+
+/* Keep the complete route available without making every section a long scroll. */
+.somex-route-sections {
+  display: grid;
+  gap: 12px;
+}
+.somex-route-section {
+  min-width: 0;
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  padding: 0 8px;
+}
+.somex-route-section > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 64px;
+  padding: 12px 4px;
+  cursor: pointer;
+  list-style: none;
+}
+.somex-route-section > summary::-webkit-details-marker {
+  display: none;
+}
+.somex-route-section > summary strong,
+.somex-route-section > summary small {
+  display: block;
+}
+.somex-route-section > summary strong {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.somex-route-section > summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-top: 4px;
+}
+.somex-section-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.somex-section-state.is-current {
+  color: var(--accent-hover);
+}
+.somex-section-state svg {
+  flex-shrink: 0;
+}
+.somex-route-section[open] > summary .somex-section-state svg {
+  transform: rotate(180deg);
+}
+.somex-route-section .somex-route-map {
+  margin: 0 0 8px;
+}
+.somex-route-node .somex-node-budget {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+.somex-route-node.is-previewed {
+  background: var(--surface-selected);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.somex-choice-preview {
+  margin: 12px 4px 16px;
+  border-top: 1px solid var(--border-card);
+  padding: 20px 4px 0;
+  scroll-margin-block: 20px;
+}
+.somex-choice-preview > .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.somex-choice-preview h4 {
+  margin: 8px 0;
+  font: 400 25px var(--serif);
+}
+.somex-choice-preview p,
+.somex-choice-preview dl {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.somex-choice-preview > p:not(.eyebrow) {
+  color: var(--text-muted);
+}
+.somex-choice-preview dl > div {
+  padding: 9px 0;
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr);
+  gap: 8px;
+}
+.somex-choice-preview dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+}
+.somex-choice-preview dd {
+  margin: 0;
+  color: var(--text-muted);
+}
+.somex-choice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.somex-choice-actions .primary {
+  width: auto;
+  min-height: 44px;
+  padding: 12px 16px;
+}
+.somex-choice-actions .text-button,
+.site-footer .text-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+.site-footer .text-button {
+  padding-inline: 10px;
+}
+.somex-route-preview > summary {
+  min-height: 44px;
+}
+.somex-route-preview .somex-route-sections {
+  margin-top: 16px;
+}

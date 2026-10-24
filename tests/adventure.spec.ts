@@ -108,6 +108,8 @@ test('all three route sections have three-by-three choices and older boss progre
   await page.goto('/')
   await expect(page.locator('.somex-route-node')).toHaveCount(31)
   await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
+  for (const section of await page.locator('.somex-route-section').all())
+    if ((await section.getAttribute('open')) === null) await section.locator('summary').click()
   for (const stop of [1, 2, 3, 5, 6, 7, 9, 10, 11])
     await expect(
       page
@@ -144,9 +146,10 @@ test('a fresh run has one rest, needs perfect trivia and ends after two unprotec
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await expect(page.getByRole('status', { name: '2 of 2 hearts', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: /^Rest stop, stop / })).toHaveCount(1)
-  await expect(page.getByRole('button', { name: /^Rest stop, stop 8/ })).toHaveCount(1)
+  await expect(page.locator('.somex-route-node[aria-label^="Rest stop, stop "]')).toHaveCount(1)
+  await expect(page.locator('.somex-route-node[aria-label^="Rest stop, stop 8"]')).toHaveCount(1)
   await page.getByRole('button', { name: 'General Trivia, stop 1, available', exact: true }).click()
+  await page.getByRole('button', { name: 'Begin trial', exact: true }).click()
   await expect(page.locator('.somex-rules').first()).toContainText('Get 3 of 3')
   for (let i = 0; i < 3; i++) {
     await triviaAnswer(page, i > 0)
@@ -157,6 +160,7 @@ test('a fresh run has one rest, needs perfect trivia and ends after two unprotec
   await expect(page.getByRole('status', { name: '1 of 2 hearts', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Return to the route', exact: true }).click()
   await page.locator('.somex-route-node.reachable').first().click()
+  await page.getByRole('button', { name: 'Begin trial', exact: true }).click()
   await page
     .getByRole('button', { name: 'Give up and reveal answer · risk 1 heart', exact: true })
     .click()
@@ -607,8 +611,8 @@ test('New run confirmation preserves progress on cancel or Escape and resets onl
   expect(fresh.coins).toBe(8)
   expect(fresh.inventory.star).toBe(0)
   await expect(page.locator('.somex-route-node')).toHaveCount(31)
-  await expect(page.getByRole('button', { name: /^Who am I, stop / })).toHaveCount(2)
-  await expect(page.getByRole('button', { name: /^Identify Me, stop / })).toHaveCount(2)
+  await expect(page.locator('.somex-route-node[aria-label^="Who am I, stop "]')).toHaveCount(2)
+  await expect(page.locator('.somex-route-node[aria-label^="Identify Me, stop "]')).toHaveCount(2)
   await page.reload()
   await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
   expect((await stored(page)).id).toBe(fresh.id)
@@ -743,6 +747,7 @@ test('blocked browser storage still allows public entry and playing with a clear
     .selectOption('somehow')
   await expect(page.locator('.somex-adventure .storage-warning')).toContainText('unavailable')
   await page.getByRole('button', { name: 'General Trivia, stop 1, available', exact: true }).click()
+  await page.getByRole('button', { name: 'Begin trial', exact: true }).click()
   await expect(page.locator('.somex-stop .trivia-choice')).toHaveCount(4)
   for (let i = 0; i < 3; i++) {
     await page.locator('.somex-stop .trivia-choice').first().click()
@@ -784,4 +789,105 @@ test('public map, satchel and encounter are accessible at 320px in both themes',
       .violations,
   ).toEqual([])
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('route previews are reversible, commit only on Begin, and keep the full map inspectable', async ({
+  page,
+}) => {
+  await seed(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const sections = page.locator('.somex-route-section')
+  await expect(sections).toHaveCount(3)
+  await expect(sections.nth(0)).toHaveAttribute('open', '')
+  await expect(sections.nth(1)).not.toHaveAttribute('open', '')
+  await expect(sections.nth(2)).not.toHaveAttribute('open', '')
+  const original = await stored(page)
+  const node = page.getByRole('button', { name: 'General Trivia, stop 1, available', exact: true })
+  await node.click()
+  const preview = page.getByRole('region', { name: 'Preview General Trivia', exact: true })
+  await expect(preview).toBeFocused()
+  await expect(preview).toContainText('3 of 3')
+  await expect(preview).toContainText('3 questions')
+  await expect(preview).toContainText('risks 1 heart')
+  await expect(preview).toContainText('+4 coins on clear')
+  expect(await stored(page)).toEqual(original)
+  await expect(page.locator('.somex-stop')).toHaveCount(0)
+  await preview.getByRole('button', { name: 'Keep choosing', exact: true }).click()
+  await expect(node).toBeFocused()
+  expect(await stored(page)).toEqual(original)
+  await sections.nth(2).locator('summary').click()
+  await expect(
+    page.getByRole('button', { name: 'Final boss, stop 13', exact: true }),
+  ).toBeDisabled()
+  await sections.nth(2).locator('summary').click()
+  await node.click()
+  await preview.getByRole('button', { name: 'Begin trial', exact: true }).click()
+  await expect(page.locator('.somex-stop .trivia-choice')).toHaveCount(4)
+  const committed = await stored(page)
+  expect(committed.path).toHaveLength(1)
+  expect(committed.encounter?.kind).toBe('trivia')
+  expect(committed.hearts).toBe(original.hearts)
+  expect(committed.coins).toBe(original.coins)
+  expect(committed.seenTrivia).toHaveLength(1)
+  await page.reload()
+  expect((await stored(page)).encounter?.trivia?.id).toBe(committed.encounter?.trivia?.id)
+})
+
+test('passing the rest stop focuses the final section and folds the completed sections', async ({
+  page,
+}) => {
+  const fixture = at('rest')
+  await seed(page, fixture)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Rest with full hearts', exact: true }).click()
+  await page.getByRole('button', { name: 'Return to the route', exact: true }).click()
+  const sections = page.locator('.somex-route-section')
+  await expect(sections.nth(0)).not.toHaveAttribute('open', '')
+  await expect(sections.nth(1)).not.toHaveAttribute('open', '')
+  await expect(sections.nth(2)).toHaveAttribute('open', '')
+  await expect(sections.nth(0).locator('summary')).toContainText('Completed')
+  await expect(sections.nth(1).locator('summary')).toContainText('Completed')
+  await expect(sections.nth(2).locator('summary')).toContainText('Current section')
+  await expect(page.locator('.somex-route-node.reachable')).toHaveCount(3)
+  const saved = await stored(page)
+  expect(saved.id).toBe(fixture.id)
+  expect(saved.path).toEqual(fixture.path)
+  expect(saved.inventory).toEqual(fixture.inventory)
+  await page.reload()
+  await expect(page.locator('.somex-route-section').nth(2)).toHaveAttribute('open', '')
+  expect(await stored(page)).toEqual(saved)
+})
+
+test('preview and section controls fit 320px in both themes, and footer help has a full touch target', async ({
+  page,
+}) => {
+  await seed(page)
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
+  await page.goto('/')
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') await changeTheme(page, 'dark')
+    await page
+      .getByRole('button', { name: 'General Trivia, stop 1, available', exact: true })
+      .click()
+    await expect(page.getByRole('region', { name: 'Preview General Trivia' })).toBeVisible()
+    expect(
+      (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
+        .violations,
+    ).toEqual([])
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.getByRole('button', { name: 'Keep choosing', exact: true }).click()
+  }
+  for (const experience of ['somewhere', 'something', 'someone', 'somehow']) {
+    await page
+      .getByRole('combobox', { name: 'Choose experience', exact: true })
+      .selectOption(experience)
+    const help = page.getByRole('button', { name: 'How to play', exact: true })
+    await expect(help).toBeVisible()
+    const rect = (await help.boundingBox())!
+    expect(rect.height).toBeGreaterThanOrEqual(44)
+    expect(rect.width).toBeGreaterThanOrEqual(44)
+  }
 })
